@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "es5",
+    "module": "es2015",
+    "lib": [
+      "es2020",
+      "dom"
+    ],
+    "jsx": "react",
+    "sourceMap": false,
+    "strict": true,
+    "strictNullChecks": false,
+    "moduleResolution": "node",
+    "esModuleInterop": false,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": [
+    "./src/client/**/*"
+  ]
+}
