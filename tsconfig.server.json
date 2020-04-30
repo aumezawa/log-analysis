@@ -12,6 +12,7 @@
     "strict": true,
     "strictNullChecks": false,
     "moduleResolution": "node",
+    "typeRoots": ["./src/server/types"],
     "esModuleInterop": false,
     "forceConsistentCasingInFileNames": true
   },
