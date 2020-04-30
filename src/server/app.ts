@@ -9,12 +9,14 @@ import indexRouter from "./routes/index"
 import apiV1Router from "./routes/api-v1"
 
 const app: express.Express = express()
-const root: string = process.cwd()
+const rootpath: string = process.cwd()
 const logfs: rfs.RotatingFileStream = rfs.createStream("access.log", {
-  path: path.join(root, "local", "log"),
+  path: path.join(rootpath, "local", "log"),
   size: "1G"
 })
 
+app.set("http_port", 3000)
+app.set("https_port", 3443)
 app.set("tokenKey", process.env.npm_package_name)
 
 morgan.token("user", (req: express.Request, res: express.Response) => ((req.token && req.token.usr) || "unknown"))
@@ -25,7 +27,7 @@ app.use(bodyParser.urlencoded({ extended: true }))
 app.use(helmet())
 
 app.use("/", indexRouter)
-app.use("/", express.static(path.join(root, "public")))
+app.use("/", express.static(path.join(rootpath, "public")))
 
 app.use("/api/v1", apiV1Router)
 

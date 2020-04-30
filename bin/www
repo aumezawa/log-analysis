@@ -12,19 +12,22 @@ var https = require('https');
 var path = require('path');
 
 /**
- * Get port from environment and store in Express.
+ * Get root directory.
  */
 
-var http_port = normalizePort(process.env.HTTP_PORT || '3000');
-var https_port = normalizePort(process.env.HTTPS_PORT || '3443');
-app.set('http_port', http_port);
-app.set('https_port', https_port);
+var rootpath = process.cwd();
 
 /**
- * Create HTTP server.
+ * Get port.
  */
 
-var rootpath = process.cwd()
+var http_port = app.get('http_port');
+var https_port = app.get('https_port');
+
+/**
+ * Create HTTP/HTTPS server.
+ */
+
 var http_server = http.createServer(app);
 var https_server = https.createServer({
   key : fs.readFileSync(path.join(rootpath, 'local', 'server-key.pem')),
@@ -42,26 +45,6 @@ http_server.on('listening', onListeningHttp);
 https_server.listen(https_port);
 https_server.on('error', onErrorHttps);
 https_server.on('listening', onListeningHttps);
-
-/**
- * Normalize a port into a number, string, or false.
- */
-
-function normalizePort(val) {
-  var port = parseInt(val, 10);
-
-  if (isNaN(port)) {
-    // named pipe
-    return val;
-  }
-
-  if (port >= 0) {
-    // port number
-    return port;
-  }
-
-  return false;
-}
 
 /**
  * Event listener for HTTP/HTTPS server "error" event.
