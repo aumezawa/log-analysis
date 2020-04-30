@@ -8,6 +8,7 @@
     "build:client": "webpack",
     "init:user": "node ./bin/initLocalUser.js",
     "start": "node ./bin/www",
+    "debug": "cross-env DEBUG=express:server node ./bin/www",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
