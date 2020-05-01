@@ -5,10 +5,10 @@
  */
 
 var app = require('../dist/server/app');
-var debug = require('debug')('express:server');
 var fs = require('fs');
 var http = require('http');
 var https = require('https');
+var logger = require('../dist/server/lib/logger')
 var path = require('path');
 
 /**
@@ -55,18 +55,14 @@ function onErrorHttp(error) {
     throw error;
   }
 
-  var bind = typeof http_port === 'string'
-    ? 'Pipe ' + http_port
-    : 'Port ' + http_port;
-
   // handle specific listen errors with friendly messages
   switch (error.code) {
     case 'EACCES':
-      console.error(bind + ' requires elevated privileges');
+      logger.error(`Worker[${ process.pid }]: port ${http_port} requires elevated privileges`);
       process.exit(1);
       break;
     case 'EADDRINUSE':
-      console.error(bind + ' is already in use');
+      logger.error(`Worker[${ process.pid }]: port ${http_port} is already in use`);
       process.exit(1);
       break;
     default:
@@ -79,18 +75,14 @@ function onErrorHttps(error) {
     throw error;
   }
 
-  var bind = typeof https_port === 'string'
-    ? 'Pipe ' + https_port
-    : 'Port ' + https_port;
-
   // handle specific listen errors with friendly messages
   switch (error.code) {
     case 'EACCES':
-      console.error(bind + ' requires elevated privileges');
+      logger.error(`Worker[${ process.pid }]: port ${https_port} requires elevated privileges`);
       process.exit(1);
       break;
     case 'EADDRINUSE':
-      console.error(bind + ' is already in use');
+      logger.error(`Worker[${ process.pid }]: port ${https_port} is already in use`);
       process.exit(1);
       break;
     default:
@@ -104,16 +96,10 @@ function onErrorHttps(error) {
 
 function onListeningHttp() {
   var addr = http_server.address();
-  var bind = typeof addr === 'string'
-    ? 'pipe ' + addr
-    : 'port ' + addr.port;
-  debug('HTTP server is listening on ' + bind);
+  logger.info(`Worker[${ process.pid }]: HTTP server is listening on port ${ addr.port }`);
 }
 
 function onListeningHttps() {
   var addr = https_server.address();
-  var bind = typeof addr === 'string'
-    ? 'pipe ' + addr
-    : 'port ' + addr.port;
-  debug('HTTPS server is listening on ' + bind);
+  logger.info(`Worker[${ process.pid }]: HTTPS server is listening on port ${ addr.port }`);
 }

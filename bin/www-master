@@ -5,8 +5,9 @@
  */
 
 var app = require('../dist/server/app');
-var os = require('os');
 var cluster = require('cluster');
+var logger = require('../dist/server/lib/logger')
+var os = require('os');
 
 /**
  * Cluster settings.
@@ -16,12 +17,20 @@ cluster.schedulingPolicy = (os.platform() === 'win32') ? cluster.SCHED_NONE : cl
 
 if (cluster.isMaster) {
 
+  var createWorker = function() {
+    var worker = cluster.fork();
+    logger.info(`Master[${ process.pid }]: created a new worker[${ worker.process.pid }]`);
+  };
+
+  logger.info(`Master[${ process.pid }]: now starting`)
+
   for (var i = 0; i < app.get('workers'); i++) {
-    cluster.fork();
+    createWorker();
   }
 
   cluster.on('exit', function(worker, code, signal) {
-    cluster.fork();
+    logger.error(`Master[${ process.pid }]: detected dead of a worker[${ worker.process.pid }]`);
+    createWorker();
   });
 
 } else {

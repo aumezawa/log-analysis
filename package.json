@@ -8,8 +8,8 @@
     "build:client": "webpack",
     "init:user": "node ./bin/initLocalUser.js",
     "start": "node ./bin/www-master",
-    "debug:single": "cross-env DEBUG=express:server node ./bin/www",
-    "debug:multi": "cross-env DEBUG=express:server node ./bin/www-master",
+    "debug:single": "cross-env LOGLEVEL=debug node ./bin/www",
+    "debug:multi": "cross-env LOGLEVEL=debug node ./bin/www-master",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -31,18 +31,17 @@
     "helmet": "^3.22.0",
     "jquery": "^3.5.0",
     "jsonwebtoken": "^8.5.1",
-    "morgan": "^1.10.0",
+    "log4js": "^6.2.1",
     "popper.js": "^1.16.1",
     "react": "^16.13.1",
-    "react-dom": "^16.13.1",
-    "rotating-file-stream": "^2.1.0"
+    "react-dom": "^16.13.1"
   },
   "devDependencies": {
     "@types/body-parser": "^1.19.0",
     "@types/express": "^4.17.6",
     "@types/helmet": "0.0.46",
     "@types/jsonwebtoken": "^8.3.9",
-    "@types/morgan": "^1.9.0",
+    "@types/log4js": "^2.3.5",
     "@types/node": "^13.13.4",
     "cross-env": "^7.0.2",
     "css-loader": "^3.5.3",
