@@ -7,12 +7,22 @@ const filename: string = process.env.npm_package_name + ".log"
 
 const config_master: log4js.Configuration = {
   appenders: {
+    console: {
+      type: "console",
+      layout: {
+        type: "pattern",
+        pattern: "[%d] [%p] - [%z]: %m"
+      },
+    },
     file: {
       type: "file",
       filename: path.join(rootpath, "local", "log", filename),
       maxLogSize: 1 * 1024 * 1024 * 1024,
       backups: 100,
-      layout: { type: 'basic' },
+      layout: {
+        type: "pattern",
+        pattern: "[%d] [%p] - %c[%z]: %m"
+      },
       compress: false,
       keepFileExt: true,
       encoding: "utf-8"
@@ -27,6 +37,16 @@ const config_master: log4js.Configuration = {
   },
   categories: {
     default: {
+      appenders: ["console"],
+      level: process.env.LOGLEVEL || "info",
+      enableCallStack: false
+    },
+    master: {
+      appenders: ["file"],
+      level: process.env.LOGLEVEL || "info",
+      enableCallStack: false
+    },
+    worker: {
       appenders: ["file"],
       level: process.env.LOGLEVEL || "info",
       enableCallStack: false
@@ -36,6 +56,13 @@ const config_master: log4js.Configuration = {
 
 const config_worker: log4js.Configuration = {
   appenders: {
+    console: {
+      type: "console",
+      layout: {
+        type: "pattern",
+        pattern: "[%d] [%p] - [%z]: %m"
+      },
+    },
     worker: {
       type: "multiprocess",
       mode: "worker",
@@ -45,6 +72,11 @@ const config_worker: log4js.Configuration = {
   },
   categories: {
     default: {
+      appenders: ["console"],
+      level: process.env.LOGLEVEL || "info",
+      enableCallStack: false
+    },
+    worker: {
       appenders: ["worker"],
       level: process.env.LOGLEVEL || "info",
       enableCallStack: false
@@ -53,10 +85,18 @@ const config_worker: log4js.Configuration = {
 }
 
 
+let category: string
+
 if (cluster.isMaster) {
+  category = "master"
   log4js.configure(config_master)
 } else {
+  category = "worker"
   log4js.configure(config_worker)
 }
 
-export = log4js.getLogger("default")
+if (process.env.LOGOUT) {
+  category = "default"
+}
+
+export = log4js.getLogger(category)

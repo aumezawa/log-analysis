@@ -58,11 +58,11 @@ function onErrorHttp(error) {
   // handle specific listen errors with friendly messages
   switch (error.code) {
     case 'EACCES':
-      logger.error(`Worker[${ process.pid }]: port ${http_port} requires elevated privileges`);
+      logger.error(`port ${http_port} requires elevated privileges`);
       process.exit(1);
       break;
     case 'EADDRINUSE':
-      logger.error(`Worker[${ process.pid }]: port ${http_port} is already in use`);
+      logger.error(`port ${http_port} is already in use`);
       process.exit(1);
       break;
     default:
@@ -78,11 +78,11 @@ function onErrorHttps(error) {
   // handle specific listen errors with friendly messages
   switch (error.code) {
     case 'EACCES':
-      logger.error(`Worker[${ process.pid }]: port ${https_port} requires elevated privileges`);
+      logger.error(`port ${https_port} requires elevated privileges`);
       process.exit(1);
       break;
     case 'EADDRINUSE':
-      logger.error(`Worker[${ process.pid }]: port ${https_port} is already in use`);
+      logger.error(`port ${https_port} is already in use`);
       process.exit(1);
       break;
     default:
@@ -96,10 +96,10 @@ function onErrorHttps(error) {
 
 function onListeningHttp() {
   var addr = http_server.address();
-  logger.info(`Worker[${ process.pid }]: HTTP server is listening on port ${ addr.port }`);
+  logger.info(`HTTP server is listening on port ${ addr.port }`);
 }
 
 function onListeningHttps() {
   var addr = https_server.address();
-  logger.info(`Worker[${ process.pid }]: HTTPS server is listening on port ${ addr.port }`);
+  logger.info(`HTTPS server is listening on port ${ addr.port }`);
 }
