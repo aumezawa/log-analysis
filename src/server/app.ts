@@ -15,6 +15,7 @@ const logfs: rfs.RotatingFileStream = rfs.createStream("access.log", {
   size: "1G"
 })
 
+app.set("workers", 4)
 app.set("http_port", 3000)
 app.set("https_port", 3443)
 app.set("tokenKey", process.env.npm_package_name)
