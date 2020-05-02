@@ -4,7 +4,8 @@ var path = require('path');
 var readline = require('readline');
 
 var rootpath = process.cwd();
-var filepath = path.join(rootpath, 'local', 'userlist.json');
+var dirpath = path.join(rootpath, 'local');
+var filepath = path.join(dirpath, 'userlist.json');
 
 var override = false;
 process.argv.forEach(function(arg) {
@@ -56,6 +57,9 @@ rl.question('', function(password) {
     'privilege': 'root'
   }]);
   try {
+    if (!fs.existsSync(dirpath)) {
+      fs.mkdirSync(dirpath, { recursive: true })
+    }
     fs.writeFileSync(filepath, writeData);
     console.log('Info : User database file was created successfully.');
     console.log('Info : Path = ' + filepath);
