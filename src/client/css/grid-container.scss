@@ -1,0 +1,13 @@
+.grid-container-center {
+  justify-content: center !important;
+  height: 100% !important;
+}
+
+.grid-container-center > .grid-area {
+  overflow: hidden !important;
+  height: 100% !important;
+}
+
+.grid-container-center > .grid-area-overflow {
+  overflow-y: auto !important;
+}

@@ -27,9 +27,8 @@ app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(helmet())
 
-app.use("/", indexRouter)
-app.use("/", express.static(path.join(rootpath, "public")))
-
+app.use("/lib", express.static(path.join(rootpath, "public")))
 app.use("/api/v1", apiV1Router)
+app.use("/", indexRouter)
 
 export = app
