@@ -4,6 +4,8 @@ import { useState, useRef, useCallback } from "react"
 import Axios from "axios"
 import { AxiosResponse, AxiosError } from "axios"
 
+import * as crypto from "crypto"
+
 import LoginForm from "../set/login-form"
 
 import MessageCard from "../part/message-card"
@@ -23,13 +25,18 @@ const LoginBox = React.memo<LoginBoxProps>(({
   const message = useRef(`Please input your "username" and "password". (between 4 - 16 characters with [0-9a-zA-Z])`)
 
   const handleSubmit = useCallback((data: {username: string, password: string}) => {
-    let uri = `${ location.protocol }//${ location.host }/api/v1/login`
-    let params = new URLSearchParams()
-    params.append("username", data.username)
-    params.append("password", data.password)
+    let uri = `${ location.protocol }//${ location.host }/api/v1/public-key`
 
     setDone(false)
-    Axios.post(uri, params)
+    Axios.get(uri)
+    .then((res: AxiosResponse) => {
+      let uri = `${ location.protocol }//${ location.host }/api/v1/login`
+      let params = new URLSearchParams()
+      params.append("username", data.username)
+      params.append("password", crypto.publicEncrypt(res.data.key, Buffer.from(data.password)).toString("base64"))
+      params.append("encrypted", "true")
+      return Axios.post(uri, params)
+    })
     .then((res: AxiosResponse) => {
       message.current = `Succeeded to login as "${ data.username }". Will redirect automatically in ${ redirectSec } sec.`
       setDone(true)

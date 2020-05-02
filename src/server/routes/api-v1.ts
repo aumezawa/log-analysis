@@ -9,7 +9,35 @@ import * as path from "path"
 const rootpath: string = process.cwd()
 const ulpath: string = path.join(rootpath, "local", "userlist.json")
 
+const publicKeyPath: string = path.join(rootpath, "local", "cert", "public-key.pem")
+const privateKeyPath: string = path.join(rootpath, "local", "cert", "private-key.pem")
+
 const router: Router = express.Router()
+
+router.get("/public-key", (req: Request, res: Response, next: NextFunction) => {
+  let publicKey: string
+  try {
+    publicKey = fs.readFileSync(publicKeyPath, "utf8")
+  } catch {
+    // Internal Server Error
+    return res.status(500).json({
+      msg: "contact an administrator."
+    })
+  }
+
+  // OK
+  return res.status(200).json({
+    msg: "Use the public key for encryption.",
+    key: publicKey
+  })
+})
+
+router.all("/public-key", (req: Request, res: Response, next: NextFunction) => {
+  // Method Not Allowed
+  return res.status(405).json({
+    msg: "GET method is only supported."
+  })
+})
 
 router.post("/login", (req: Request, res: Response, next: NextFunction) => {
   /*if (req.protocol !== "https") {
@@ -27,7 +55,8 @@ router.post("/login", (req: Request, res: Response, next: NextFunction) => {
   }
 
   const username: string = req.body.username
-  const password: string = req.body.password
+  let password: string = req.body.password
+  const encrypted: boolean = !!req.body.encrypted
 
   let userlist: LocalUserList = []
   try {
@@ -37,6 +66,19 @@ router.post("/login", (req: Request, res: Response, next: NextFunction) => {
     return res.status(500).json({
       msg: "contact an administrator."
     })
+  }
+
+  if (encrypted) {
+    let privateKey: string
+    try {
+      privateKey = fs.readFileSync(privateKeyPath, "utf8")
+    } catch {
+      // Internal Server Error
+      return res.status(500).json({
+        msg: "contact an administrator."
+      })
+    }
+    password = crypto.privateDecrypt(privateKey, Buffer.from(password, "base64")).toString()
   }
 
   const userinfo: LocalUserInfo = userlist.find((userinfo: LocalUserInfo) => (
