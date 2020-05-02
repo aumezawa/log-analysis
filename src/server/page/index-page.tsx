@@ -17,7 +17,7 @@ const IndexPage = React.memo<IndexPageProps>(({
   desc      = process.env.npm_package_description,
   author    = process.env.npm_package_author_name,
   version   = process.env.npm_package_version,
-  script    = "/lib/js/bundle.js",
+  script    = "/public/js/bundle.js",
   page      = "main",
   user      = "anonymous"
 }) => (
@@ -40,6 +40,6 @@ const IndexPage = React.memo<IndexPageProps>(({
       <script src={ script }></script>
     </body>
   </html>
-), (p, n) => true)
+))
 
 export default IndexPage

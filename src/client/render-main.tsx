@@ -4,9 +4,10 @@ import * as ReactDOM from "react-dom"
 import "bootstrap"
 import "./css/bootstrap-custom.scss"
 
+import MainPage from "./page/main-page"
+import LoginPage from "./page/login-page"
 import ErrorPage from "./page/error-page"
 import HelloPage from "./page/hello-page"
-import LoginPage from "./page/login-page"
 
 // render on loaded
 const main: HTMLElement = document.getElementById("render-main")
@@ -16,7 +17,7 @@ const version: string = main.getAttribute("data-version")
 const user: string = main.getAttribute("data-user")
 switch (main.getAttribute("data-page")) {
   case "main":
-    ReactDOM.render(<HelloPage project={ project } author={ author } version={ version } user={ user } />, main)
+    ReactDOM.render(<MainPage project={ project } author={ author } version={ version } user={ user } />, main)
     break
 
   case "login":
@@ -25,6 +26,10 @@ switch (main.getAttribute("data-page")) {
 
   case "error":
     ReactDOM.render(<ErrorPage project={ project } author={ author } version={ version } />, main)
+    break
+
+  case "hello":
+    ReactDOM.render(<HelloPage project={ project } author={ author } version={ version } user={ user } />, main)
     break
 
   default:
