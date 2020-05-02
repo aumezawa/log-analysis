@@ -16,6 +16,12 @@ router.get("/login", (req: Request, res: Response, next: NextFunction) => {
   )
 })
 
+router.get("/error", (req: Request, res: Response, next: NextFunction) => {
+  return res.status(200).send(
+    ReactDOMServer.renderToString(React.createElement(IndexPage, { page: "error" }))
+  )
+})
+
 router.use((req: Request, res: Response, next: NextFunction) => {
   const token = req.query.token || req.body.token || req.header("X-Access-Token")
   if (!token) {
@@ -26,9 +32,7 @@ router.use((req: Request, res: Response, next: NextFunction) => {
   jwt.verify(token, req.app.get("tokenKey"), (err: jwt.VerifyErrors, decoded: object) => {
     if (err) {
       // Unauthorized
-      return res.status(401).json({
-        msg: "access token is invalid."
-      })
+      return res.redirect(`/error?type=token&msg=${ err.message }`)
     }
 
     req.token = {
@@ -49,6 +53,11 @@ router.get("/", (req: Request, res: Response, next: NextFunction) => {
   return res.status(200).send(
     ReactDOMServer.renderToString(React.createElement(IndexPage))
   )
+})
+
+router.get("*", (req: Request, res: Response, next: NextFunction) => {
+  // Not Found
+  return res.redirect(`/error?type=page&msg=${ "no page" }`)
 })
 
 export default router

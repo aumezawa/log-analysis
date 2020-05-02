@@ -4,6 +4,7 @@ import * as ReactDOM from "react-dom"
 import "bootstrap"
 import "./css/bootstrap-custom.scss"
 
+import ErrorPage from "./page/error-page"
 import HelloPage from "./page/hello-page"
 import LoginPage from "./page/login-page"
 
@@ -20,6 +21,10 @@ switch (main.getAttribute("data-page")) {
 
   case "login":
     ReactDOM.render(<LoginPage project={ project } author={ author } version={ version } />, main)
+    break
+
+  case "error":
+    ReactDOM.render(<ErrorPage project={ project } author={ author } version={ version } />, main)
     break
 
   default:
