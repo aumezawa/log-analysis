@@ -7,14 +7,14 @@ import * as jwt from "jsonwebtoken"
 import * as path from "path"
 
 const rootpath: string = process.cwd()
-const ulpath: string = path.join(rootpath, "local", "userlist.json")
-
+const uerListPath: string = path.join(rootpath, "local", "userlist.json")
 const publicKeyPath: string = path.join(rootpath, "local", "cert", "public-key.pem")
 const privateKeyPath: string = path.join(rootpath, "local", "cert", "private-key.pem")
 
 const router: Router = express.Router()
 
-router.get("/public-key", (req: Request, res: Response, next: NextFunction) => {
+router.route("/public-key")
+.get((req: Request, res: Response, next: NextFunction) => {
   let publicKey: string
   try {
     publicKey = fs.readFileSync(publicKeyPath, "utf8")
@@ -31,15 +31,15 @@ router.get("/public-key", (req: Request, res: Response, next: NextFunction) => {
     key: publicKey
   })
 })
-
-router.all("/public-key", (req: Request, res: Response, next: NextFunction) => {
+.all((req: Request, res: Response, next: NextFunction) => {
   // Method Not Allowed
   return res.status(405).json({
     msg: "GET method is only supported."
   })
 })
 
-router.post("/login", (req: Request, res: Response, next: NextFunction) => {
+router.route("/login")
+.post((req: Request, res: Response, next: NextFunction) => {
   /*if (req.protocol !== "https") {
     // Forbidden
     return res.status(403).json({
@@ -60,7 +60,7 @@ router.post("/login", (req: Request, res: Response, next: NextFunction) => {
 
   let userlist: LocalUserList = []
   try {
-    userlist = JSON.parse(fs.readFileSync(ulpath, "utf8"))
+    userlist = JSON.parse(fs.readFileSync(uerListPath, "utf8"))
   } catch {
     // Internal Server Error
     return res.status(500).json({
@@ -104,8 +104,7 @@ router.post("/login", (req: Request, res: Response, next: NextFunction) => {
     token: token
   })
 })
-
-router.all("/login", (req: Request, res: Response, next: NextFunction) => {
+.all((req: Request, res: Response, next: NextFunction) => {
   // Method Not Allowed
   return res.status(405).json({
     msg: "POST method is only supported."
@@ -144,14 +143,16 @@ router.use((req: Request, res: Response, next: NextFunction) => {
   return
 })
 
-router.get("/hello", (req: Request, res: Response, next: NextFunction) => {
+router.route("/hello")
+.get((req: Request, res: Response, next: NextFunction) => {
   // OK
   return res.status(200).json({
     msg: `Hello ${ req.token.usr }!`
   })
 })
 
-router.all("*", (req: Request, res: Response, next: NextFunction) => {
+router.route("*")
+.all((req: Request, res: Response, next: NextFunction) => {
   // Not Found
   return res.status(404).json({
     msg: "No resource found."
