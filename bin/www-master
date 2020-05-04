@@ -24,7 +24,7 @@ if (cluster.isMaster) {
 
   logger.info(`now starting`)
 
-  for (var i = 0; i < app.get('workers'); i++) {
+  for (var i = 0; i < app.get('num-workers'); i++) {
     createWorker();
   }
 

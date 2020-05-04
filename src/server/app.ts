@@ -13,10 +13,11 @@ import apiV1Router from "./routes/api-v1"
 const app: express.Express = express()
 const rootpath: string = process.cwd()
 
-app.set("workers", 4)
-app.set("http_port", 3000)
-app.set("https_port", 3443)
-app.set("tokenKey", process.env.npm_package_name)
+app.set("http-port", Number(process.env.npm_package_config_http_port))
+app.set("https-port", Number(process.env.npm_package_config_https_port))
+app.set("num-workers", Number(process.env.npm_package_config_num_workers))
+app.set("token-key", process.env.npm_package_name)
+app.set("token-period", process.env.npm_package_config_token_period)
 
 app.use(log4js.connectLogger(logger, {
   level: "auto",

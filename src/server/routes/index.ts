@@ -31,7 +31,7 @@ router.use((req: Request, res: Response, next: NextFunction) => {
     return res.redirect("/login")
   }
 
-  jwt.verify(token, req.app.get("tokenKey"), (err: jwt.VerifyErrors, decoded: object) => {
+  jwt.verify(token, req.app.get("token-key"), (err: jwt.VerifyErrors, decoded: object) => {
     if (err) {
       // Unauthorized
       return res.redirect(`/error?type=token&msg=${ err.message }`)

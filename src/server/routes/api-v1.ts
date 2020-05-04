@@ -111,7 +111,7 @@ router.route("/login")
     sub: "token-" + process.env.npm_package_name,
     usr: userinfo.username,
     prv: userinfo.privilege
-  }, req.app.get("tokenKey"), { expiresIn: "1h" })
+  }, req.app.get("token-key"), { expiresIn: req.app.get("token-period") })
   return res.status(200).json({
     msg: "Authentication successfully.",
     token: token
@@ -134,7 +134,7 @@ router.use((req: Request, res: Response, next: NextFunction) => {
     })
   }
 
-  jwt.verify(token, req.app.get("tokenKey"), (err: jwt.VerifyErrors, decoded: object) => {
+  jwt.verify(token, req.app.get("token-key"), (err: jwt.VerifyErrors, decoded: object) => {
     if (err) {
       // Unauthorized
       return res.status(401).json({

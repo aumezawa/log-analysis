@@ -2,6 +2,12 @@
   "name": "log-analysis",
   "version": "0.0.0",
   "description": "log analysis tools",
+  "config": {
+    "http-port": "3000",
+    "https-port": "3443",
+    "num-workers": "4",
+    "token-period": "1h"
+  },
   "scripts": {
     "build": "npm run build:server && npm run build:client",
     "build:server": "tsc -p ./tsconfig.server.json",

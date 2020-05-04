@@ -21,8 +21,8 @@ var rootpath = process.cwd();
  * Get port.
  */
 
-var http_port = app.get('http_port');
-var https_port = app.get('https_port');
+var http_port = app.get('http-port');
+var https_port = app.get('https-port');
 
 /**
  * Create HTTP/HTTPS server.
@@ -58,11 +58,11 @@ function onErrorHttp(error) {
   // handle specific listen errors with friendly messages
   switch (error.code) {
     case 'EACCES':
-      logger.error(`port ${http_port} requires elevated privileges`);
+      logger.error(`port ${ http_port } requires elevated privileges`);
       process.exit(1);
       break;
     case 'EADDRINUSE':
-      logger.error(`port ${http_port} is already in use`);
+      logger.error(`port ${ http_port } is already in use`);
       process.exit(1);
       break;
     default:
@@ -78,11 +78,11 @@ function onErrorHttps(error) {
   // handle specific listen errors with friendly messages
   switch (error.code) {
     case 'EACCES':
-      logger.error(`port ${https_port} requires elevated privileges`);
+      logger.error(`port ${ https_port } requires elevated privileges`);
       process.exit(1);
       break;
     case 'EADDRINUSE':
-      logger.error(`port ${https_port} is already in use`);
+      logger.error(`port ${ https_port } is already in use`);
       process.exit(1);
       break;
     default:
