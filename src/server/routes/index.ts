@@ -25,7 +25,7 @@ router.route("/error")
 })
 
 router.use((req: Request, res: Response, next: NextFunction) => {
-  const token = req.query.token || req.body.token || req.header("X-Access-Token")
+  const token = req.query.token || req.body.token || req.header("X-Access-Token") || req.cookies.token
   if (!token) {
     // Unauthorized
     return res.redirect("/login")
