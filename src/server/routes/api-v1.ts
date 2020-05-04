@@ -6,6 +6,10 @@ import * as fs from "fs"
 import * as jwt from "jsonwebtoken"
 import * as path from "path"
 
+import logger = require("../lib/logger")
+
+import logRouter from "./api-v1-log"
+
 const rootpath: string = process.cwd()
 const uerListPath: string = path.join(rootpath, "local", "userlist.json")
 const publicKeyPath: string = path.join(rootpath, "local", "cert", "public-key.pem")
@@ -18,10 +22,13 @@ router.route("/public-key")
   let publicKey: string
   try {
     publicKey = fs.readFileSync(publicKeyPath, "utf8")
-  } catch {
+  } catch (err) {
+    if (err instanceof Error) {
+      logger.error(`${ err.name }: ${ err.message }`)
+    }
     // Internal Server Error
     return res.status(500).json({
-      msg: "contact an administrator."
+      msg: "Contact an administrator."
     })
   }
 
@@ -50,7 +57,7 @@ router.route("/login")
   if (!req.body.username || !req.body.password) {
     // Bad Request
     return res.status(400).json({
-      msg: "username and password are required."
+      msg: "Username and password are required. (param name: username, password)"
     })
   }
 
@@ -61,10 +68,13 @@ router.route("/login")
   let userlist: LocalUserList = []
   try {
     userlist = JSON.parse(fs.readFileSync(uerListPath, "utf8"))
-  } catch {
+  } catch (err) {
+    if (err instanceof Error) {
+      logger.error(`${ err.name }: ${ err.message }`)
+    }
     // Internal Server Error
     return res.status(500).json({
-      msg: "contact an administrator."
+      msg: "Contact an administrator."
     })
   }
 
@@ -72,10 +82,13 @@ router.route("/login")
     let privateKey: string
     try {
       privateKey = fs.readFileSync(privateKeyPath, "utf8")
-    } catch {
+    } catch (err) {
+      if (err instanceof Error) {
+        logger.error(`${ err.name }: ${ err.message }`)
+      }
       // Internal Server Error
       return res.status(500).json({
-        msg: "contact an administrator."
+        msg: "Contact an administrator."
       })
     }
     password = crypto.privateDecrypt(privateKey, Buffer.from(password, "base64")).toString()
@@ -88,7 +101,7 @@ router.route("/login")
   if (!userinfo) {
     // Unauthorized
     return res.status(401).json({
-      msg: "username or password is incorrect."
+      msg: "Username or password is incorrect."
     })
   }
 
@@ -100,7 +113,7 @@ router.route("/login")
     prv: userinfo.privilege
   }, req.app.get("tokenKey"), { expiresIn: "1h" })
   return res.status(200).json({
-    msg: "authentication successfully.",
+    msg: "Authentication successfully.",
     token: token
   })
 })
@@ -117,7 +130,7 @@ router.use((req: Request, res: Response, next: NextFunction) => {
   if (!token) {
     // Unauthorized
     return res.status(401).json({
-      msg: "access token is required."
+      msg: "Access token is required. (param name: token)"
     })
   }
 
@@ -125,7 +138,7 @@ router.use((req: Request, res: Response, next: NextFunction) => {
     if (err) {
       // Unauthorized
       return res.status(401).json({
-        msg: "access token is invalid."
+        msg: `Access token is invalid. (reason: ${ err.message })`
       })
     }
 
@@ -142,6 +155,8 @@ router.use((req: Request, res: Response, next: NextFunction) => {
 
   return
 })
+
+router.use("/log", logRouter)
 
 router.route("/hello")
 .get((req: Request, res: Response, next: NextFunction) => {
