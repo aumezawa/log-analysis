@@ -4,7 +4,8 @@ import { useState, useRef, useCallback } from "react"
 import Axios from "axios"
 import { AxiosResponse, AxiosError } from "axios"
 
-import * as crypto from "crypto"
+import * as Cookie from "js-cookie"
+import * as Crypto from "crypto"
 
 import LoginForm from "../set/login-form"
 
@@ -33,12 +34,12 @@ const LoginBox = React.memo<LoginBoxProps>(({
       let uri = `${ location.protocol }//${ location.host }/api/v1/login`
       let params = new URLSearchParams()
       params.append("username", data.username)
-      params.append("password", crypto.publicEncrypt(res.data.key, Buffer.from(data.password)).toString("base64"))
+      params.append("password", Crypto.publicEncrypt(res.data.key, Buffer.from(data.password)).toString("base64"))
       params.append("encrypted", "true")
       return Axios.post(uri, params)
     })
     .then((res: AxiosResponse) => {
-      document.cookie = `token=${ res.data.token }`
+      Cookie.set("token", res.data.token)
       message.current = `Succeeded to login as "${ data.username }". Will redirect automatically in ${ redirectSec } sec.`
       setDone(true)
       setSuccess(true)

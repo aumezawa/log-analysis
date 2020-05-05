@@ -12,7 +12,7 @@ type ButtonSetProps = {
 }
 
 const ButtonSet = React.memo<ButtonSetProps>(({
-  className = "mb-3",
+  className = "",
   submit    = "Submit",
   cancel    = "Cancel",
   disabled  = false,
@@ -20,13 +20,13 @@ const ButtonSet = React.memo<ButtonSetProps>(({
   onSubmit  = undefined,
   onCancel  = undefined
 }) => {
-  const handleSubmit = useCallback((e: React.FormEvent<HTMLButtonElement>) => {
+  const handleSubmit = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
     if (onSubmit) {
       onSubmit()
     }
   }, [onSubmit])
 
-  const handleCancel = useCallback((e: React.FormEvent<HTMLButtonElement>) => {
+  const handleCancel = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
     if (onCancel) {
       onCancel()
     }
@@ -40,6 +40,7 @@ const ButtonSet = React.memo<ButtonSetProps>(({
             className="btn btn-primary"
             type="button"
             disabled={ disabled }
+            data-dismiss={ dismiss }
             onClick={ handleSubmit }
           >
             { submit }

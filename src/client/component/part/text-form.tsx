@@ -20,14 +20,14 @@ const TextForm = React.memo(React.forwardRef<HTMLInputElement, TextFormProps>(({
   hidden    = false,
   onChange  = undefined
 }, ref) => {
-  const handleChange = useCallback((e: React.FormEvent<HTMLInputElement>) => {
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     if (onChange) {
       onChange(e.currentTarget.value)
     }
   }, [onChange])
 
   return (
-    <div className={ `${ className} ${ hidden && "d-none" }` }>
+    <div className={ `${ className } ${ hidden && "d-none" }` }>
       <div className="input-group">
         <div className="input-group-prepend">
           <span className="input-group-text">{ label }</span>

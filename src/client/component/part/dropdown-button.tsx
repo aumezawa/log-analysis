@@ -4,26 +4,32 @@ import { useRef } from "react"
 import uniqueId from "../../lib/uniqueId"
 
 type DropdownButtonProps = {
-  label?: string,
-  align?: "left" | "right",
-  items?: Array<JSX.Element>,
+  className?: string,
+  label?    : string,
+  title?    : string,
+  align?    : "left" | "right",
+  items?    : Array<JSX.Element>,
+  shape?    : "normal" | "square"
 }
 
 const DropdownButton: React.FC<DropdownButtonProps> = ({
-  label = "Dropdown",
-  align = "left",
-  items = []
+  className = "",
+  label     = "Dropdown",
+  title     = undefined,
+  align     = "left",
+  items     = [],
+  shape     = "normal"
 }) => {
   const id = useRef({
-    drop: "dropdown-" + uniqueId()
+    dropdown: "dropdown-" + uniqueId()
   })
 
   return (
-    <div className="dropdown">
+    <div className={ `dropdown ${ className }` }>
       <button
-        className="btn btn-secondary dropdown-toggle"
+        className={ `btn btn-secondary dropdown-toggle flex-item-${ shape }` }
         type="button"
-        id={ id.current.drop }
+        id={ id.current.dropdown }
         data-toggle="dropdown"
         aria-haspopup="true"
         aria-expanded="false"
@@ -32,7 +38,8 @@ const DropdownButton: React.FC<DropdownButtonProps> = ({
       </button>
       <div
         className={ `dropdown-menu dropdown-menu-${ align }` }
-        aria-labelledby={ id.current.drop }
+        title={ title }
+        aria-labelledby={ id.current.dropdown }
       >
         { items }
       </div>
