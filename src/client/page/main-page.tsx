@@ -15,7 +15,9 @@ import FileExplorerBox from "../component/complex/file-explorer-box"
 import FunctionalTableBox from "../component/complex/functional-table-box"
 
 import DomainSelectButton from "../component/complex/domain-select-button"
+import ProjectCreateButton from "../component/complex/project-create-button"
 import ProjectSelectButton from "../component/complex/project-select-button"
+import BundleUploadButton from "../component/complex/bundle-upload-button"
 import BundleSelectButton from "../component/complex/bundle-select-button"
 import InformationButton from "../component/part/information-button"
 
@@ -99,11 +101,20 @@ const MainPage: React.FC<MainPageProps> = ({
                   onSubmit={ handleSubmitDomain }
                 />
                 { " >> " }
+                <ProjectCreateButton
+                  domain={ data.current.domain }
+                />
+                { " | " }
                 <ProjectSelectButton
                   domain={ data.current.domain }
                   onSubmit={ handleSubmitProject }
                 />
                 { " >> " }
+                <BundleUploadButton
+                  domain={ data.current.domain }
+                  project={ data.current.project }
+                />
+                { " | " }
                 <BundleSelectButton
                   domain={ data.current.domain }
                   project={ data.current.project }

@@ -63,7 +63,7 @@ const ProjectSelectButton = React.memo<ProjectSelectButtonProps>(({
   }, [true])
 
   const handleSubmit = useCallback(() => {
-    if (onSubmit) {
+    if (onSubmit && data.current.project) {
       onSubmit(data.current.project)
     }
     setProject(data.current.project)

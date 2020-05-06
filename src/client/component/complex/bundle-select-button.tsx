@@ -68,7 +68,7 @@ const ProjectSelectButton = React.memo<ProjectSelectButtonProps>(({
   }, [true])
 
   const handleSubmit = useCallback(() => {
-    if (onSubmit) {
+    if (onSubmit && data.current.bundleId) {
       onSubmit(data.current.bundleId)
     }
     setBundle(data.current.bundleName)

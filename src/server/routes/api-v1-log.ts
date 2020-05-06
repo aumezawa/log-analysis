@@ -433,18 +433,6 @@ router.route("/:domain(private|public)/projects/:projectName([0-9a-zA-Z_.#]+)/bu
   })
 })
 .post((req: Request, res: Response, next: NextFunction) => {
-  // OK
-  return res.status(200).json({
-    msg: "Out of service.",
-  })
-
-  /*if (!req.body.bundle) {
-    // Bad Request
-    return res.status(400).json({
-      msg: "log bundle is required. (param name: bundle)"
-    })
-  }
-
   return multer({
     storage: multer.diskStorage({
       destination : (req, file, cb) => cb(null, req.resPath),
@@ -455,17 +443,27 @@ router.route("/:domain(private|public)/projects/:projectName([0-9a-zA-Z_.#]+)/bu
       if (err instanceof Error) {
         logger.error(`${ err.name }: ${ err.message }`)
       }
-      // Internal Server Error
-      return res.status(500).json({
-        msg: "Contact an administrator."
+      // Bad Request
+      return res.status(400).json({
+        msg: "log bundle is required. (param name: bundle)"
       })
     }
 
-    // Created
-    return res.status(201).json({
-      msg: `bundle: ${ req.file.originalname } was created successfully.`
+    if (!req.file) {
+      // Bad Request
+      return res.status(400).json({
+        msg: "log bundle is required. (param name: bundle)"
+      })
+    }
+
+    // TODO: shuold update project.inf
+    // TODO: shuold return as 201 with location header
+
+    // OK
+    return res.status(200).json({
+      msg: `bundle: ${ req.file.originalname } was uploaded successfully.`
     })
-  })*/
+  })
 })
 .all((req: Request, res: Response, next: NextFunction) => {
   // Method Not Allowed
