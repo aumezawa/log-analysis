@@ -207,6 +207,29 @@ router.route("/:domain(private|public)/projects/:projectName([0-9a-zA-Z_.#]+)/bu
         // OK
         return res.status(200).sendFile(nodePath)
       }
+      if (req.query.mode && req.query.mode === "download") {
+        // OK
+        return res.status(200).download(nodePath, path.basename(nodePath))
+      }
+      if (req.query.mode && req.query.mode === "json") {
+        const content = {
+          "format": {
+            "title"     : path.basename(nodePath),
+            "labels"    : [{ "name": "Content", "type": "text" }],
+            "hasHeader" : true,
+            "hasIndex"  : true,
+            "contentKey": "Content"
+          },
+          "data": fs.readFileSync(nodePath, "utf8").split(/\r\n|\n|\r/).map((line: string) => ({ Content: line }))
+        }
+        // OK
+        return res.status(200).json({
+          msg: `You get a file content of path /${ req.params[0] } of project ${ req.params.projectName } bundle ID=${ req.params.bundleId }.`,
+          content: content,
+          size: fs.statSync(nodePath).size,
+          modifiedAt: fs.statSync(nodePath).mtime
+        })
+      }
       // OK
       return res.status(200).json({
         msg: `You get a file content of path /${ req.params[0] } of project ${ req.params.projectName } bundle ID=${ req.params.bundleId }.`,

@@ -44,7 +44,7 @@ const TabFrame: React.FC<TabFrameProps> = ({
           ))
         }
       </ul>
-      <div className={ `tab-content flex-main-area ${ overflow && "flex-main-overflow" }` }>
+      <div className={ `flex-main-area ${ overflow && "flex-main-overflow" }` }>
         {
           items.map((item: JSX.Element, index: number) => (
             <TabItem

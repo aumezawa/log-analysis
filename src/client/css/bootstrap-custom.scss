@@ -2,8 +2,18 @@
 @import "./flex-container";
 @import "./grid-container";
 @import "./list-group";
-@import "./text-box";
+@import "./table";
+@import "./text";
+
+.btn-no-action {
+  cursor: default !important;
+}
 
 .dropdown-menu {
   z-index: 9999 !important;
+}
+
+.pagination {
+  margin-top: 0rem !important;
+  margin-bottom: 0rem !important;
 }

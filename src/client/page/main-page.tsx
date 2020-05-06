@@ -1,6 +1,8 @@
 import * as React from "react"
 import { useRef, useCallback, useReducer } from "react"
 
+import * as Path from "path"
+
 import LayerFrame from "../component/frame/layer-frame"
 import TFrame from "../component/frame/t-frame"
 import TabFrame from "../component/frame/tab-frame"
@@ -10,10 +12,12 @@ import NavigatorBar from "../component/set/navigator-bar"
 import DropdownHeader from "../component/part/dropdown-header"
 
 import FileExplorerBox from "../component/complex/file-explorer-box"
+import FunctionalTableBox from "../component/complex/functional-table-box"
 
 import DomainSelectButton from "../component/complex/domain-select-button"
 import ProjectSelectButton from "../component/complex/project-select-button"
 import BundleSelectButton from "../component/complex/bundle-select-button"
+import InformationButton from "../component/part/information-button"
 
 type MainPageProps = {
   project?  : string,
@@ -31,14 +35,17 @@ const MainPage: React.FC<MainPageProps> = ({
   const [ignored, forceUpdate] = useReducer(x => x + 1, 0)
 
   const refs = useRef({
-    files : React.createRef<HTMLAnchorElement>()
+    files : React.createRef<HTMLAnchorElement>(),
+    table : React.createRef<HTMLAnchorElement>()
   })
 
   const data = useRef({
     domain  : "public",
     project : null,
     bundle  : null,
-    path    : null
+    path    : null,
+    filepath: null,
+    filename: null
   })
 
   const handleSubmitDomain = useCallback((value: string) => {
@@ -46,21 +53,33 @@ const MainPage: React.FC<MainPageProps> = ({
     data.current.project = null
     data.current.bundle = null
     data.current.path = null
+    data.current.filepath = null
+    data.current.filename = null
     forceUpdate()
-  } , [true])
+  }, [true])
 
   const handleSubmitProject = useCallback((value: string) => {
     data.current.project = value
     data.current.bundle = null
     data.current.path = null
+    data.current.filepath = null
+    data.current.filename = null
     forceUpdate()
-  } , [true])
+  }, [true])
 
   const handleSubmitBundle = useCallback((value: string) => {
     data.current.bundle = value
     data.current.path = `/log/${ data.current.domain }/projects/${ data.current.project }/bundles/${ data.current.bundle }/files`
+    data.current.filepath = null
+    data.current.filename = null
     forceUpdate()
-  } , [true])
+  }, [true])
+
+  const handleSelectFile = useCallback((action: string, value: string) => {
+    data.current.filepath = `${ data.current.path }${ value }`
+    data.current.filename = Path.basename(value)
+    forceUpdate()
+  }, [true])
 
   return (
     <div className="container-fluid">
@@ -90,16 +109,27 @@ const MainPage: React.FC<MainPageProps> = ({
                   project={ data.current.project }
                   onSubmit={ handleSubmitBundle }
                 />
+                { " >> " }
+                <InformationButton
+                  label={ data.current.filename }
+                  defaultValue={ "Select File" }
+                />
               </>
             }
             left={
               <TabFrame
                 labels={ ["Files"] }
-                items={ [<FileExplorerBox path={ data.current.path } />] }
+                items={ [<FileExplorerBox path={ data.current.path } onSelect={ handleSelectFile } />] }
                 refs={ [refs.current.files] }
               />
             }
-            right={ <></> }
+            right={
+              <TabFrame
+                labels={ ["Table"] }
+                items={ [<FunctionalTableBox path={ data.current.filepath }/>] }
+                refs={ [refs.current.table] }
+              />
+             }
           />
         }
         foot={ <div className="text-light text-right bg-dark text-box-margin">Coded by { author }, powered by React</div> }

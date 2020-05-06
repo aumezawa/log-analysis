@@ -18,10 +18,10 @@ const TFrame: React.FC<TFrameProps> = ({
   overflowR = true
 }) => (
   <div className={ `${ className } flex-container-column` }>
-    <div className="mt-2 mb-1">
+    <div className="flex-area-top">
       { head }
     </div>
-    <div className="flex-main-area mt-1 mb-2">
+    <div className="flex-main-area flex-area-bottom">
       <div className="flex-main-inner">
         <div className="grid-container-center row">
           <div className={ `grid-area-left col-3 ${ overflowL && "grid-area-overflow" }` }>
