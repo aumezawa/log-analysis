@@ -8,7 +8,8 @@ declare namespace Express {
 type BundleInfo = {
   id          : number,
   name        : string,
-  description : string
+  description : string,
+  available   : boolean
 }
 
 type ProjectInfo = {

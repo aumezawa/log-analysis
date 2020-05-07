@@ -4,6 +4,9 @@ import { Router, Request, Response, NextFunction } from "express"
 import * as fs from "fs"
 import * as multer from "multer"
 import * as path from "path"
+import * as tar from "tar"
+
+import TypeGurad from "../lib/type-guard"
 
 import logger = require("../lib/logger")
 
@@ -15,26 +18,22 @@ const storagePath: string = path.join(rootpath, "..", "data")
 router.param("domain", (req: Request, res: Response, next: NextFunction, domain: string) => {
   const domainPath: string = path.join(storagePath, (domain === "private") ? req.token.usr : "public")
 
-  let domainExists: boolean
   try {
-    domainExists = fs.existsSync(domainPath)
+    fs.mkdirSync(domainPath)
   } catch (err) {
     if (err instanceof Error) {
-      logger.error(`${ err.name }: ${ err.message }`)
-    }
-    // Internal Server Error
-    return res.status(500).json({
-      msg: "Contact an administrator."
-    })
-  }
-
-  if (!domainExists) {
-    try {
-      fs.mkdirSync(domainPath)
-    } catch (err) {
-      if (err instanceof Error) {
+      if (TypeGurad.isErrnoException(err) && (err as NodeJS.ErrnoException).code === "EEXIST") {
+        // Nothing to do, continue
+        ;
+      } else {
+        // Internal Server Error
         logger.error(`${ err.name }: ${ err.message }`)
+        return res.status(500).json({
+          msg: "Contact an administrator."
+        })
       }
+    } else {
+      logger.error(`${ err }`)
       // Internal Server Error
       return res.status(500).json({
         msg: "Contact an administrator."
@@ -58,12 +57,17 @@ router.param("projectName", (req: Request, res: Response, next: NextFunction, pr
   const projectPath: string = path.join(req.resPath, projectName)
   const projectInfoPath: string = path.join(projectPath, "project.inf")
 
-  let projectExists: boolean
   try {
-    projectExists = fs.existsSync(projectPath)
+    fs.statSync(projectPath)
   } catch (err) {
     if (err instanceof Error) {
       logger.error(`${ err.name }: ${ err.message }`)
+      if (TypeGurad.isErrnoException(err) && (err as NodeJS.ErrnoException).code === "ENOENT") {
+        // Bad Request
+        return res.status(400).json({
+          msg: `project: ${ projectName } does not exist.`
+        })
+      }
     }
     // Internal Server Error
     return res.status(500).json({
@@ -71,28 +75,12 @@ router.param("projectName", (req: Request, res: Response, next: NextFunction, pr
     })
   }
 
-  if (!projectExists) {
-    // Bad Request
-    return res.status(400).json({
-      msg: `project: ${ projectName } does not exist.`
-    })
-  }
-
-  let projectInfoExists: boolean
   try {
-    projectInfoExists = fs.existsSync(projectInfoPath)
+    fs.statSync(projectInfoPath)
   } catch (err) {
     if (err instanceof Error) {
       logger.error(`${ err.name }: ${ err.message }`)
     }
-    // Internal Server Error
-    return res.status(500).json({
-      msg: "Contact an administrator."
-    })
-  }
-
-  if (!projectInfoExists) {
-    logger.error(`${ projectInfoPath } does not exist...`)
     // Internal Server Error
     return res.status(500).json({
       msg: "Contact an administrator."
@@ -143,11 +131,17 @@ router.param("bundleId", (req: Request, res: Response, next: NextFunction, bundl
     })
   }
 
+  if (!bundleInfo.available) {
+    // Bad Request
+    return res.status(400).json({
+      msg: `bundle: bundle ID=${ bundleId } is not available.`
+    })
+  }
+
   const bundlePath: string = path.join(req.resPath, bundleInfo.name)
 
-  let bundleExists: boolean
   try {
-    bundleExists = fs.existsSync(bundlePath)
+    fs.statSync(bundlePath)
   } catch (err) {
     if (err instanceof Error) {
       logger.error(`${ err.name }: ${ err.message }`)
@@ -155,13 +149,6 @@ router.param("bundleId", (req: Request, res: Response, next: NextFunction, bundl
     // Internal Server Error
     return res.status(500).json({
       msg: "Contact an administrator."
-    })
-  }
-
-  if (!bundleExists) {
-    // Bad Request
-    return res.status(400).json({
-      msg: `bundle: ${ bundlePath } does not exist.`
     })
   }
 
@@ -175,12 +162,18 @@ router.route("/:domain(private|public)/projects/:projectName([0-9a-zA-Z_.#]+)/bu
 .get((req: Request, res: Response, next: NextFunction) => {
   const nodePath: string = path.join(req.resPath, req.params[0])
 
-  let nodeExists: boolean
+  let fileStat: fs.Stats
   try {
-    nodeExists = fs.existsSync(nodePath)
+    fileStat = fs.statSync(nodePath)
   } catch (err) {
     if (err instanceof Error) {
       logger.error(`${ err.name }: ${ err.message }`)
+      if (TypeGurad.isErrnoException(err) && (err as NodeJS.ErrnoException).code === "ENOENT") {
+        // Bad Request
+        return res.status(400).json({
+          msg: `file: /${ req.params[0] } does not exist in project ${ req.params.projectName } bundle ID=${ req.params.bundleId }.`
+        })
+      }
     }
     // Internal Server Error
     return res.status(500).json({
@@ -188,15 +181,8 @@ router.route("/:domain(private|public)/projects/:projectName([0-9a-zA-Z_.#]+)/bu
     })
   }
 
-  if (!nodeExists) {
-    // Bad Request
-    return res.status(400).json({
-      msg: `file: /${ req.params[0] } does not exist in project ${ req.params.projectName } bundle ID=${ req.params.bundleId }.`
-    })
-  }
-
   try {
-    if (fs.statSync(nodePath).isDirectory()) {
+    if (fileStat.isDirectory()) {
       // OK
       return res.status(200).json({
         msg: `You get a file list of path /${ req.params[0] } of project ${ req.params.projectName } bundle ID=${ req.params.bundleId }.`,
@@ -226,16 +212,16 @@ router.route("/:domain(private|public)/projects/:projectName([0-9a-zA-Z_.#]+)/bu
         return res.status(200).json({
           msg: `You get a file content of path /${ req.params[0] } of project ${ req.params.projectName } bundle ID=${ req.params.bundleId }.`,
           content: content,
-          size: fs.statSync(nodePath).size,
-          modifiedAt: fs.statSync(nodePath).mtime
+          size: fileStat.size,
+          modifiedAt: fileStat.mtime
         })
       }
       // OK
       return res.status(200).json({
         msg: `You get a file content of path /${ req.params[0] } of project ${ req.params.projectName } bundle ID=${ req.params.bundleId }.`,
         content: fs.readFileSync(nodePath, "utf8"),
-        size: fs.statSync(nodePath).size,
-        modifiedAt: fs.statSync(nodePath).mtime
+        size: fileStat.size,
+        modifiedAt: fileStat.mtime
       })
     }
   } catch (err) {
@@ -456,11 +442,102 @@ router.route("/:domain(private|public)/projects/:projectName([0-9a-zA-Z_.#]+)/bu
       })
     }
 
-    // TODO: shuold update project.inf
-    // TODO: shuold return as 201 with location header
+    const uploadFilePath: string = path.join(req.resPath, req.file.originalname)
+    let bundleName: string = null
+    try {
+      tar.list({
+        file: uploadFilePath,
+        sync: true,
+        filter: (path: string, entry: tar.FileStat) => (!!path.match(/^[^/]+[/]$/)),
+        onentry: (entry: tar.FileStat) => { bundleName = entry.header.path.replace("/", "") }
+      })
+    } catch {
+      if (err instanceof Error) {
+        logger.error(`${ err.name }: ${ err.message }`)
+      }
+      // Internal Server Error
+      return res.status(500).json({
+        msg: "Contact an administrator."
+      })
+    }
 
-    // OK
-    return res.status(200).json({
+    if (!bundleName) {
+      logger.error(`bundleName was not extracted from ${ uploadFilePath }.`)
+      // Bad Request
+      return res.status(400).json({
+        msg: `bundle: Is ${ req.file.originalname } valid tgz file?`
+      })
+    }
+
+    let projectInfo: ProjectInfo
+    try {
+      projectInfo = JSON.parse(fs.readFileSync(req.projectInfoPath, "utf8"))
+    } catch (err) {
+      if (err instanceof Error) {
+        logger.error(`${ err.name }: ${ err.message }`)
+      }
+      // Internal Server Error
+      return res.status(500).json({
+        msg: "Contact an administrator."
+      })
+    }
+
+    if (!!projectInfo.bundles.find((bundle: BundleInfo) => (bundle.name === bundleName))) {
+      // Bad Request
+      return res.status(400).json({
+        msg: `bundle: ${ req.file.originalname } is already exists.`
+      })
+    }
+
+    const bundleId: number = projectInfo.index
+    const bundleDesc: string = req.body.description || ""
+    projectInfo.bundles.push({
+      id          : bundleId,
+      name        : bundleName,
+      description : bundleDesc,
+      available   : false
+    })
+    projectInfo.index++
+
+    try {
+      fs.writeFileSync(req.projectInfoPath, JSON.stringify(projectInfo))
+    } catch (err) {
+      if (err instanceof Error) {
+        logger.error(`${ err.name }: ${ err.message }`)
+      }
+      // Internal Server Error
+      return res.status(500).json({
+        msg: "Contact an administrator."
+      })
+    }
+
+    // TODO: temporary code, want to kick other scripts
+    fs.createReadStream(uploadFilePath)
+    .pipe(tar.extract({ cwd: req.resPath }))
+    .on("error", (err: Error) => {
+      logger.error(`${ err.name }: ${ err.message }`)
+    })
+    .on("finish", () => {
+      try {
+        fs.statSync(path.join(req.resPath, bundleName))
+
+        const projectInfo = JSON.parse(fs.readFileSync(req.projectInfoPath, "utf8"))
+        projectInfo.bundles = projectInfo.bundles.map((bundle: BundleInfo) => {
+          if (bundle.id === bundleId) {
+            bundle.available = true
+          }
+          return bundle
+        })
+        fs.writeFileSync(req.projectInfoPath, JSON.stringify(projectInfo))
+      } catch (err) {
+        if (err instanceof Error) {
+          logger.error(`${ err.name }: ${ err.message }`)
+        }
+      }
+    })
+
+    // Created
+    return res.status(201).location(`${ req.protocol }://${ req.headers.host }${ req.path }/`).json({
       msg: `bundle: ${ req.file.originalname } was uploaded successfully.`
     })
   })
@@ -599,31 +676,16 @@ router.route("/:domain(private|public)/projects")
 
   const projectPath = path.join(req.resPath, req.body.name)
 
-  let projectExists: boolean
-  try {
-    projectExists = fs.existsSync(projectPath)
-  } catch (err) {
-    if (err instanceof Error) {
-      logger.error(`${ err.name }: ${ err.message }`)
-    }
-    // Internal Server Error
-    return res.status(500).json({
-      msg: "Contact an administrator."
-    })
-  }
-
-  if (projectExists) {
-    // Conflict
-    return res.status(409).json({
-      msg: `project: ${ req.body.name } already exists.`
-    })
-  }
-
   try {
     fs.mkdirSync(projectPath)
   } catch (err) {
     if (err instanceof Error) {
       logger.error(`${ err.name }: ${ err.message }`)
+      if (TypeGurad.isErrnoException(err) && (err as NodeJS.ErrnoException).code === "EEXIST") {
+        return res.status(409).json({
+          msg: `project: ${ req.body.name } already exists.`
+        })
+      }
     }
     // Internal Server Error
     return res.status(500).json({

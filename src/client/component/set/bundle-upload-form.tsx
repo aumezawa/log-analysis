@@ -35,7 +35,7 @@ const BundleUploadForm = React.memo<BundleUploadFormProps>(({
   const handleChangeFile = useCallback((name: string, obj: any) => {
     data.current.name = name
     data.current.obj  = obj
-    setValid(name !== "")
+    setValid(!!name.match(/^.+[.]tgz$/))
   }, [true])
 
   const handleChangeDescription = useCallback((value: string) => {

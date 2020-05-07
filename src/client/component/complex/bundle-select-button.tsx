@@ -82,7 +82,7 @@ const ProjectSelectButton = React.memo<ProjectSelectButtonProps>(({
         message="Select a log bundle."
         body={
           <ListForm
-            labels={ data.current.bundles.map((bundle: any) => (bundle.name)) }
+            labels={ data.current.bundles.filter((bundle: any) => (bundle.available)).map((bundle: any) => (bundle.name)) }
             onChange={ handleChange }
           />
         }

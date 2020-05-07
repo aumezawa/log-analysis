@@ -25,7 +25,7 @@ const BundleUploadBox = React.memo<BundleUploadBoxProps>(({
   const [success, setSuccess] = useState<boolean>(false)
   const [formKey, clearFrom]  = useReducer(x => x + 1, 0)
 
-  const message = useRef(`Please select a upload file and input a bundle "description".`)
+  const message = useRef(`Please select a upload file (.tgz) and input a bundle "description".`)
 
   const handleSubmit = useCallback((name: string, obj: any, description: string) => {
     const uri = `${ location.protocol }//${ location.host }/api/v1/log/${ domain }/projects/${ project }/bundles`
@@ -51,7 +51,7 @@ const BundleUploadBox = React.memo<BundleUploadBoxProps>(({
   }, [domain, project])
 
   const handleCancel = useCallback(() => {
-    message.current = `Please select a upload file and input a bundle "description".`
+    message.current = `Please select a upload file (.tgz) and input a bundle "description".`
     setDone(false)
     setSuccess(false)
   }, [true])
