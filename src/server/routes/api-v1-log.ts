@@ -445,11 +445,16 @@ router.route("/:domain(private|public)/projects/:projectName([0-9a-zA-Z_.#]+)/bu
     const uploadFilePath: string = path.join(req.resPath, req.file.originalname)
     let bundleName: string = null
     try {
+      // NOTE: Get only the first entry.
+      let first: boolean = true
       tar.list({
         file: uploadFilePath,
         sync: true,
-        filter: (path: string, entry: tar.FileStat) => (!!path.match(/^[^/]+[/]$/)),
-        onentry: (entry: tar.FileStat) => { bundleName = entry.header.path.replace("/", "") }
+        filter: (path: string, entry: tar.FileStat) => (first && !(first = false)),
+        onentry: (entry: tar.FileStat) => {
+          const match = entry.header.path.match(/([^/]+)[/]/)
+          bundleName = (match ? match[1] : null)
+        }
       })
     } catch {
       if (err instanceof Error) {
@@ -517,6 +522,15 @@ router.route("/:domain(private|public)/projects/:projectName([0-9a-zA-Z_.#]+)/bu
     .on("error", (err: Error) => {
       logger.error(`${ err.name }: ${ err.message }`)
     })
+    .on("close", () => {
+      try {
+        fs.unlinkSync(uploadFilePath)
+      } catch (err) {
+        if (err instanceof Error) {
+          logger.error(`${ err.name }: ${ err.message }`)
+        }
+      }
+    })
     .on("finish", () => {
       try {
         fs.statSync(path.join(req.resPath, bundleName))
@@ -529,6 +543,7 @@ router.route("/:domain(private|public)/projects/:projectName([0-9a-zA-Z_.#]+)/bu
           return bundle
         })
         fs.writeFileSync(req.projectInfoPath, JSON.stringify(projectInfo))
+        logger.info(`${ uploadFilePath } was decompressed successfully.`)
       } catch (err) {
         if (err instanceof Error) {
           logger.error(`${ err.name }: ${ err.message }`)
@@ -640,9 +655,9 @@ router.route("/:domain(private|public)/projects/:projectName([0-9a-zA-Z_.#]+)")
 
 router.route("/:domain(private|public)/projects")
 .get((req: Request, res: Response, next: NextFunction) => {
-  let list: Array<string>
+  let dirList: Array<string> = []
   try {
-    list = fs.readdirSync(req.resPath)
+    dirList = fs.readdirSync(req.resPath)
   } catch (err) {
     if (err instanceof Error) {
       logger.error(`${ err.name }: ${ err.message }`)
@@ -653,10 +668,25 @@ router.route("/:domain(private|public)/projects")
     })
   }
 
+  const projectList: Array<ProjectSummary> = dirList.map((project: string) => {
+    try {
+      const projectInfo: ProjectInfo = JSON.parse(fs.readFileSync(path.join(req.resPath, project, "project.inf"), "utf8"))
+      return ({
+        name        : projectInfo.name,
+        description : projectInfo.description
+      })
+    } catch (err) {
+      if (err instanceof Error) {
+        logger.error(`${ err.name }: ${ err.message }`)
+      }
+      return null
+    }
+  }).filter((project: ProjectSummary) => (!!project))
+
   // OK
   return res.status(200).json({
     msg: "You get a project list.",
-    projects: list
+    projects: projectList
   })
 })
 .post((req: Request, res: Response, next: NextFunction) => {

@@ -3,6 +3,8 @@ import { useRef, useCallback, useReducer } from "react"
 
 import * as Path from "path"
 
+import uniqueId from "../lib/uniqueId"
+
 import LayerFrame from "../component/frame/layer-frame"
 import TFrame from "../component/frame/t-frame"
 import TabFrame from "../component/frame/tab-frame"
@@ -10,6 +12,9 @@ import TabFrame from "../component/frame/tab-frame"
 import NavigatorBar from "../component/set/navigator-bar"
 
 import DropdownHeader from "../component/part/dropdown-header"
+import DropdownDivider from "../component/part/dropdown-divider"
+import DropdownItem from "../component/part/dropdown-item"
+import TokenStatusModal from "../component/complex/token-status-modal"
 
 import FileExplorerBox from "../component/complex/file-explorer-box"
 import FunctionalTableBox from "../component/complex/functional-table-box"
@@ -39,6 +44,10 @@ const MainPage: React.FC<MainPageProps> = ({
   const refs = useRef({
     files : React.createRef<HTMLAnchorElement>(),
     table : React.createRef<HTMLAnchorElement>()
+  })
+
+  const id = useRef({
+    tokenStat : "modal-" + uniqueId()
   })
 
   const data = useRef({
@@ -87,10 +96,17 @@ const MainPage: React.FC<MainPageProps> = ({
     <div className="container-fluid">
       <LayerFrame
         head={
-          <NavigatorBar
-            title={ project }
-            items={ [<DropdownHeader key="header" label={ `Version: ${ version }` } />] }
-          />
+          <>
+            <TokenStatusModal id={ id.current.tokenStat } />
+            <NavigatorBar
+              title={ project }
+              items={ [
+                <DropdownHeader key="header" label={ `Version: ${ version }` } />,
+                <DropdownDivider key="divider" />,
+                <DropdownItem key="status" label="Token Status" toggle="modal" target={ id.current.tokenStat } />
+              ] }
+            />
+          </>
         }
         body={
           <TFrame

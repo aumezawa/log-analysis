@@ -43,6 +43,7 @@ const ErrorBox = React.memo<ErrorBoxProps>(({
       <ButtonSet
         submit="Login Page"
         cancel=""
+        valid={ true }
         onSubmit={ handleSubmit }
       />
     </div>

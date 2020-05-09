@@ -5,6 +5,7 @@ type ButtonSetProps = {
   className?: string,
   submit?   : string,
   cancel?   : string,
+  valid     : boolean,
   disabled? : boolean,
   dismiss?  : string,
   onSubmit? : () => void,
@@ -15,6 +16,7 @@ const ButtonSet = React.memo<ButtonSetProps>(({
   className = "",
   submit    = "Submit",
   cancel    = "Cancel",
+  valid     = false,
   disabled  = false,
   dismiss   = "",
   onSubmit  = undefined,
@@ -39,7 +41,7 @@ const ButtonSet = React.memo<ButtonSetProps>(({
           <button
             className="btn btn-primary"
             type="button"
-            disabled={ disabled }
+            disabled={ !valid || disabled }
             data-dismiss={ dismiss }
             onClick={ handleSubmit }
           >
@@ -50,6 +52,7 @@ const ButtonSet = React.memo<ButtonSetProps>(({
           <button
             className="btn btn-secondary"
             type="button"
+            disabled={ disabled }
             data-dismiss={ dismiss }
             onClick={ handleCancel }
           >

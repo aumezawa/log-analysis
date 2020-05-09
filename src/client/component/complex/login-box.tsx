@@ -40,13 +40,13 @@ const LoginBox = React.memo<LoginBoxProps>(({
     })
     .then((res: AxiosResponse) => {
       Cookie.set("token", res.data.token)
-      message.current = `Succeeded to login as "${ data.username }". Will redirect automatically in ${ redirectSec } sec.`
+      message.current = `${ res.data.msg } Will redirect automatically in ${ redirectSec } sec.`
       setDone(true)
       setSuccess(true)
       setTimeout(() => location.href = `${ location.protocol }//${ location.host }` , redirectSec * 1000)
     })
     .catch((err: AxiosError) => {
-      message.current = `Failed to login as "${ data.username }"...`
+      message.current = err.response.data.msg
       setDone(true)
       setSuccess(false)
     })

@@ -55,8 +55,8 @@ const DomainSelectButton = React.memo<DomainSelectButtonProps>(({
         }
         foot={
           <ButtonSet
-            className=""
             cancel="Close"
+            valid={ true }
             dismiss="modal"
             onSubmit={ handleSubmit }
           />

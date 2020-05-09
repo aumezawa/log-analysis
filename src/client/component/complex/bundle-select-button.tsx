@@ -58,6 +58,9 @@ const ProjectSelectButton = React.memo<ProjectSelectButtonProps>(({
       return
     })
     .catch((err: AxiosError) => {
+      data.current.bundles = []
+      forceUpdate()
+      alert(err.response.data.msg)
       return
     })
   }, [domain, project])
@@ -65,6 +68,7 @@ const ProjectSelectButton = React.memo<ProjectSelectButtonProps>(({
   const handleChange = useCallback((value: string) => {
     data.current.bundleId = data.current.bundles.find((bundle: any) => (bundle.name === value)).id.toString()
     data.current.bundleName = value
+    forceUpdate()
   }, [true])
 
   const handleSubmit = useCallback(() => {
@@ -83,12 +87,14 @@ const ProjectSelectButton = React.memo<ProjectSelectButtonProps>(({
         body={
           <ListForm
             labels={ data.current.bundles.filter((bundle: any) => (bundle.available)).map((bundle: any) => (bundle.name)) }
+            titles={ data.current.bundles.filter((bundle: any) => (bundle.available)).map((bundle: any) => (bundle.description)) }
             onChange={ handleChange }
           />
         }
         foot={
           <ButtonSet
             cancel="Close"
+            valid={ !!data.current.bundleId }
             dismiss="modal"
             onSubmit={ handleSubmit }
           />

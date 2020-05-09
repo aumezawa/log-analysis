@@ -76,10 +76,10 @@ const LoginForm = React.memo<LoginFormProps>(({
         onChange={ handleChangePassword }
       />
       <ButtonSet
-        className=""
         submit="Login"
         cancel="Clear"
-        disabled={ disabled || !validUser || !validPass }
+        valid={ validUser && validPass }
+        disabled={ disabled }
         onSubmit={ handleSubmit }
         onCancel={ handleCancel }
       />

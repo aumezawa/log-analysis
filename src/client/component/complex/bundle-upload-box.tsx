@@ -1,5 +1,5 @@
 import * as React from "react"
-import { useState, useRef, useCallback, useReducer } from "react"
+import { useRef, useCallback, useReducer } from "react"
 
 import Axios from "axios"
 import { AxiosResponse, AxiosError } from "axios"
@@ -9,6 +9,7 @@ import * as Cookie from "js-cookie"
 import BundleUploadForm from "../set/bundle-upload-form"
 
 import MessageCard from "../part/message-card"
+import ProgressBar from "../part/progress-bar"
 
 type BundleUploadBoxProps = {
   className?: string,
@@ -21,11 +22,17 @@ const BundleUploadBox = React.memo<BundleUploadBoxProps>(({
   domain    = null,
   project   = null
 }) => {
-  const [done,    setDone]    = useState<boolean>(false)
-  const [success, setSuccess] = useState<boolean>(false)
-  const [formKey, clearFrom]  = useReducer(x => x + 1, 0)
+  const [ignored, forceUpdate]  = useReducer(x => x + 1, 0)
+  const [formKey, clearFrom]    = useReducer(x => x + 1, 0)
 
   const message = useRef(`Please select a upload file (.tgz) and input a bundle "description".`)
+
+  const data = useRef({
+    done      : false,
+    success   : false,
+    uploading : false,
+    progress  : 0,
+  })
 
   const handleSubmit = useCallback((name: string, obj: any, description: string) => {
     const uri = `${ location.protocol }//${ location.host }/api/v1/log/${ domain }/projects/${ project }/bundles`
@@ -33,39 +40,57 @@ const BundleUploadBox = React.memo<BundleUploadBoxProps>(({
     params.append("bundle", obj)
     params.append("description", description)
 
-    setDone(false)
+    data.current.done = false
+    data.current.uploading = true
+    data.current.progress = 0
+    forceUpdate()
     Axios.post(uri, params, {
-      headers : { "X-Access-Token": Cookie.get("token") || "" }
+      headers: { "X-Access-Token": Cookie.get("token") || "" },
+      onUploadProgress: (progressEvent: any) => {
+        data.current.progress = Math.floor(progressEvent.loaded / progressEvent.total * 100)
+        forceUpdate()
+      }
     })
     .then((res: AxiosResponse) => {
       message.current = res.data.msg
-      setDone(true)
-      setSuccess(true)
+      data.current.done = true
+      data.current.success = true
+      data.current.uploading = false
       clearFrom()
     })
     .catch((err: AxiosError) => {
       message.current = err.response.data.msg
-      setDone(true)
-      setSuccess(false)
+      data.current.done = true
+      data.current.success = false
+      data.current.uploading = false
+      clearFrom()
     })
   }, [domain, project])
 
   const handleCancel = useCallback(() => {
     message.current = `Please select a upload file (.tgz) and input a bundle "description".`
-    setDone(false)
-    setSuccess(false)
+    data.current.done = false
+    data.current.success = false
+    data.current.uploading = false
+    data.current.progress = 0
+    forceUpdate()
   }, [true])
 
   return (
     <div className={ className }>
       <MessageCard
+        className=""
         message={ message.current }
-        success={ done && success }
-        failure={ done && !success }
+        success={ data.current.done && data.current.success }
+        failure={ data.current.done && !data.current.success }
+      />
+      <ProgressBar
+        className="mb-3"
+        progress={ data.current.progress }
       />
       <BundleUploadForm
         key={ formKey }
-        disabled={ !domain || !project }
+        disabled={ !domain || !project || data.current.uploading }
         onSubmit={ handleSubmit }
         onCancel={ handleCancel }
       />

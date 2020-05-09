@@ -54,12 +54,16 @@ const ProjectSelectButton = React.memo<ProjectSelectButtonProps>(({
       return
     })
     .catch((err: AxiosError) => {
+      data.current.projects = []
+      forceUpdate()
+      alert(err.response.data.msg)
       return
     })
   }, [domain])
 
   const handleChange = useCallback((value: string) => {
     data.current.project = value
+    forceUpdate()
   }, [true])
 
   const handleSubmit = useCallback(() => {
@@ -77,13 +81,15 @@ const ProjectSelectButton = React.memo<ProjectSelectButtonProps>(({
         message="Select a project."
         body={
           <ListForm
-            labels={ data.current.projects }
+            labels={ data.current.projects.map((project: any) => (project.name)) }
+            titles={ data.current.projects.map((project: any) => (project.description)) }
             onChange={ handleChange }
           />
         }
         foot={
           <ButtonSet
             cancel="Close"
+            valid={ !!data.current.project }
             dismiss="modal"
             onSubmit={ handleSubmit }
           />

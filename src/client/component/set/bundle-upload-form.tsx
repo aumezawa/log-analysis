@@ -77,7 +77,8 @@ const BundleUploadForm = React.memo<BundleUploadFormProps>(({
       <ButtonSet
         submit="Upload"
         cancel="Cancel"
-        disabled={ !valid }
+        valid={ valid }
+        disabled={ disabled }
         onSubmit={ handleSubmit }
         onCancel={ handleCancel }
       />

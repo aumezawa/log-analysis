@@ -156,6 +156,26 @@ router.use((req: Request, res: Response, next: NextFunction) => {
   return
 })
 
+router.route("/token")
+.get((req: Request, res: Response, next: NextFunction) => {
+  // OK
+  return res.status(200).json({
+    msg: "You get your token information.",
+    iss: req.token.iss,
+    sub: req.token.sub,
+    iat: req.token.iat,
+    exp: req.token.exp,
+    IssueAt: (new Date(req.token.iat * 1000)).toLocaleString("ja"),
+    ExpirationTime: (new Date(req.token.exp * 1000)).toLocaleString("ja")
+  })
+})
+.all((req: Request, res: Response, next: NextFunction) => {
+  // Method Not Allowed
+  return res.status(405).json({
+    msg: "GET method is only supported."
+  })
+})
+
 router.use("/log", logRouter)
 
 router.route("/hello")
@@ -163,6 +183,12 @@ router.route("/hello")
   // OK
   return res.status(200).json({
     msg: `Hello ${ req.token.usr }!`
+  })
+})
+.all((req: Request, res: Response, next: NextFunction) => {
+  // Method Not Allowed
+  return res.status(405).json({
+    msg: "GET method is only supported."
   })
 })
 

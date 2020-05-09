@@ -19,6 +19,11 @@ type ProjectInfo = {
   bundles     : Array<BundleInfo>
 }
 
+type ProjectSummary = {
+  name        : string,
+  description : string
+}
+
 type NodeType = FileType | DirectoryType
 
 type FileType = {

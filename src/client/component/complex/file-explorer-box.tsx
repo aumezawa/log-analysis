@@ -42,6 +42,13 @@ const FileExplorerBox = React.memo<FileExplorerBoxProps>(({
         return
       })
       .catch((err: AxiosError) => {
+        files.current = {
+          name: "",
+          file: false,
+          children: []
+        }
+        forceUpdate()
+        alert(err.response.data.msg)
         return
       })
     } else {

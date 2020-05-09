@@ -73,7 +73,8 @@ const ProjectForm = React.memo<ProjectFormProps>(({
       <ButtonSet
         submit="Create"
         cancel="Clear"
-        disabled={ disabled || !valid }
+        valid={ valid }
+        disabled={ disabled }
         onSubmit={ handleSubmit }
         onCancel={ handleCancel }
       />
