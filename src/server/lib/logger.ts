@@ -2,7 +2,7 @@ import * as cluster from "cluster"
 import * as log4js from "log4js"
 import * as path from "path"
 
-const rootpath: string = process.cwd()
+const rootPath: string = process.cwd()
 const filename: string = process.env.npm_package_name + ".log"
 
 const config_master: log4js.Configuration = {
@@ -16,7 +16,7 @@ const config_master: log4js.Configuration = {
     },
     file: {
       type: "file",
-      filename: path.join(rootpath, "local", "log", filename),
+      filename: path.join(rootPath, process.env.npm_package_config_log_path, filename),
       maxLogSize: 1 * 1024 * 1024 * 1024,
       backups: 100,
       layout: {

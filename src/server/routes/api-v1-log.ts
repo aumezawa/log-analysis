@@ -6,17 +6,16 @@ import * as multer from "multer"
 import * as path from "path"
 import * as tar from "tar"
 
+import logger = require("../lib/logger")
+
 import TypeGurad from "../lib/type-guard"
 
-import logger = require("../lib/logger")
+const rootPath: string = process.cwd()
 
 const router: Router = express.Router()
 
-const rootpath: string = process.cwd()
-const storagePath: string = path.join(rootpath, "..", "data")
-
 router.param("domain", (req: Request, res: Response, next: NextFunction, domain: string) => {
-  const domainPath: string = path.join(storagePath, (domain === "private") ? req.token.usr : "public")
+  const domainPath: string = path.join(path.join(rootPath, req.app.get("storage-path")), (domain === "private") ? req.token.usr : "public")
 
   try {
     fs.mkdirSync(domainPath)

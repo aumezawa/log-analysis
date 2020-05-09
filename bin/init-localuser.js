@@ -3,9 +3,9 @@ var fs = require('fs');
 var path = require('path');
 var readline = require('readline');
 
-var rootpath = process.cwd();
-var dirpath = path.join(rootpath, 'local');
-var filepath = path.join(dirpath, 'userlist.json');
+var rootPath = process.cwd();
+var filePath = path.join(rootPath, process.env.npm_package_config_userlist_path);
+var dirPath = path.dirname(filePath);
 
 var override = false;
 process.argv.forEach(function(arg) {
@@ -19,7 +19,7 @@ process.argv.forEach(function(arg) {
 if (!override) {
   var userlist = {};
   try {
-    userlist = JSON.parse(fs.readFileSync(filepath, 'utf8'));
+    userlist = JSON.parse(fs.readFileSync(filePath, 'utf8'));
   } catch {
     ;
   }
@@ -57,12 +57,12 @@ rl.question('', function(password) {
     'privilege': 'root'
   }]);
   try {
-    if (!fs.existsSync(dirpath)) {
-      fs.mkdirSync(dirpath, { recursive: true })
+    if (!fs.existsSync(dirPath)) {
+      fs.mkdirSync(dirPath, { recursive: true })
     }
-    fs.writeFileSync(filepath, writeData);
+    fs.writeFileSync(filePath, writeData);
     console.log('Info : User database file was created successfully.');
-    console.log('Info : Path = ' + filepath);
+    console.log('Info : Path = ' + filePath);
   } catch {
     console.log('Error: Failed in writing a user database file...');
   }

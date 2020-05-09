@@ -12,11 +12,12 @@
     "strict": true,
     "strictNullChecks": false,
     "moduleResolution": "node",
-    "typeRoots": ["./src/server/types"],
+    "typeRoots": ["./src/@types"],
     "esModuleInterop": false,
     "forceConsistentCasingInFileNames": true
   },
   "include": [
-    "./src/server/**/*"
+    "./src/server/**/*",
+    "./src/@types"
   ]
 }

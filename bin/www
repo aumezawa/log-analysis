@@ -15,7 +15,7 @@ var path = require('path');
  * Get root directory.
  */
 
-var rootpath = process.cwd();
+var rootPath = process.cwd();
 
 /**
  * Get port.
@@ -30,8 +30,8 @@ var https_port = app.get('https-port');
 
 var http_server = http.createServer(app);
 var https_server = https.createServer({
-  key : fs.readFileSync(path.join(rootpath, 'local', 'cert', 'private-key.pem')),
-  cert: fs.readFileSync(path.join(rootpath, 'local', 'cert', 'server-cert.pem'))
+  key : fs.readFileSync(path.join(rootPath, app.get('private-key-path'))),
+  cert: fs.readFileSync(path.join(rootPath, app.get('certificate-path')))
 }, app);
 
 /**

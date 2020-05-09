@@ -6,7 +6,13 @@
     "http-port": "3000",
     "https-port": "3443",
     "num-workers": "4",
-    "token-period": "1h"
+    "token-period": "1h",
+    "userlist-path": "./local/userlist.json",
+    "public-key-path": "./local/cert/public-key.pem",
+    "private-key-path": "./local/cert/private-key.pem",
+    "certificate-path": "./local/cert/server-cert.pem",
+    "log-path": "./local/log", 
+    "storage-path": "../data"
   },
   "scripts": {
     "build": "npm run build:server && npm run build:client",

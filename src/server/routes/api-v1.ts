@@ -10,10 +10,7 @@ import logger = require("../lib/logger")
 
 import logRouter from "./api-v1-log"
 
-const rootpath: string = process.cwd()
-const uerListPath: string = path.join(rootpath, "local", "userlist.json")
-const publicKeyPath: string = path.join(rootpath, "local", "cert", "public-key.pem")
-const privateKeyPath: string = path.join(rootpath, "local", "cert", "private-key.pem")
+const rootPath: string = process.cwd()
 
 const router: Router = express.Router()
 
@@ -21,7 +18,7 @@ router.route("/public-key")
 .get((req: Request, res: Response, next: NextFunction) => {
   let publicKey: string
   try {
-    publicKey = fs.readFileSync(publicKeyPath, "utf8")
+    publicKey = fs.readFileSync(path.join(rootPath, req.app.get("public-key-path")), "utf8")
   } catch (err) {
     if (err instanceof Error) {
       logger.error(`${ err.name }: ${ err.message }`)
@@ -67,7 +64,7 @@ router.route("/login")
 
   let userlist: LocalUserList = []
   try {
-    userlist = JSON.parse(fs.readFileSync(uerListPath, "utf8"))
+    userlist = JSON.parse(fs.readFileSync(path.join(rootPath, req.app.get("userlist-path")), "utf8"))
   } catch (err) {
     if (err instanceof Error) {
       logger.error(`${ err.name }: ${ err.message }`)
@@ -81,7 +78,7 @@ router.route("/login")
   if (encrypted) {
     let privateKey: string
     try {
-      privateKey = fs.readFileSync(privateKeyPath, "utf8")
+      privateKey = fs.readFileSync(path.join(rootPath, req.app.get("private-key-path")), "utf8")
     } catch (err) {
       if (err instanceof Error) {
         logger.error(`${ err.name }: ${ err.message }`)

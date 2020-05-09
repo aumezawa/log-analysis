@@ -2,25 +2,25 @@ import * as express from "express"
 import { Router, Request, Response, NextFunction } from "express"
 
 import * as React from "react"
-import * as ReactDOMServer from "react-dom/server"
+import * as ReactDomServer from "react-dom/server"
 
 import * as jwt from "jsonwebtoken"
 
-import IndexPage from "../page/index-page"
+import IndexPage from "../pages/index-page"
 
 const router: Router = express.Router()
 
 router.route("/login")
 .get((req: Request, res: Response, next: NextFunction) => {
   return res.status(200).send(
-    ReactDOMServer.renderToString(React.createElement(IndexPage, { page: "login" }))
+    ReactDomServer.renderToString(React.createElement(IndexPage, { page: "login" }))
   )
 })
 
 router.route("/error")
 .get((req: Request, res: Response, next: NextFunction) => {
   return res.status(200).send(
-    ReactDOMServer.renderToString(React.createElement(IndexPage, { page: "error" }))
+    ReactDomServer.renderToString(React.createElement(IndexPage, { page: "error" }))
   )
 })
 
@@ -54,14 +54,14 @@ router.use((req: Request, res: Response, next: NextFunction) => {
 router.route("/")
 .get((req: Request, res: Response, next: NextFunction) => {
   return res.status(200).send(
-    ReactDOMServer.renderToString(React.createElement(IndexPage, { user: req.token.usr, page: "main" }))
+    ReactDomServer.renderToString(React.createElement(IndexPage, { user: req.token.usr, page: "main" }))
   )
 })
 
 router.route("/hello")
 .get((req: Request, res: Response, next: NextFunction) => {
   return res.status(200).send(
-    ReactDOMServer.renderToString(React.createElement(IndexPage, { user: req.token.usr, page: "hello" }))
+    ReactDomServer.renderToString(React.createElement(IndexPage, { user: req.token.usr, page: "hello" }))
   )
 })
 
