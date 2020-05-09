@@ -1,0 +1,105 @@
+#!/usr/bin/env node
+
+/**
+ * Module dependencies.
+ */
+
+var app = require('../dist/server/app');
+var fs = require('fs');
+var http = require('http');
+var https = require('https');
+var logger = require('../dist/server/lib/logger')
+var path = require('path');
+
+/**
+ * Get root directory.
+ */
+
+var rootPath = process.cwd();
+
+/**
+ * Get port.
+ */
+
+var http_port = app.get('http-port');
+var https_port = app.get('https-port');
+
+/**
+ * Create HTTP/HTTPS server.
+ */
+
+var http_server = http.createServer(app);
+var https_server = https.createServer({
+  key : fs.readFileSync(path.join(rootPath, app.get('private-key-path'))),
+  cert: fs.readFileSync(path.join(rootPath, app.get('certificate-path')))
+}, app);
+
+/**
+ * Listen on provided port, on all network interfaces.
+ */
+
+http_server.listen(http_port);
+http_server.on('error', onErrorHttp);
+http_server.on('listening', onListeningHttp);
+
+https_server.listen(https_port);
+https_server.on('error', onErrorHttps);
+https_server.on('listening', onListeningHttps);
+
+/**
+ * Event listener for HTTP/HTTPS server "error" event.
+ */
+
+function onErrorHttp(error) {
+  if (error.syscall !== 'listen') {
+    throw error;
+  }
+
+  // handle specific listen errors with friendly messages
+  switch (error.code) {
+    case 'EACCES':
+      logger.error(`port ${ http_port } requires elevated privileges`);
+      process.exit(1);
+      break;
+    case 'EADDRINUSE':
+      logger.error(`port ${ http_port } is already in use`);
+      process.exit(1);
+      break;
+    default:
+      throw error;
+  }
+}
+
+function onErrorHttps(error) {
+  if (error.syscall !== 'listen') {
+    throw error;
+  }
+
+  // handle specific listen errors with friendly messages
+  switch (error.code) {
+    case 'EACCES':
+      logger.error(`port ${ https_port } requires elevated privileges`);
+      process.exit(1);
+      break;
+    case 'EADDRINUSE':
+      logger.error(`port ${ https_port } is already in use`);
+      process.exit(1);
+      break;
+    default:
+      throw error;
+  }
+}
+
+/**
+ * Event listener for HTTP/HTTPS server "listening" event.
+ */
+
+function onListeningHttp() {
+  var addr = http_server.address();
+  logger.info(`HTTP server is listening on port ${ addr.port }`);
+}
+
+function onListeningHttps() {
+  var addr = https_server.address();
+  logger.info(`HTTPS server is listening on port ${ addr.port }`);
+}

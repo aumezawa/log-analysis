@@ -1,0 +1,19 @@
+.table-fixed thead th {
+  position: -webkit-sticky !important;
+  position: sticky !important;
+  top: 0 !important;
+  border-top: 0 !important;
+  border-bottom: 0 !important;
+  z-index: 1 !important;
+}
+
+.table-fixed th:first-child {
+  position: -webkit-sticky !important;
+  position: sticky !important;
+  left: 0 !important;
+  z-index: 2 !important;
+}
+
+.table-fixed thead th:first-child {
+  z-index: 3 !important;
+}

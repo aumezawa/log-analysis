@@ -1,0 +1,71 @@
+.flex-container-column {
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  height: 100% !important;
+}
+
+.flex-container-column > .flex-area-top {
+  margin-top: 0.5rem !important;
+  margin-bottom: 0.25rem !important;
+}
+
+.flex-container-column > .flex-area-top-0 {
+  margin-top: 0rem !important;
+  margin-bottom: 0.25rem !important;
+}
+
+.flex-container-column > .flex-area-center {
+  margin-top: 0.25rem !important;
+  margin-bottom: 0.25rem !important;
+}
+
+.flex-container-column > .flex-area-bottom {
+  margin-top: 0.25rem !important;
+  margin-bottom: 0.5rem !important;
+}
+
+.flex-container-column > .flex-area-bottom-0 {
+  margin-top: 0.25rem !important;
+  margin-bottom: 0rem !important;
+}
+
+.flex-container-column > .flex-main-area {
+  flex: 1 0 0 !important;
+  overflow: hidden !important;
+}
+
+.flex-container-column > .flex-main-overflow {
+  overflow-y: auto !important;
+}
+
+.flex-main-area > .flex-main-inner {
+  display: block !important;
+  height: 100% !important;
+}
+
+.flex-container-row {
+  display: flex !important;
+  flex-direction: row !important;
+}
+
+.flex-container-row > .flex-area-left {
+  margin-left: 0.5rem !important;
+  margin-right: 0.25rem !important;
+}
+
+.flex-container-row > .flex-area-right {
+  margin-left: 0.25rem !important;
+  margin-right: 0.5rem !important;
+}
+
+.flex-container-row > .flex-main-area {
+  flex: 1 0 0 !important;
+}
+
+.flex-item-normal {
+}
+
+.flex-item-square {
+  border-radius: 0 !important;
+}

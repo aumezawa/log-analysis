@@ -1,0 +1,40 @@
+#!/usr/bin/env node
+
+/**
+ * Module dependencies.
+ */
+
+var app = require('../dist/server/app');
+var cluster = require('cluster');
+var logger = require('../dist/server/lib/logger')
+var os = require('os');
+
+/**
+ * Cluster settings.
+ */
+
+cluster.schedulingPolicy = (os.platform() === 'win32') ? cluster.SCHED_NONE : cluster.SCHED_RR;
+
+if (cluster.isMaster) {
+
+  var createWorker = function() {
+    var worker = cluster.fork();
+    logger.info(`created a new worker[${ worker.process.pid }]`);
+  };
+
+  logger.info(`now starting`)
+
+  for (var i = 0; i < app.get('num-workers'); i++) {
+    createWorker();
+  }
+
+  cluster.on('exit', function(worker, code, signal) {
+    logger.error(`detected dead of a worker[${ worker.process.pid }]`);
+    createWorker();
+  });
+
+} else {
+
+  require('./www');
+
+}
