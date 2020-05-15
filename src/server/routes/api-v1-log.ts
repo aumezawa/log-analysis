@@ -1,6 +1,7 @@
 import * as express from "express"
 import { Router, Request, Response, NextFunction } from "express"
 
+import * as child_process from "child_process"
 import * as fs from "fs"
 import * as multer from "multer"
 import * as os from "os"
@@ -158,6 +159,190 @@ router.param("bundleId", (req: Request, res: Response, next: NextFunction, bundl
 })
 
 /* -------------------------------------------------------------------------- */
+
+router.route("/:domain(private|public)/projects/:projectName([0-9a-zA-Z_.#]+)/bundles/:bundleId([0-9]+)/vms/:vmName")
+.get((req: Request, res: Response, next: NextFunction) => {
+  const result = child_process.spawnSync("python", [
+    "main.py",
+    "-g",
+    "-v", req.params.vmName,
+    "-b", req.resPath,
+    "-l", path.join(rootPath, "local", "log")
+  ], {
+    cwd: path.join("src", "server", "exts", "vmtools"),
+    encoding: "utf-8"
+  })
+
+  if (result.status !== 0) {
+    logger.error(`child_process: pid=${ result.pid }, status=${ result.status | 0 }, error=${ result.error }`)  // unsigned to signed
+    // Internal Server Error
+    return res.status(500).json({
+      msg: "Contact an administrator."
+    })
+  }
+
+  let vmInfo: VmInfo
+  try {
+    vmInfo = JSON.parse(result.stdout)
+  } catch (err) {
+    if (err instanceof Error) {
+      logger.error(`${ err.name }: ${ err.message }`)
+    }
+    // Internal Server Error
+    return res.status(500).json({
+      msg: "Contact an administrator."
+    })
+  }
+
+  return res.status(200).json({
+    msg: "You get a virtual machine information.",
+    vm: vmInfo
+  })
+})
+.all((req: Request, res: Response, next: NextFunction) => {
+  // Method Not Allowed
+  return res.status(405).json({
+    msg: "GET method is only supported."
+  })
+})
+
+router.route("/:domain(private|public)/projects/:projectName([0-9a-zA-Z_.#]+)/bundles/:bundleId([0-9]+)/vms")
+.get((req: Request, res: Response, next: NextFunction) => {
+  const result = child_process.spawnSync("python", [
+    "main.py",
+    "-g",
+    "-v", "LIST",
+    "-b", req.resPath,
+    "-l", path.join(rootPath, "local", "log")
+  ], {
+    cwd: path.join("src", "server", "exts", "vmtools"),
+    encoding: "utf-8"
+  })
+
+  if (result.status !== 0) {
+    logger.error(`child_process: pid=${ result.pid }, status=${ result.status | 0 }, error=${ result.error }`)  // unsigned to signed
+    // Internal Server Error
+    return res.status(500).json({
+      msg: "Contact an administrator."
+    })
+  }
+
+  let vms: Array<string>
+  try {
+    vms = JSON.parse(result.stdout)
+  } catch (err) {
+    if (err instanceof Error) {
+      logger.error(`${ err.name }: ${ err.message }`)
+    }
+    // Internal Server Error
+    return res.status(500).json({
+      msg: "Contact an administrator."
+    })
+  }
+
+  return res.status(200).json({
+    msg: "You get a virtual machine list.",
+    vms: vms
+  })
+})
+.all((req: Request, res: Response, next: NextFunction) => {
+  // Method Not Allowed
+  return res.status(405).json({
+    msg: "GET method is only supported."
+  })
+})
+
+router.route("/:domain(private|public)/projects/:projectName([0-9a-zA-Z_.#]+)/bundles/:bundleId([0-9]+)/hosts/:hostName")
+.get((req: Request, res: Response, next: NextFunction) => {
+  const result = child_process.spawnSync("python", [
+    "main.py",
+    "-g",
+    "-e", req.params.hostName,
+    "-b", req.resPath,
+    "-l", path.join(rootPath, "local", "log")
+  ], {
+    cwd: path.join("src", "server", "exts", "vmtools"),
+    encoding: "utf-8"
+  })
+
+  if (result.status !== 0) {
+    logger.error(`child_process: pid=${ result.pid }, status=${ result.status | 0 }, error=${ result.error }`)  // unsigned to signed
+    // Internal Server Error
+    return res.status(500).json({
+      msg: "Contact an administrator."
+    })
+  }
+
+  let hostInfo: HostInfo
+  try {
+    hostInfo = JSON.parse(result.stdout)
+  } catch (err) {
+    if (err instanceof Error) {
+      logger.error(`${ err.name }: ${ err.message }`)
+    }
+    // Internal Server Error
+    return res.status(500).json({
+      msg: "Contact an administrator."
+    })
+  }
+
+  return res.status(200).json({
+    msg: "You get a host information.",
+    host: hostInfo
+  })
+})
+.all((req: Request, res: Response, next: NextFunction) => {
+  // Method Not Allowed
+  return res.status(405).json({
+    msg: "GET method is only supported."
+  })
+})
+
+router.route("/:domain(private|public)/projects/:projectName([0-9a-zA-Z_.#]+)/bundles/:bundleId([0-9]+)/hosts")
+.get((req: Request, res: Response, next: NextFunction) => {
+  const result = child_process.spawnSync("python", [
+    "main.py",
+    "-g",
+    "-e", "LIST",
+    "-b", req.resPath,
+    "-l", path.join(rootPath, "local", "log")
+  ], {
+    cwd: path.join("src", "server", "exts", "vmtools"),
+    encoding: "utf-8"
+  })
+
+  if (result.status !== 0) {
+    logger.error(`child_process: pid=${ result.pid }, status=${ result.status | 0 }, error=${ result.error }`)  // unsigned to signed
+    // Internal Server Error
+    return res.status(500).json({
+      msg: "Contact an administrator."
+    })
+  }
+
+  let hosts: Array<string>
+  try {
+    hosts = JSON.parse(result.stdout)
+  } catch (err) {
+    if (err instanceof Error) {
+      logger.error(`${ err.name }: ${ err.message }`)
+    }
+    // Internal Server Error
+    return res.status(500).json({
+      msg: "Contact an administrator."
+    })
+  }
+
+  return res.status(200).json({
+    msg: "You get a host list.",
+    hosts: hosts
+  })
+})
+.all((req: Request, res: Response, next: NextFunction) => {
+  // Method Not Allowed
+  return res.status(405).json({
+    msg: "GET method is only supported."
+  })
+})
 
 router.route("/:domain(private|public)/projects/:projectName([0-9a-zA-Z_.#]+)/bundles/:bundleId([0-9]+)/files/*")
 .get((req: Request, res: Response, next: NextFunction) => {
@@ -526,7 +711,8 @@ router.route("/:domain(private|public)/projects/:projectName([0-9a-zA-Z_.#]+)/bu
       })
     }
 
-    // TODO: temporary code, want to kick other scripts
+    // Note: temporary code
+    /*
     FSTool.decompressTgz(path.basename(uploadFilePath, ".tgz"), req.resPath, (err: Error) => {
       if (err) {
         logger.error(`${ err.name }: ${ err.message }`)
@@ -548,6 +734,42 @@ router.route("/:domain(private|public)/projects/:projectName([0-9a-zA-Z_.#]+)/bu
       }
       logger.info(`${ uploadFilePath } was decompressed successfully.`)
     })
+    */
+
+    setTimeout(() => {
+      const result = child_process.spawnSync("python", [
+        "main.py",
+        "-d",
+        "-f", uploadFilePath,
+        "-l", path.join(rootPath, "local", "log")
+      ], {
+        cwd: path.join("src", "server", "exts", "vmtools"),
+        encoding: "utf-8"
+      })
+
+      if (result.status !== 0) {
+        logger.error(`child_process: pid=${ result.pid }, status=${ result.status | 0 }, error=${ result.error }`)  // unsigned to signed
+        return
+      }
+
+      try {
+        fs.statSync(path.join(req.resPath, bundleName))
+
+        const projectInfo = JSON.parse(fs.readFileSync(req.projectInfoPath, "utf8"))
+        projectInfo.bundles = projectInfo.bundles.map((bundle: BundleInfo) => {
+          if (bundle.id === bundleId) {
+            bundle.available = true
+          }
+          return bundle
+        })
+        fs.writeFileSync(req.projectInfoPath, JSON.stringify(projectInfo))
+        logger.info(`${ uploadFilePath } was decompressed successfully.`)
+      } catch (err) {
+        if (err instanceof Error) {
+          logger.error(`${ err.name }: ${ err.message }`)
+        }
+      }
+    }, 0)
 
     // Created
     return res.status(201).location(`${ req.protocol }://${ req.headers.host }${ req.path }/`).json({
