@@ -92,7 +92,7 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
   return (
     <div className={ `flex-container-column ${ className }` }>
       <div className="flex-main-area flex-main-overflow table-responsive">
-        <table className="table table-hover table-fixed text-monospace">
+        <table className="table table-hover table-header-fixed text-monospace">
           <thead className="thead-dark">{ renderHeader() }</thead>
           <tbody>{ renderBody() }</tbody>
           <tfoot></tfoot>
