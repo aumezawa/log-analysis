@@ -87,7 +87,7 @@ def GetHostInfo(dirPath, esxName):
                 'hbas'      : GetHbas(dirPath),
                 'disks'     : GetDisks(dirPath)
             },
-            'packages'      : GetPackage(dirPath)
+            'packages'      : GetPackages(dirPath)
         }
     except Exception as e:
         logger.error(e)
@@ -376,9 +376,9 @@ def GetEsxiBuildNumber(dirPath):
 
 
 def GetHostName(dirPath):
-    filePath = os.path.join(dirPath, 'commands', 'esxcfg-info_-a--F-xml.txt')
-    xpath    = './network-info/dns-config/value[@name="hostname"]'
-    return SearchInXml(filePath, xpath)
+    filePath = os.path.join(dirPath, 'commands', 'uname_-a.txt')
+    keyword  = r"^VMkernel[ ](\S+)[ ].*$"
+    return SearchInText(filePath, keyword)
 
 
 def GetMachineModel(dirPath):
@@ -512,20 +512,24 @@ def GetDisks(dirPath):
         else:
             disks.append({
                 'name'      : name,
-                'size'      : _int(node.findtext('./disk-lun/value[@name="size"]')),
+                'size'      : _int(node.findtext('./disk-lun/value[@name="size"]'), calc=lambda x: x // 1024 // 1024 // 1024),
                 'adapters'  : [adapter]
             })
     disks.sort(key=lambda x: x['name'])
     return disks
 
 
-def GetPackage(dirPath):
+def GetPackages(dirPath):
     filePath = os.path.join(dirPath, 'commands', 'localcli_software-vib-list.txt')
     repattern = re.compile(r"^(\S+)[ ]+(\S+)[ ].*$")
     packages = []
     try:
         with open(filePath, 'r') as fp:
+            title = True
             for line in fp:
+                if title:
+                    title = False
+                    continue
                 match = repattern.match(line)
                 if match:
                     packages.append({
@@ -616,7 +620,7 @@ def GetVmDisks(vmxDict):
             vmDisks.append({
                 'name'      : scsi,
                 'device'    : vmxDict[scsi + '.deviceType'],
-                'mode'      : vmxDict[scsi + '.mode'],
+                'mode'      : vmxDict[scsi + '.mode'] if (scsi + '.mode' in vmxDict) else None,
                 'present'   : vmxDict[scsi + '.present'] == 'TRUE'
             })
     vmDisks.sort(key=lambda x: x['name'])

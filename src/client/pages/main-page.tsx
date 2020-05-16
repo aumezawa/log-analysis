@@ -39,6 +39,10 @@ import FunctionalTableBox from "../components/complexes/functional-table-box"
 
 import TerminalBox from "../components/complexes/terminal-box"
 
+import HostInfoBox from "../components/specifics/vmlog/host-info-box"
+import VmExplorerBox from "../components/specifics/vmlog/vm-explorer-box"
+import VmInfoBox from "../components/specifics/vmlog/vm-info-box"
+
 type MainPageProps = {
   project?  : string,
   author?   : string,
@@ -66,7 +70,10 @@ const MainPage: React.FC<MainPageProps> = ({
   const ref = useRef({
     files   : React.createRef<HTMLAnchorElement>(),
     search  : React.createRef<HTMLAnchorElement>(),
+    vms     : React.createRef<HTMLAnchorElement>(),
     whatsnew: React.createRef<HTMLAnchorElement>(),
+    host    : React.createRef<HTMLAnchorElement>(),
+    vm      : React.createRef<HTMLAnchorElement>(),
     viewer  : React.createRef<HTMLAnchorElement>()
   })
 
@@ -81,6 +88,7 @@ const MainPage: React.FC<MainPageProps> = ({
     domain  : "public",
     project : null,
     bundle  : null,
+    vmname  : null,
     filepath: null,
     filename: null,
     line    : null,
@@ -150,6 +158,7 @@ const MainPage: React.FC<MainPageProps> = ({
     data.current.domain = value
     data.current.project = null
     data.current.bundle = null
+    data.current.vmname = null
     data.current.filepath = null
     data.current.filename = null
     data.current.line = null
@@ -161,6 +170,7 @@ const MainPage: React.FC<MainPageProps> = ({
   const handleSubmitProjectSelect = useCallback((value: string) => {
     data.current.project = value
     data.current.bundle = null
+    data.current.vmname = null
     data.current.filepath = null
     data.current.filename = null
     data.current.line = null
@@ -184,6 +194,7 @@ const MainPage: React.FC<MainPageProps> = ({
 
   const handleSubmitBundleSelect = useCallback((value: string) => {
     data.current.bundle = value
+    data.current.vmname = null
     data.current.filepath = null
     data.current.filename = null
     data.current.line = null
@@ -202,6 +213,12 @@ const MainPage: React.FC<MainPageProps> = ({
       forceUpdate()
       updateAddressBar()
     }
+  }, [true])
+
+  const handleSelectVm = useCallback((value: string) => {
+    data.current.vmname = value
+    ref.current.vm.current.click()
+    forceUpdate()
   }, [true])
 
   const handleSelectFile = useCallback((action: string, value: string, option: any) => {
@@ -369,7 +386,12 @@ const MainPage: React.FC<MainPageProps> = ({
                   bundle={ data.current.bundle }
                   onSubmit={ handleSubmitBundleSelect }
                 />
-                { (!!data.current.filename) ? " >> " : "" }
+                { (!!data.current.vmname || !!data.current.filename) ? " >> " : "" }
+                <InformationButton
+                  label={ data.current.vmname }
+                  hide={ true }
+                />
+                { (!!data.current.vmname && !!data.current.filename) ? " | " : "" }
                 <InformationButton
                   label={ data.current.filename }
                   hide={ true }
@@ -378,7 +400,7 @@ const MainPage: React.FC<MainPageProps> = ({
             }
             left={
               <TabFrame
-                labels={ ["Files", "Search"] }
+                labels={ ["Files", "Search", "VMs"] }
                 items={ [
                   <FileExplorerBox
                     path={ ProjectPath.strictEncodeFiles(data.current.domain, data.current.project, data.current.bundle) }
@@ -387,16 +409,33 @@ const MainPage: React.FC<MainPageProps> = ({
                   <FileSearchBox
                     path={ ProjectPath.strictEncodeFiles(data.current.domain, data.current.project, data.current.bundle) }
                     onSelect={ handleSelectFile }
+                  />,
+                  <VmExplorerBox
+                    domain={ data.current.domain }
+                    project={ data.current.project }
+                    bundle={ data.current.bundle }
+                    onSelect={ handleSelectVm }
                   />
                 ] }
-                refs={ [ref.current.files, ref.current.search] }
+                refs={ [ref.current.files, ref.current.search, ref.current.vms] }
               />
             }
             right={
               <TabFrame
-                labels={ ["What's New", "Viewer"] }
+                labels={ ["What's New", "Host", "VM", "Viewer"] }
                 items={ [
                   <MarddownViewerBox />,
+                  <HostInfoBox
+                    domain={ data.current.domain }
+                    project={ data.current.project }
+                    bundle={ data.current.bundle }
+                  />,
+                  <VmInfoBox
+                    domain={ data.current.domain }
+                    project={ data.current.project }
+                    bundle={ data.current.bundle }
+                    vm={ data.current.vmname }
+                  />,
                   <>
                     { !data.current.terminal &&
                       <FunctionalTableBox
@@ -416,7 +455,7 @@ const MainPage: React.FC<MainPageProps> = ({
                     }
                   </>
                 ] }
-                refs={ [ref.current.whatsnew, ref.current.viewer] }
+                refs={ [ref.current.whatsnew, ref.current.host, ref.current.vm, ref.current.viewer] }
               />
              }
           />
