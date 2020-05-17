@@ -17,3 +17,14 @@ type TableContent = {
   },
   data: Array<TableData>
 }
+
+type FilterSettings = {
+  [label: string]: FilterSetting
+}
+
+type FilterSetting = {
+  type?     : string,
+  mode?     : string,
+  sensitive?: boolean,
+  condition?: string
+}

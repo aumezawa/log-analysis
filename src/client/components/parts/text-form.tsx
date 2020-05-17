@@ -7,7 +7,6 @@ type TextFormProps = {
   label?    : string,
   type?     : string,
   disabled? : boolean,
-  hidden?   : boolean,
   onChange? : (value: string) => void
 }
 
@@ -17,7 +16,6 @@ const TextForm = React.memo(React.forwardRef<HTMLInputElement, TextFormProps>(({
   label     = "Text",
   type      = "text",
   disabled  = false,
-  hidden    = false,
   onChange  = undefined
 }, ref) => {
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -27,7 +25,7 @@ const TextForm = React.memo(React.forwardRef<HTMLInputElement, TextFormProps>(({
   }, [onChange])
 
   return (
-    <div className={ `${ className } ${ hidden && "d-none" }` }>
+    <div className={ className }>
       <div className="input-group">
         <div className="input-group-prepend">
           <span className="input-group-text">{ label }</span>

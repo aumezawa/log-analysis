@@ -1,3 +1,10 @@
+@import "~bootstrap/scss/bootstrap";
+
+.text-highlight {
+  @extend .bg-warning;
+  @extend .font-weight-bold;
+}
+
 .text-break {
   word-break : break-all !important;
   word-wrap : break-word !important;;
