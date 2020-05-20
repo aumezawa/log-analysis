@@ -1,16 +1,15 @@
 type TableLabel = {
-  name: string,
-  type: string
+  [label: string]: string
 }
 
 type TableData = {
-  [name: string]: string
+  [label: string]: string
 }
 
 type TableContent = {
   format: {
-    title?: string,
-    labels: Array<TableLabel>,
+    title?      : string,
+    label       : TableLabel,
     hasHeader?  : boolean,
     hasIndex?   : boolean,
     contentKey? : string
@@ -23,8 +22,10 @@ type FilterSettings = {
 }
 
 type FilterSetting = {
-  type?     : string,
-  mode?     : string,
-  sensitive?: boolean,
-  condition?: string
+  type?         : string,
+  mode?         : string,
+  sensitive?    : boolean,
+  condition?    : string,
+  from?         : Date,
+  to?           : Date
 }

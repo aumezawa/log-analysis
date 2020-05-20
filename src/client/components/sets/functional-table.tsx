@@ -3,6 +3,7 @@ import { useEffect, useRef, useCallback, useReducer } from "react"
 
 import ModalFrame from "../frames/modal-frame"
 import TextFilterForm from "../sets/text-filter-form"
+import DateFilterForm from "../sets/date-filter-form"
 import EmbeddedButton from "../parts/embedded-button"
 import SelectForm from "../parts/select-form"
 import Pagination from "../parts/pagination"
@@ -68,6 +69,24 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
     }
   }, [true])
 
+  const handleSubmitDateFilter = useCallback((from: Date, to: Date) => {
+    if (env.current.label) {
+      env.current.filters[env.current.label] = {
+        type      : "date",
+        from      : from,
+        to        : to
+      }
+      forceUpdate()
+    }
+  }, [true])
+
+  const handleCancelDateFilter = useCallback(() => {
+    if (env.current.label) {
+      delete env.current.filters[env.current.label]
+      forceUpdate()
+    }
+  }, [true])
+
   const handleChangeMaxRow = useCallback((value: string) => {
     env.current.page = 1
     env.current.maxRow = Number(value)
@@ -86,19 +105,21 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
         if (content.format.hasIndex) {
           header = [<th key="index" scope="col">#</th>]
         }
-        header = header.concat(content.format.labels.map((label: TableLabel) => (
-          <th key={ label.name } scope="col" title={ label.name }>
-            { label.name }
-            <EmbeddedButton
-              key={ label.name }
-              label="filter"
-              on={ label.name in env.current.filters }
-              toggle="modal"
-              target={ id.current.textFilter }
-              onClick={ handleClickFilter }
-            />
-          </th>
-        )))
+        for (let label in content.format.label) {
+          header.push(
+            <th key={ label } scope="col" title={ label }>
+              { label }
+              <EmbeddedButton
+                key={ label }
+                label="filter"
+                on={ label in env.current.filters }
+                toggle="modal"
+                target={ content.format.label[label] === "text" ? id.current.textFilter : id.current.dateFilter }
+                onClick={ handleClickFilter }
+              />
+            </th>
+          )
+        }
       }
       return <tr>{ header }</tr>
     } else {
@@ -110,10 +131,10 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
     if (content) {
       env.current.rows = 0
       return content.data.map((datum: TableData, index: number) => {
-        if (!content.format.labels.reduce((acc, label) => (
-          acc && isFiltered(datum, label.name)
-        ), true)) {
-          return
+        for (let label in content.format.label) {
+          if (!isFiltered(datum, label)) {
+            return
+          }
         }
 
         env.current.rows++
@@ -125,14 +146,16 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
         if (content.format.hasIndex) {
           row = [<th key="index" className="text-right" scope="row" >{ `${ index + 1 }:` }</th>]
         }
-        row = row.concat(content.format.labels.map((label: TableLabel) => (
-          <td
-            key={ label.name }
-            className={ `${ (label.name === content.format.contentKey) ? "text-wrap text-break" : "text-nowrap" }` }
-          >
-            { highlight(datum, label.name) }
-          </td>
-        )))
+        for (let label in content.format.label) {
+          row.push(
+            <td
+              key={ label }
+              className={ `${ (label === content.format.contentKey) ? "text-wrap text-break" : "text-nowrap" }` }
+            >
+              { highlight(datum, label) }
+            </td>
+          )
+        }
         return <tr key={ "row" + index }>{ row }</tr>
       })
     } else {
@@ -170,6 +193,19 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
           default:
             return false
         }
+
+      case "date":
+        const at = new Date(datum[label])
+        if (at.toString() === "Invalid Date") {
+          return false
+        }
+        if (env.current.filters[label].from && env.current.filters[label].from > at) {
+          return false
+        }
+        if (env.current.filters[label].to   && env.current.filters[label].to   < at) {
+          return false
+        }
+        return true
 
       default:
         return true
@@ -226,6 +262,17 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
             <TextFilterForm
               onSubmit={ handleSubmitTextFilter }
               onCancel={ handleCancelTextFilter }
+            />
+          }
+        />
+        <ModalFrame
+          id={ id.current.dateFilter }
+          title="Date Filter"
+          message="Input a condition, or press [Clear] to reset."
+          body={
+            <DateFilterForm
+              onSubmit={ handleSubmitDateFilter }
+              onCancel={ handleCancelDateFilter }
             />
           }
         />

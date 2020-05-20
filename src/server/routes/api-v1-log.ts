@@ -198,14 +198,14 @@ router.route("/:domain(private|public)/projects/:projectName([0-9a-zA-Z_.#]+)/bu
       }
       if (req.query.mode && req.query.mode === "json") {
         const content = {
-          "format": {
-            "title"     : path.basename(nodePath),
-            "labels"    : [{ "name": "Content", "type": "text" }],
-            "hasHeader" : true,
-            "hasIndex"  : true,
-            "contentKey": "Content"
+          format: {
+            title     : path.basename(nodePath),
+            label     : { Content: "text" },
+            hasHeader : true,
+            hasIndex  : true,
+            contentKey: "Content"
           },
-          "data": fs.readFileSync(nodePath, "utf8").split(/\r\n|\n|\r/).map((line: string) => ({ Content: line }))
+          data: fs.readFileSync(nodePath, "utf8").split(/\r\n|\n|\r/).map((line: string) => ({ Content: line }))
         }
         // OK
         return res.status(200).json({

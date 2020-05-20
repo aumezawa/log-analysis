@@ -2,19 +2,19 @@ import * as React from "react"
 import { useCallback } from "react"
 
 type CheckFormProps = {
-  className?: string,
-  label?    : string,
-  dafault?  : boolean,
-  disabled? : boolean,
-  onChange? : (value: boolean) => void
+  className?      : string,
+  label?          : string,
+  disabled?       : boolean,
+  defaultChecked? : boolean,
+  onChange?       : (value: boolean) => void
 }
 
 const CheckForm = React.memo(React.forwardRef<HTMLInputElement, CheckFormProps>(({
-  className = "",
-  label     = "Check",
-  dafault   = true,
-  disabled  = false,
-  onChange  = undefined
+  className       = "",
+  label           = "Check",
+  disabled        = false,
+  defaultChecked  = true,
+  onChange        = undefined
 }, ref) => {
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     if (onChange) {
@@ -31,7 +31,7 @@ const CheckForm = React.memo(React.forwardRef<HTMLInputElement, CheckFormProps>(
               ref={ ref }
               type="checkbox"
               disabled={ disabled }
-              defaultChecked={ dafault }
+              defaultChecked={ defaultChecked }
               onChange={ handleChange }
             />
           </div>
