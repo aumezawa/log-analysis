@@ -1,5 +1,5 @@
 import * as React from "react"
-import { useState, useRef, useCallback } from "react"
+import { useRef, useCallback, useReducer } from "react"
 
 import Axios from "axios"
 import { AxiosResponse, AxiosError } from "axios"
@@ -12,54 +12,75 @@ import LoginForm from "../sets/login-form"
 
 type LoginBoxProps = {
   className?  : string,
-  redirectSec?: number
+  redirect?   : boolean,
+  onDone?     : () => void
 }
 
 const LoginBox = React.memo<LoginBoxProps>(({
   className   = "",
-  redirectSec = 3
+  redirect    = true,
+  onDone      = undefined
 }) => {
-  const [done,    setDone]    = useState<boolean>(false)
-  const [success, setSuccess] = useState<boolean>(false)
+  const [ignored, forceUpdate]  = useReducer(x => x + 1, 0)
+  const [formKey, clearFrom]    = useReducer(x => x + 1, 0)
 
   const message = useRef(`Please input your "username" and "password". (between 4 - 16 characters with [0-9a-zA-Z])`)
 
-  const handleSubmit = useCallback((data: {username: string, password: string}) => {
-    let uri = `${ location.protocol }//${ location.host }/api/v1/public-key`
+  const data = useRef({
+    done      : false,
+    success   : false
+  })
 
-    setDone(false)
+  const handleSubmit = useCallback((username: string, password: string) => {
+    const uri = `${ location.protocol }//${ location.host }/api/v1/public-key`
+
+    data.current.done = false
+    forceUpdate()
     Axios.get(uri)
     .then((res: AxiosResponse) => {
-      let uri = `${ location.protocol }//${ location.host }/api/v1/login`
-      let params = new URLSearchParams()
-      params.append("username", data.username)
-      params.append("password", Crypto.publicEncrypt(res.data.key, Buffer.from(data.password)).toString("base64"))
+      const uri = `${ location.protocol }//${ location.host }/api/v1/login`
+      const params = new URLSearchParams()
+      params.append("username", username)
+      params.append("password", Crypto.publicEncrypt(res.data.key, Buffer.from(password)).toString("base64"))
       params.append("encrypted", "true")
       return Axios.post(uri, params)
     })
     .then((res: AxiosResponse) => {
       Cookie.set("token", res.data.token)
-      message.current = `${ res.data.msg } Will redirect automatically in ${ redirectSec } sec.`
-      setDone(true)
-      setSuccess(true)
-      setTimeout(() => location.href = `${ location.protocol }//${ location.host }` , redirectSec * 1000)
+      message.current = `${ res.data.msg }` + (redirect ? " Will redirect automatically in 3 sec." : "")
+      data.current.done = true
+      data.current.success = true
+      forceUpdate()
+      setTimeout(() => {
+        if (redirect) {
+          location.href = `${ location.protocol }//${ location.host }`
+        } else {
+          message.current = `Please input your "username" and "password". (between 4 - 16 characters with [0-9a-zA-Z])`
+          data.current.done = false
+          clearFrom()
+          if (onDone) {
+            onDone()
+          }
+        }
+      }, 3000)
     })
     .catch((err: AxiosError) => {
-      message.current = err.response.data.msg
-      setDone(true)
-      setSuccess(false)
+      data.current.done = true
+      data.current.success = false
+      forceUpdate()
     })
-  }, [redirectSec])
+  }, [redirect, onDone])
 
   return (
     <div className={ className }>
       <MessageCard
         message={ message.current }
-        success={ done && success }
-        failure={ done && !success }
+        success={ data.current.done && data.current.success }
+        failure={ data.current.done && !data.current.success }
       />
       <LoginForm
-        disabled={ success }
+        key={ formKey }
+        disabled={ data.current.done && data.current.success }
         onSubmit={ handleSubmit }
       />
     </div>

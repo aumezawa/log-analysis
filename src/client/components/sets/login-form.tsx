@@ -8,7 +8,7 @@ import TextForm from "../parts/text-form"
 type LoginFormProps = {
   className?: string,
   disabled? : boolean,
-  onSubmit? : (data: { username: string, password: string }) => void,
+  onSubmit? : (username: string, password: string) => void,
   onCancel? : () => void,
   allowUser?: RegExp,
   allowPass?: RegExp
@@ -47,7 +47,7 @@ const LoginForm = React.memo<LoginFormProps>(({
 
   const handleSubmit = useCallback(() => {
     if (onSubmit) {
-      onSubmit(data.current)
+      onSubmit(data.current.username, data.current.password)
     }
   }, [onSubmit])
 
