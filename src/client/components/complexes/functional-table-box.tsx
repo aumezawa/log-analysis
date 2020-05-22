@@ -36,6 +36,7 @@ const FunctionalTableBox = React.memo<FunctionalTableBoxProps>(({
         return
       })
       .catch((err: AxiosError) => {
+        alert(err.response.data.msg)
         return
       })
     } else {

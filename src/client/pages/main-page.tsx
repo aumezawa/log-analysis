@@ -26,6 +26,8 @@ import FileExplorerBox from "../components/complexes/file-explorer-box"
 
 import FunctionalTableBox from "../components/complexes/functional-table-box"
 
+import TerminalBox from "../components/complexes/terminal-box"
+
 type MainPageProps = {
   project?  : string,
   author?   : string,
@@ -43,7 +45,7 @@ const MainPage: React.FC<MainPageProps> = ({
 
   const refs = useRef({
     files : React.createRef<HTMLAnchorElement>(),
-    table : React.createRef<HTMLAnchorElement>()
+    viewer: React.createRef<HTMLAnchorElement>()
   })
 
   const id = useRef({
@@ -56,7 +58,8 @@ const MainPage: React.FC<MainPageProps> = ({
     bundle  : null,
     path    : null,
     filepath: null,
-    filename: null
+    filename: null,
+    terminal: false
   })
 
   const handleSubmitDomain = useCallback((value: string) => {
@@ -87,9 +90,11 @@ const MainPage: React.FC<MainPageProps> = ({
   }, [true])
 
   const handleSelectFile = useCallback((action: string, value: string) => {
+    refs.current.viewer.current.click()
     data.current.filepath = `${ data.current.path }${ value }`
     data.current.filename = Path.basename(value)
-    forceUpdate()
+    data.current.terminal = (action == "terminal")
+    setTimeout(() => forceUpdate(), 1000)
   }, [true])
 
   return (
@@ -152,9 +157,14 @@ const MainPage: React.FC<MainPageProps> = ({
             }
             right={
               <TabFrame
-                labels={ ["Table"] }
-                items={ [<FunctionalTableBox path={ data.current.filepath }/>] }
-                refs={ [refs.current.table] }
+                labels={ ["Viewer"] }
+                items={ [
+                  <>
+                    { !data.current.terminal && <FunctionalTableBox path={ data.current.filepath }/> }
+                    {  data.current.terminal && <TerminalBox app="term" path={ data.current.filepath } disabled={ !data.current.terminal } /> }
+                  </>
+                ] }
+                refs={ [refs.current.viewer] }
               />
              }
           />

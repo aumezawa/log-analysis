@@ -66,6 +66,12 @@ const FileExplorerBox = React.memo<FileExplorerBoxProps>(({
     }
   }, [onSelect])
 
+  const handleClickTerminal = useCallback((targetValue: string, parentValue: string) => {
+    if (onSelect) {
+      onSelect("terminal", parentValue)
+    }
+  }, [onSelect])
+
   const handleClickDownload = useCallback((targetValue: string, parentValue: string) => {
     const uri = `${ location.protocol }//${ location.host }/api/v1${ path }${ parentValue }?mode=download`
     Axios.get(uri, {
@@ -109,6 +115,11 @@ const FileExplorerBox = React.memo<FileExplorerBoxProps>(({
             key="view"
             label="view"
             onClick={ handleClickView }
+          />,
+          <DropdownItem
+            key="terminal"
+            label="advanced view"
+            onClick={ handleClickTerminal }
           />,
           <DropdownItem
             key="download"
