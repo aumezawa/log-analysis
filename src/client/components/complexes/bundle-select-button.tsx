@@ -6,25 +6,28 @@ import { AxiosResponse, AxiosError } from "axios"
 
 import * as Cookie from "js-cookie"
 
+import Environment from "../../lib/environment"
+import ProjectPath from "../../lib/project-path"
 import UniqueId from "../../lib/unique-id"
 
 import ModalFrame from "../frames/modal-frame"
 import ListForm from "../parts/list-form"
 import ButtonSet from "../sets/button-set"
 
-
 type ProjectSelectButtonProps = {
-  className?: string,
-  domain?   : string,
-  project?  : string,
-  onSubmit? : (value: string) => void
+  className?    : string,
+  domain?       : string,
+  project?      : string,
+  defaultValue? : string,
+  onSubmit?     : (value: string) => void
 }
 
 const ProjectSelectButton = React.memo<ProjectSelectButtonProps>(({
-  className = "",
-  domain    = null,
-  project   = null,
-  onSubmit  = undefined
+  className     = "",
+  domain        = null,
+  project       = null,
+  defaultValue  = null,
+  onSubmit      = undefined
 }) => {
   const [bundle, setBundle] = useState<string>(null)
   const [ignored, forceUpdate] = useReducer(x => x + 1, 0)
@@ -40,13 +43,33 @@ const ProjectSelectButton = React.memo<ProjectSelectButtonProps>(({
   })
 
   useEffect(() => {
-    data.current.bundleId = null
-    data.current.bundleName = null
-    setBundle(null)
-  }, [domain, project])
+    if (domain && project && defaultValue) {
+      const uri = `${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project, defaultValue) }`
+      Axios.get(uri, {
+        headers : { "X-Access-Token": Cookie.get("token") || "" },
+        data    : {}
+      })
+      .then((res: AxiosResponse) => {
+        data.current.bundleId = defaultValue
+        data.current.bundleName = res.data.name
+        setBundle(res.data.name)
+        return
+      })
+      .catch((err: AxiosError) => {
+        data.current.bundleId = null
+        data.current.bundleName = null
+        setBundle(null)
+        return
+      })
+    } else {
+      data.current.bundleId = null
+      data.current.bundleName = null
+      setBundle(null)
+    }
+  }, [domain, project, defaultValue])
 
   const handleClick = useCallback(() => {
-    const uri = `${ location.protocol }//${ location.host }/api/v1/log/${ domain }/projects/${ project }/bundles`
+    const uri = `${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project) }/bundles`
     Axios.get(uri, {
       headers : { "X-Access-Token": Cookie.get("token") || "" },
       data    : {}

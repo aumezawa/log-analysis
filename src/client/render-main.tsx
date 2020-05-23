@@ -15,9 +15,10 @@ const project: string = main.getAttribute("data-project")
 const author: string = main.getAttribute("data-author")
 const version: string = main.getAttribute("data-version")
 const user: string = main.getAttribute("data-user")
+const query: string = main.getAttribute("data-query")
 switch (main.getAttribute("data-page")) {
   case "main":
-    ReactDom.render(<MainPage project={ project } author={ author } version={ version } user={ user } />, main)
+    ReactDom.render(<MainPage project={ project } author={ author } version={ version } user={ user } query={ query } />, main)
     break
 
   case "login":

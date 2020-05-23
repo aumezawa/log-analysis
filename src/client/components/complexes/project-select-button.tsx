@@ -6,6 +6,8 @@ import { AxiosResponse, AxiosError } from "axios"
 
 import * as Cookie from "js-cookie"
 
+import Environment from "../../lib/environment"
+import ProjectPath from "../../lib/project-path"
 import UniqueId from "../../lib/unique-id"
 
 import ModalFrame from "../frames/modal-frame"
@@ -13,15 +15,17 @@ import ListForm from "../parts/list-form"
 import ButtonSet from "../sets/button-set"
 
 type ProjectSelectButtonProps = {
-  className?: string,
-  domain?   : string,
-  onSubmit? : (value: string) => void
+  className?    : string,
+  domain?       : string,
+  defaultValue? : string,
+  onSubmit?     : (value: string) => void
 }
 
 const ProjectSelectButton = React.memo<ProjectSelectButtonProps>(({
-  className = "",
-  domain    = null,
-  onSubmit  = undefined
+  className     = "",
+  domain        = null,
+  defaultValue  = null,
+  onSubmit      = undefined
 }) => {
   const [project, setProject] = useState<string>(null)
   const [ignored, forceUpdate] = useReducer(x => x + 1, 0)
@@ -36,12 +40,17 @@ const ProjectSelectButton = React.memo<ProjectSelectButtonProps>(({
   })
 
   useEffect(() => {
-    data.current.project = null
-    setProject(null)
-  }, [domain])
+    if (domain && defaultValue) {
+      data.current.project = defaultValue
+      setProject(defaultValue)
+    } else {
+      data.current.project = null
+      setProject(null)
+    }
+  }, [domain, defaultValue])
 
   const handleClick = useCallback(() => {
-    const uri = `${ location.protocol }//${ location.host }/api/v1/log/${ domain }/projects`
+    const uri = `${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain) }/projects`
     Axios.get(uri, {
       headers : { "X-Access-Token": Cookie.get("token") || "" },
       data    : {}

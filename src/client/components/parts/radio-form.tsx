@@ -4,17 +4,19 @@ import { useRef, useCallback } from "react"
 import UniqueId from "../../lib/unique-id"
 
 type RadioFormProps = {
-  className?: string,
-  labels?   : Array<string>,
-  disabled? : boolean,
-  onChange? : (value: string) => void
+  className?      : string,
+  labels?         : Array<string>,
+  disabled?       : boolean,
+  defaultChecked? : number,
+  onChange?       : (value: string) => void
 }
 
 const RadioForm = React.memo<RadioFormProps>(({
-  className = "",
-  labels    = [],
-  disabled  = false,
-  onChange  = undefined
+  className       = "",
+  labels          = [],
+  disabled        = false,
+  defaultChecked  = 0,
+  onChange        = undefined
 }) => {
   const id = useRef({
     radio: "radio-" + UniqueId()
@@ -37,7 +39,7 @@ const RadioForm = React.memo<RadioFormProps>(({
               type="radio"
               name={ id.current.radio }
               value={ label }
-              defaultChecked={ index === 0 }
+              defaultChecked={ index === defaultChecked }
               disabled={ disabled }
               onChange={ handleChange }
             />

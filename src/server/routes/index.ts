@@ -8,6 +8,8 @@ import * as jwt from "jsonwebtoken"
 
 import IndexPage from "../pages/index-page"
 
+import mainRouter from "./main"
+
 const router: Router = express.Router()
 
 router.route("/login")
@@ -57,6 +59,8 @@ router.route("/")
     ReactDomServer.renderToString(React.createElement(IndexPage, { user: req.token.usr, page: "main" }))
   )
 })
+
+router.use("/main", mainRouter)
 
 router.route("/hello")
 .get((req: Request, res: Response, next: NextFunction) => {

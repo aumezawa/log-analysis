@@ -1,8 +1,14 @@
 import * as React from "react"
-import { useRef, useCallback, useReducer } from "react"
+import { useEffect, useRef, useCallback, useReducer } from "react"
 
+import Axios from "axios"
+import { AxiosResponse, AxiosError } from "axios"
+
+import * as Cookie from "js-cookie"
 import * as Path from "path"
 
+import Environment from "../lib/environment"
+import ProjectPath from "../lib/project-path"
 import UniqueId from "../lib/unique-id"
 
 import LayerFrame from "../components/frames/layer-frame"
@@ -33,14 +39,16 @@ type MainPageProps = {
   project?  : string,
   author?   : string,
   version?  : string,
-  user?     : string
+  user?     : string,
+  query?    : string,
 }
 
 const MainPage: React.FC<MainPageProps> = ({
   project   = "unaffiliated",
   author    = "unnamed",
   version   = "none",
-  user      = "anonymous"
+  user      = "anonymous",
+  query     = ""
 }) => {
   const [ignored,   forceUpdate]  = useReducer(x => x + 1, 0)
   const [statusKey, reloadStatus] = useReducer(x => x + 1, 0)
@@ -59,11 +67,65 @@ const MainPage: React.FC<MainPageProps> = ({
     domain  : "public",
     project : null,
     bundle  : null,
-    path    : null,
     filepath: null,
     filename: null,
     terminal: false
   })
+
+  const updateAddressBar = () => {
+    Environment.updateAddressBar("/main/" + ProjectPath.encode(
+      data.current.domain,
+      data.current.project,
+      data.current.bundle,
+      data.current.filepath
+    ))
+  }
+
+  useEffect(() => {
+    const params = new URLSearchParams(query)
+    const domain = params.get("domain")
+    const project = params.get("project")
+    const bundle = params.get("bundle")
+    const filepath = params.get("filepath")
+
+    if (domain && project) {
+      const uri = `${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project, bundle, filepath) }`
+
+      Axios.get(uri, {
+        headers : { "X-Access-Token": Cookie.get("token") || "" },
+        data    : {}
+      })
+      .then((res: AxiosResponse) => {
+        data.current.domain   = domain
+        data.current.project  = domain && project
+        data.current.bundle   = domain && project && bundle
+        data.current.filepath = domain && project && bundle && filepath
+        data.current.filename = domain && project && bundle && filepath && Path.basename(filepath)
+        forceUpdate()
+        updateAddressBar()
+        return
+      })
+      .catch((err: AxiosError) => {
+        alert(`No resource: ${ uri }`)
+        data.current.domain   = "public"
+        data.current.project  = null
+        data.current.bundle   = null
+        data.current.filepath = null
+        data.current.filename = null
+        forceUpdate()
+        updateAddressBar()
+        return
+      })
+    } else {
+      data.current.domain   = "public"
+      data.current.project  = null
+      data.current.bundle   = null
+      data.current.filepath = null
+      data.current.filename = null
+      forceUpdate()
+      updateAddressBar()
+    }
+  }, [query])
 
   const handleDoneTokenUpdate = useCallback(() => {
     reloadStatus()
@@ -73,35 +135,36 @@ const MainPage: React.FC<MainPageProps> = ({
     data.current.domain = value
     data.current.project = null
     data.current.bundle = null
-    data.current.path = null
     data.current.filepath = null
     data.current.filename = null
     forceUpdate()
+    updateAddressBar()
   }, [true])
 
   const handleSubmitProject = useCallback((value: string) => {
     data.current.project = value
     data.current.bundle = null
-    data.current.path = null
     data.current.filepath = null
     data.current.filename = null
     forceUpdate()
+    updateAddressBar()
   }, [true])
 
   const handleSubmitBundle = useCallback((value: string) => {
     data.current.bundle = value
-    data.current.path = `/log/${ data.current.domain }/projects/${ data.current.project }/bundles/${ data.current.bundle }/files`
     data.current.filepath = null
     data.current.filename = null
     forceUpdate()
+    updateAddressBar()
   }, [true])
 
   const handleSelectFile = useCallback((action: string, value: string) => {
     refs.current.viewer.current.click()
-    data.current.filepath = `${ data.current.path }/${ value }`
+    data.current.filepath = value
     data.current.filename = Path.basename(value)
     data.current.terminal = (action == "terminal")
     setTimeout(() => forceUpdate(), 1000)
+    updateAddressBar()
   }, [true])
 
   return (
@@ -137,6 +200,7 @@ const MainPage: React.FC<MainPageProps> = ({
                 { " | " }
                 <ProjectSelectButton
                   domain={ data.current.domain }
+                  defaultValue={ data.current.project }
                   onSubmit={ handleSubmitProject }
                 />
                 { " >> " }
@@ -148,6 +212,7 @@ const MainPage: React.FC<MainPageProps> = ({
                 <BundleSelectButton
                   domain={ data.current.domain }
                   project={ data.current.project }
+                  defaultValue={ data.current.bundle }
                   onSubmit={ handleSubmitBundle }
                 />
                 { " >> " }
@@ -160,7 +225,12 @@ const MainPage: React.FC<MainPageProps> = ({
             left={
               <TabFrame
                 labels={ ["Files"] }
-                items={ [<FileExplorerBox path={ data.current.path } onSelect={ handleSelectFile } />] }
+                items={ [
+                  <FileExplorerBox
+                    path={ ProjectPath.strictEncodeFiles(data.current.domain, data.current.project, data.current.bundle) }
+                    onSelect={ handleSelectFile }
+                  />
+                ] }
                 refs={ [refs.current.files] }
               />
             }
@@ -169,8 +239,8 @@ const MainPage: React.FC<MainPageProps> = ({
                 labels={ ["Viewer"] }
                 items={ [
                   <>
-                    { !data.current.terminal && <FunctionalTableBox path={ data.current.filepath }/> }
-                    {  data.current.terminal && <TerminalBox app="term" path={ data.current.filepath } disabled={ !data.current.terminal } /> }
+                    { !data.current.terminal && <FunctionalTableBox path={ ProjectPath.strictEncodeFilepath(data.current.domain, data.current.project, data.current.bundle, data.current.filepath) }/> }
+                    {  data.current.terminal && <TerminalBox app="term" path={ ProjectPath.strictEncodeFilepath(data.current.domain, data.current.project, data.current.bundle, data.current.filepath) } disabled={ !data.current.terminal } /> }
                   </>
                 ] }
                 refs={ [refs.current.viewer] }

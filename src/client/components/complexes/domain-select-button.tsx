@@ -1,5 +1,5 @@
 import * as React from "react"
-import { useState, useRef, useCallback } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 
 import UniqueId from "../../lib/unique-id"
 
@@ -13,12 +13,14 @@ type DomainSelectButtonProps = {
   onSubmit?     : (value: string) => void
 }
 
+const DOMAIN = ["public", "private"]
+
 const DomainSelectButton = React.memo<DomainSelectButtonProps>(({
   className     = "",
-  defaultValue  = "private",
+  defaultValue  = "public",
   onSubmit      = undefined
 }) => {
-  const [domain, setDomain] = useState<string>(defaultValue)
+  const [domain, setDomain] = useState<string>(null)
 
   const id = useRef({
     modal: "modal-" + UniqueId()
@@ -27,6 +29,16 @@ const DomainSelectButton = React.memo<DomainSelectButtonProps>(({
   const data = useRef({
     domain: defaultValue
   })
+
+  useEffect(() => {
+    if (DOMAIN.includes(defaultValue)) {
+      data.current.domain = defaultValue
+      setDomain(defaultValue)
+    } else {
+      data.current.domain = "public"
+      setDomain("public")
+    }
+  }, [defaultValue])
 
   const handleChange = useCallback((value: string) => {
     data.current.domain = value
@@ -47,7 +59,9 @@ const DomainSelectButton = React.memo<DomainSelectButtonProps>(({
         message="Select access domain."
         body={
           <RadioForm
-            labels={ ["public", "private"] }
+            key={ domain }
+            labels={ DOMAIN }
+            defaultChecked={ DOMAIN.indexOf(domain) }
             onChange={ handleChange }
           />
         }
