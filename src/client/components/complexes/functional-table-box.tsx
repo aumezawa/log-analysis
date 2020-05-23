@@ -8,6 +8,8 @@ import * as Cookie from "js-cookie"
 
 import FunctionalTable from "../sets/functional-table"
 
+import Escape from "../../lib/escape"
+
 type FunctionalTableBoxProps = {
   className?: string,
   path?     : string
@@ -25,7 +27,7 @@ const FunctionalTableBox = React.memo<FunctionalTableBoxProps>(({
 
   useEffect(() => {
     if (path) {
-      const uri = `${ location.protocol }//${ location.host }/api/v1${ path }?mode=json`
+      const uri = `${ location.protocol }//${ location.host }/api/v1/${ Escape.root(path) }?mode=json`
       Axios.get(uri, {
         headers : { "X-Access-Token": Cookie.get("token") || "" },
         data    : {}

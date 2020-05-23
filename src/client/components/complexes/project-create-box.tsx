@@ -7,7 +7,7 @@ import { AxiosResponse, AxiosError } from "axios"
 import * as Cookie from "js-cookie"
 
 import MessageCard from "../parts/message-card"
-import ProjectForm from "../sets/project-form"
+import ProjectCreateForm from "../sets/project-create-form"
 
 type ProjectCreateBoxProps = {
   className?: string,
@@ -59,7 +59,7 @@ const ProjectCreateBox = React.memo<ProjectCreateBoxProps>(({
         success={ done && success }
         failure={ done && !success }
       />
-      <ProjectForm
+      <ProjectCreateForm
         key={ formKey }
         disabled={ !domain }
         onSubmit={ handleSubmit }

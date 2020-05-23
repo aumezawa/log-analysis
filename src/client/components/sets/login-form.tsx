@@ -15,7 +15,7 @@ type LoginFormProps = {
 }
 
 const LoginForm = React.memo<LoginFormProps>(({
-  className = "mb-3",
+  className = "",
   disabled  = false,
   onSubmit  = undefined,
   onCancel  = undefined,
@@ -62,6 +62,7 @@ const LoginForm = React.memo<LoginFormProps>(({
     <div className={ className }>
       <TextForm
         ref={ refs.current.username }
+        className="mb-3"
         valid={ validUser }
         label="username"
         disabled={ disabled }
@@ -69,6 +70,7 @@ const LoginForm = React.memo<LoginFormProps>(({
       />
       <TextForm
         ref={ refs.current.password }
+        className="mb-3"
         valid={ validPass }
         label="password"
         type="password"

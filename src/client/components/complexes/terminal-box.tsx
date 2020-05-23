@@ -10,6 +10,8 @@ import { Terminal } from "xterm"
 import { FitAddon } from "xterm-addon-fit"
 import "xterm/css/xterm.css"
 
+import Escape from "../../lib/escape"
+
 type TerminalBoxProps = {
   app       : "term",
   path?     : string,
@@ -29,17 +31,17 @@ const TerminalBox = React.memo<TerminalBoxProps>(({
     let socket: SocketIOClient.Socket = null
 
     if (path && !disabled) {
-      const uri = `${ location.protocol }//${ location.host }/api/v1${ path }?mode=${ app }`
+      const uri = `${ location.protocol }//${ location.host }/api/v1/${ Escape.root(path) }?mode=${ app }`
       Axios.get(uri, {
         headers : { "X-Access-Token": Cookie.get("token") || "" },
         data    : {}
       })
       .then((res: AxiosResponse) => {
-        socket = Socketio(`?cmd=${ encodeURI(res.data.cmd) }&cols=${ terminal.cols }&rows=${ terminal.rows }`, { path: "/terminal" })
-
         terminal.loadAddon(fitAddon)
         terminal.open(ref.current)
         fitAddon.fit()
+
+        socket = Socketio(`?cmd=${ encodeURI(res.data.cmd) }&cols=${ terminal.cols }&rows=${ terminal.rows }`, { path: "/terminal" })
 
         terminal.onData((data: string) => {
           socket.emit("request", data)

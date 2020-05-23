@@ -98,7 +98,7 @@ const MainPage: React.FC<MainPageProps> = ({
 
   const handleSelectFile = useCallback((action: string, value: string) => {
     refs.current.viewer.current.click()
-    data.current.filepath = `${ data.current.path }${ value }`
+    data.current.filepath = `${ data.current.path }/${ value }`
     data.current.filename = Path.basename(value)
     data.current.terminal = (action == "terminal")
     setTimeout(() => forceUpdate(), 1000)

@@ -5,14 +5,14 @@ import ButtonSet from "../sets/button-set"
 
 import TextForm from "../parts/text-form"
 
-type ProjectFormProps = {
+type ProjectCreateFormProps = {
   className?: string,
   disabled? : boolean,
   onSubmit? : (name: string, description: string) => void,
   onCancel? : () => void
 }
 
-const ProjectForm = React.memo<ProjectFormProps>(({
+const ProjectCreateForm = React.memo<ProjectCreateFormProps>(({
   className = "",
   disabled  = false,
   onSubmit  = undefined,
@@ -58,6 +58,7 @@ const ProjectForm = React.memo<ProjectFormProps>(({
     <div className={ className }>
       <TextForm
         ref={ refs.current.name }
+        className="mb-3"
         valid={ valid }
         label="project name"
         disabled={ disabled }
@@ -65,6 +66,7 @@ const ProjectForm = React.memo<ProjectFormProps>(({
       />
       <TextForm
         ref={ refs.current.desc }
+        className="mb-3"
         valid={ true }
         label="description"
         disabled={ disabled }
@@ -82,4 +84,4 @@ const ProjectForm = React.memo<ProjectFormProps>(({
   )
 })
 
-export default ProjectForm
+export default ProjectCreateForm

@@ -15,7 +15,7 @@ type FileFormProps = {
 }
 
 const FileForm = React.memo(React.forwardRef<HTMLInputElement, FileFormProps>(({
-  className = "mb-3",
+  className = "",
   label     = "File",
   filename  = "",
   valid     = undefined,

@@ -9,6 +9,8 @@ import * as Cookie from "js-cookie"
 import FileTreeRoot from "../sets/file-tree-root"
 import DropdownItem from "../parts/dropdown-item"
 
+import Escape from "../../lib/escape"
+
 type FileExplorerBoxProps = {
   className?: string,
   path?     : string,
@@ -30,7 +32,7 @@ const FileExplorerBox = React.memo<FileExplorerBoxProps>(({
 
   useEffect(() => {
     if (path) {
-      const uri = `${ location.protocol }//${ location.host }/api/v1${ path }`
+      const uri = `${ location.protocol }//${ location.host }/api/v1/${ Escape.root(path) }`
       Axios.get(uri, {
         headers : { "X-Access-Token": Cookie.get("token") || "" },
         data    : {}
@@ -62,18 +64,18 @@ const FileExplorerBox = React.memo<FileExplorerBoxProps>(({
 
   const handleClickView = useCallback((targetValue: string, parentValue: string) => {
     if (onSelect) {
-      onSelect("view", parentValue)
+      onSelect("view", Escape.root(parentValue))
     }
   }, [onSelect])
 
   const handleClickTerminal = useCallback((targetValue: string, parentValue: string) => {
     if (onSelect) {
-      onSelect("terminal", parentValue)
+      onSelect("terminal", Escape.root(parentValue))
     }
   }, [onSelect])
 
   const handleClickDownload = useCallback((targetValue: string, parentValue: string) => {
-    const uri = `${ location.protocol }//${ location.host }/api/v1${ path }${ parentValue }?mode=download`
+    const uri = `${ location.protocol }//${ location.host }/api/v1/${ Escape.root(path) }/${ Escape.root(parentValue) }?mode=download`
     Axios.get(uri, {
       headers : { "X-Access-Token": Cookie.get("token") || "" },
       data    : {},
@@ -118,7 +120,7 @@ const FileExplorerBox = React.memo<FileExplorerBoxProps>(({
           />,
           <DropdownItem
             key="terminal"
-            label="advanced view"
+            label="legacy view"
             onClick={ handleClickTerminal }
           />,
           <DropdownItem

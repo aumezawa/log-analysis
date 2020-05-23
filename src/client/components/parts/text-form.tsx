@@ -11,7 +11,7 @@ type TextFormProps = {
 }
 
 const TextForm = React.memo(React.forwardRef<HTMLInputElement, TextFormProps>(({
-  className = "mb-3",
+  className = "",
   valid     = undefined,
   label     = "Text",
   type      = "text",

@@ -201,7 +201,7 @@ router.route("/:domain(private|public)/projects/:projectName([0-9a-zA-Z_.#]+)/bu
         if (fileStat.size >= 104857600) {
           // Service Unavailable
           return res.status(503).json({
-            msg: "This file's size is too large. Please use advanced view."
+            msg: "This file's size is too large. Please use legacy view."
           })
         }
         const content = {
