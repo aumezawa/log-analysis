@@ -1,4 +1,4 @@
 dist/
 local/
 node_modules/
-public/
+public/js/
