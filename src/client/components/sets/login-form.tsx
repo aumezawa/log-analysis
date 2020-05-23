@@ -8,14 +8,14 @@ import TextForm from "../parts/text-form"
 type LoginFormProps = {
   className?: string,
   disabled? : boolean,
-  onSubmit? : (data: { username: string, password: string }) => void,
+  onSubmit? : (username: string, password: string) => void,
   onCancel? : () => void,
   allowUser?: RegExp,
   allowPass?: RegExp
 }
 
 const LoginForm = React.memo<LoginFormProps>(({
-  className = "mb-3",
+  className = "",
   disabled  = false,
   onSubmit  = undefined,
   onCancel  = undefined,
@@ -47,7 +47,7 @@ const LoginForm = React.memo<LoginFormProps>(({
 
   const handleSubmit = useCallback(() => {
     if (onSubmit) {
-      onSubmit(data.current)
+      onSubmit(data.current.username, data.current.password)
     }
   }, [onSubmit])
 
@@ -62,6 +62,7 @@ const LoginForm = React.memo<LoginFormProps>(({
     <div className={ className }>
       <TextForm
         ref={ refs.current.username }
+        className="mb-3"
         valid={ validUser }
         label="username"
         disabled={ disabled }
@@ -69,6 +70,7 @@ const LoginForm = React.memo<LoginFormProps>(({
       />
       <TextForm
         ref={ refs.current.password }
+        className="mb-3"
         valid={ validPass }
         label="password"
         type="password"

@@ -10,6 +10,7 @@ var http = require('http');
 var https = require('https');
 var logger = require('../dist/server/lib/logger')
 var path = require('path');
+var terminal = require('../dist/server/routes/terminal')
 
 /**
  * Get root directory.
@@ -45,6 +46,13 @@ http_server.on('listening', onListeningHttp);
 https_server.listen(https_port);
 https_server.on('error', onErrorHttps);
 https_server.on('listening', onListeningHttps);
+
+/**
+ * Connect to Terminal
+ */
+
+terminal(http_server);
+terminal(https_server);
 
 /**
  * Event listener for HTTP/HTTPS server "error" event.

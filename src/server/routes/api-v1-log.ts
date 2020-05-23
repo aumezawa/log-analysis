@@ -3,6 +3,7 @@ import { Router, Request, Response, NextFunction } from "express"
 
 import * as fs from "fs"
 import * as multer from "multer"
+import * as os from "os"
 import * as path from "path"
 import * as tar from "tar"
 
@@ -197,15 +198,21 @@ router.route("/:domain(private|public)/projects/:projectName([0-9a-zA-Z_.#]+)/bu
         return res.status(200).download(nodePath, path.basename(nodePath))
       }
       if (req.query.mode && req.query.mode === "json") {
+        if (fileStat.size >= 104857600) {
+          // Service Unavailable
+          return res.status(503).json({
+            msg: "This file's size is too large. Please use legacy view."
+          })
+        }
         const content = {
-          "format": {
-            "title"     : path.basename(nodePath),
-            "labels"    : [{ "name": "Content", "type": "text" }],
-            "hasHeader" : true,
-            "hasIndex"  : true,
-            "contentKey": "Content"
+          format: {
+            title     : path.basename(nodePath),
+            label     : { Content: "text" },
+            hasHeader : true,
+            hasIndex  : true,
+            contentKey: "Content"
           },
-          "data": fs.readFileSync(nodePath, "utf8").split(/\r\n|\n|\r/).map((line: string) => ({ Content: line }))
+          data: fs.readFileSync(nodePath, "utf8").split(/\r\n|\n|\r/).map((line: string) => ({ Content: line }))
         }
         // OK
         return res.status(200).json({
@@ -213,6 +220,13 @@ router.route("/:domain(private|public)/projects/:projectName([0-9a-zA-Z_.#]+)/bu
           content: content,
           size: fileStat.size,
           modifiedAt: fileStat.mtime
+        })
+      }
+      if (req.query.mode && req.query.mode === "term") {
+        // OK
+        return res.status(200).json({
+          msg: `You get a terminal command to open the file of path /${ req.params[0] } of project ${ req.params.projectName } bundle ID=${ req.params.bundleId }.`,
+          cmd: `${ os.platform() === "win32" ? "more" : "less" } ${ nodePath }`
         })
       }
       // OK

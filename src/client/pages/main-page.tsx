@@ -14,6 +14,7 @@ import DropdownHeader from "../components/parts/dropdown-header"
 import DropdownDivider from "../components/parts/dropdown-divider"
 import DropdownItem from "../components/parts/dropdown-item"
 import TokenStatusModal from "../components/complexes/token-status-modal"
+import TokenUpdateModal from "../components/complexes/token-update-modal"
 
 import DomainSelectButton from "../components/complexes/domain-select-button"
 import ProjectCreateButton from "../components/complexes/project-create-button"
@@ -25,6 +26,8 @@ import InformationButton from "../components/parts/information-button"
 import FileExplorerBox from "../components/complexes/file-explorer-box"
 
 import FunctionalTableBox from "../components/complexes/functional-table-box"
+
+import TerminalBox from "../components/complexes/terminal-box"
 
 type MainPageProps = {
   project?  : string,
@@ -39,15 +42,17 @@ const MainPage: React.FC<MainPageProps> = ({
   version   = "none",
   user      = "anonymous"
 }) => {
-  const [ignored, forceUpdate] = useReducer(x => x + 1, 0)
+  const [ignored,   forceUpdate]  = useReducer(x => x + 1, 0)
+  const [statusKey, reloadStatus] = useReducer(x => x + 1, 0)
 
   const refs = useRef({
     files : React.createRef<HTMLAnchorElement>(),
-    table : React.createRef<HTMLAnchorElement>()
+    viewer: React.createRef<HTMLAnchorElement>()
   })
 
   const id = useRef({
-    tokenStat : "modal-" + UniqueId()
+    tokenStatus : "modal-" + UniqueId(),
+    tokenUpdate : "modal-" + UniqueId()
   })
 
   const data = useRef({
@@ -56,8 +61,13 @@ const MainPage: React.FC<MainPageProps> = ({
     bundle  : null,
     path    : null,
     filepath: null,
-    filename: null
+    filename: null,
+    terminal: false
   })
+
+  const handleDoneTokenUpdate = useCallback(() => {
+    reloadStatus()
+  }, [true])
 
   const handleSubmitDomain = useCallback((value: string) => {
     data.current.domain = value
@@ -87,9 +97,11 @@ const MainPage: React.FC<MainPageProps> = ({
   }, [true])
 
   const handleSelectFile = useCallback((action: string, value: string) => {
-    data.current.filepath = `${ data.current.path }${ value }`
+    refs.current.viewer.current.click()
+    data.current.filepath = `${ data.current.path }/${ value }`
     data.current.filename = Path.basename(value)
-    forceUpdate()
+    data.current.terminal = (action == "terminal")
+    setTimeout(() => forceUpdate(), 1000)
   }, [true])
 
   return (
@@ -97,13 +109,15 @@ const MainPage: React.FC<MainPageProps> = ({
       <LayerFrame
         head={
           <>
-            <TokenStatusModal id={ id.current.tokenStat } />
+            <TokenStatusModal id={ id.current.tokenStatus } key={ statusKey } />
+            <TokenUpdateModal id={ id.current.tokenUpdate } onDone={ handleDoneTokenUpdate } />
             <NavigatorBar
               title={ project }
               items={ [
                 <DropdownHeader key="header" label={ `Version: ${ version }` } />,
                 <DropdownDivider key="divider" />,
-                <DropdownItem key="status" label="Token Status" toggle="modal" target={ id.current.tokenStat } />
+                <DropdownItem key="status" label="Token Status" toggle="modal" target={ id.current.tokenStatus } />,
+                <DropdownItem key="update" label="Token Update" toggle="modal" target={ id.current.tokenUpdate } />
               ] }
             />
           </>
@@ -152,9 +166,14 @@ const MainPage: React.FC<MainPageProps> = ({
             }
             right={
               <TabFrame
-                labels={ ["Table"] }
-                items={ [<FunctionalTableBox path={ data.current.filepath }/>] }
-                refs={ [refs.current.table] }
+                labels={ ["Viewer"] }
+                items={ [
+                  <>
+                    { !data.current.terminal && <FunctionalTableBox path={ data.current.filepath }/> }
+                    {  data.current.terminal && <TerminalBox app="term" path={ data.current.filepath } disabled={ !data.current.terminal } /> }
+                  </>
+                ] }
+                refs={ [refs.current.viewer] }
               />
              }
           />

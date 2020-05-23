@@ -48,7 +48,7 @@ const TokenStatusModal = React.memo<TokenStatusModalProps>(({
     <ModalFrame
       id={ id }
       title="Token"
-      message="your token is valid in the duration below."
+      message="Validity period of your token is in the below."
       body={
         <p className="h6 text-monospace">{ `${ data.current.iat } ~ ${ data.current.exp }` }</p>
       }

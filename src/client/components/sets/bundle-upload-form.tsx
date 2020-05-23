@@ -61,6 +61,7 @@ const BundleUploadForm = React.memo<BundleUploadFormProps>(({
     <div className={ className }>
       <FileForm
         ref={ refs.current.file }
+        className="mb-3"
         valid={ valid }
         filename={ data.current.name }
         disabled={ disabled }
@@ -68,6 +69,7 @@ const BundleUploadForm = React.memo<BundleUploadFormProps>(({
       />
       <TextForm
         ref={ refs.current.desc }
+        className="mb-3"
         valid={ true }
         label="description"
         disabled={ disabled }
