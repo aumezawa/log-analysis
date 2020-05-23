@@ -13,12 +13,14 @@ import LoginForm from "../sets/login-form"
 type LoginBoxProps = {
   className?  : string,
   redirect?   : boolean,
+  redirectUrl?: string,
   onDone?     : () => void
 }
 
 const LoginBox = React.memo<LoginBoxProps>(({
   className   = "",
   redirect    = true,
+  redirectUrl = null,
   onDone      = undefined
 }) => {
   const [ignored, forceUpdate]  = useReducer(x => x + 1, 0)
@@ -53,7 +55,11 @@ const LoginBox = React.memo<LoginBoxProps>(({
       forceUpdate()
       setTimeout(() => {
         if (redirect) {
-          location.href = `${ location.protocol }//${ location.host }`
+          if (redirectUrl) {
+            location.href = `${ location.protocol }//${ location.host }${ redirectUrl }`
+          } else {
+            location.href = `${ location.protocol }//${ location.host }`
+          }
         } else {
           message.current = `Please input your "username" and "password". (between 4 - 16 characters with [0-9a-zA-Z])`
           data.current.done = false

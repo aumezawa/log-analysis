@@ -22,7 +22,7 @@ switch (main.getAttribute("data-page")) {
     break
 
   case "login":
-    ReactDom.render(<LoginPage project={ project } author={ author } version={ version } />, main)
+    ReactDom.render(<LoginPage project={ project } author={ author } version={ version } query={ query } />, main)
     break
 
   case "error":
