@@ -12,14 +12,12 @@ type LoginPageProps = {
   project?  : string,
   author?   : string,
   version?  : string
-  query?    : string
 }
 
 const LoginPage: React.FC<LoginPageProps> = ({
   project   = "unaffiliated",
   author    = "unnamed",
-  version   = "none",
-  query     = ""
+  version   = "none"
 }) => (
   <div className="container-fluid">
     <LayerFrame
@@ -29,7 +27,7 @@ const LoginPage: React.FC<LoginPageProps> = ({
           items={ [<DropdownHeader key="header" label={ `Version: ${ version }` } />] }
         />
       }
-      body={ <CenterFrame body={ <LoginBox redirectUrl={ (new URLSearchParams(query)).get("request") } /> } /> }
+      body={ <CenterFrame body={ <LoginBox /> } /> }
       foot={ <div className="text-light text-right bg-dark text-box-margin">Coded by { author }, powered by React</div> }
       overflow={ false }
     />

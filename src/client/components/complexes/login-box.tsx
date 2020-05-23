@@ -11,20 +11,21 @@ import MessageCard from "../parts/message-card"
 import LoginForm from "../sets/login-form"
 
 type LoginBoxProps = {
-  className?  : string,
-  redirect?   : boolean,
-  redirectUrl?: string,
-  onDone?     : () => void
+  className?: string,
+  redirect? : boolean,
+  onDone?   : () => void
 }
 
 const LoginBox = React.memo<LoginBoxProps>(({
-  className   = "",
-  redirect    = true,
-  redirectUrl = null,
-  onDone      = undefined
+  className = "",
+  redirect  = true,
+  onDone    = undefined
 }) => {
   const [ignored, forceUpdate]  = useReducer(x => x + 1, 0)
   const [formKey, clearFrom]    = useReducer(x => x + 1, 0)
+
+  const url = new URL(location.href)
+  const params = new URLSearchParams(url.search)
 
   const message = useRef(`Please input your "username" and "password". (between 4 - 16 characters with [0-9a-zA-Z])`)
 
@@ -55,8 +56,8 @@ const LoginBox = React.memo<LoginBoxProps>(({
       forceUpdate()
       setTimeout(() => {
         if (redirect) {
-          if (redirectUrl) {
-            location.href = `${ location.protocol }//${ location.host }${ redirectUrl }`
+          if (params.has("request")) {
+            location.href = `${ location.protocol }//${ location.host }${ params.get("request") }`
           } else {
             location.href = `${ location.protocol }//${ location.host }`
           }

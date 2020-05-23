@@ -30,7 +30,11 @@ const ErrorBox = React.memo<ErrorBoxProps>(({
   }
 
   const handleSubmit = useCallback(() => {
-    location.href = `${ location.protocol }//${ location.host }/login`
+    if (params.has("request")) {
+      location.href = `${ location.protocol }//${ location.host }/login?request=${ params.get("request") }`
+    } else {
+      location.href = `${ location.protocol }//${ location.host }/login`
+    }
   }, [true])
 
   return (
