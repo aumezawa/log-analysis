@@ -11,6 +11,7 @@ import ProjectPath from "../../lib/project-path"
 import UniqueId from "../../lib/unique-id"
 
 import ModalFrame from "../frames/modal-frame"
+import TextForm from "../parts/text-form"
 import ListForm from "../parts/list-form"
 import ButtonSet from "../sets/button-set"
 
@@ -35,7 +36,8 @@ const ProjectSelectButton = React.memo<ProjectSelectButtonProps>(({
   })
 
   const data = useRef({
-    project: null,
+    filter  : "",
+    project : null,
     projects: []
   })
 
@@ -48,6 +50,15 @@ const ProjectSelectButton = React.memo<ProjectSelectButtonProps>(({
       setProject(null)
     }
   }, [domain, defaultValue])
+
+  const filter = useCallback((label: string) => {
+    return label.includes(data.current.filter)
+  }, [true])
+
+  const handleChangeFilter = useCallback((value: string) => {
+    data.current.filter = value
+    forceUpdate()
+  }, [true])
 
   const handleClick = useCallback(() => {
     const uri = `${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain) }/projects`
@@ -86,12 +97,22 @@ const ProjectSelectButton = React.memo<ProjectSelectButtonProps>(({
         id={ id.current.modal }
         title="Project"
         message="Select a project."
+        center={ false }
         body={
-          <ListForm
-            labels={ data.current.projects.map((project: any) => (project.name)) }
-            titles={ data.current.projects.map((project: any) => (project.description)) }
-            onChange={ handleChange }
-          />
+          <>
+            <TextForm
+              className="mb-3"
+              valid={ true }
+              label="Filter"
+              onChange={ handleChangeFilter }
+            />
+            <ListForm
+              labels={ data.current.projects.map((project: any) => (project.name)) }
+              titles={ data.current.projects.map((project: any) => (project.description)) }
+              filter={ filter }
+              onChange={ handleChange }
+            />
+          </>
         }
         foot={
           <ButtonSet

@@ -11,6 +11,7 @@ import ProjectPath from "../../lib/project-path"
 import UniqueId from "../../lib/unique-id"
 
 import ModalFrame from "../frames/modal-frame"
+import TextForm from "../parts/text-form"
 import ListForm from "../parts/list-form"
 import ButtonSet from "../sets/button-set"
 
@@ -37,6 +38,7 @@ const ProjectSelectButton = React.memo<ProjectSelectButtonProps>(({
   })
 
   const data = useRef({
+    filter    : "",
     bundleId  : null,
     bundleName: null,
     bundles   : []
@@ -67,6 +69,15 @@ const ProjectSelectButton = React.memo<ProjectSelectButtonProps>(({
       setBundle(null)
     }
   }, [domain, project, defaultValue])
+
+  const filter = useCallback((label: string) => {
+    return label.includes(data.current.filter)
+  }, [true])
+
+  const handleChangeFilter = useCallback((value: string) => {
+    data.current.filter = value
+    forceUpdate()
+  }, [true])
 
   const handleClick = useCallback(() => {
     const uri = `${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project) }/bundles`
@@ -106,12 +117,22 @@ const ProjectSelectButton = React.memo<ProjectSelectButtonProps>(({
         id={ id.current.modal }
         title="Log Bundle"
         message="Select a log bundle."
+        center={ false }
         body={
-          <ListForm
-            labels={ data.current.bundles.filter((bundle: any) => (bundle.available)).map((bundle: any) => (bundle.name)) }
-            titles={ data.current.bundles.filter((bundle: any) => (bundle.available)).map((bundle: any) => (bundle.description)) }
-            onChange={ handleChange }
-          />
+          <>
+            <TextForm
+              className="mb-3"
+              valid={ true }
+              label="Filter"
+              onChange={ handleChangeFilter }
+            />
+            <ListForm
+              labels={ data.current.bundles.filter((bundle: any) => (bundle.available)).map((bundle: any) => (bundle.name)) }
+              titles={ data.current.bundles.filter((bundle: any) => (bundle.available)).map((bundle: any) => (bundle.description)) }
+              filter={ filter }
+              onChange={ handleChange }
+            />
+          </>
         }
         foot={
           <ButtonSet
