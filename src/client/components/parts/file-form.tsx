@@ -11,6 +11,7 @@ type FileFormProps = {
   filename? : string,
   valid     : boolean,
   disabled? : boolean,
+  accept?   : string,
   onChange  : (name: string, obj: any) => void
 }
 
@@ -20,6 +21,7 @@ const FileForm = React.memo(React.forwardRef<HTMLInputElement, FileFormProps>(({
   filename  = "",
   valid     = undefined,
   disabled  = false,
+  accept    = null,
   onChange  = undefined
 }, ref) => {
   const id = useRef({
@@ -45,6 +47,7 @@ const FileForm = React.memo(React.forwardRef<HTMLInputElement, FileFormProps>(({
             type="file"
             id={ id.current.form }
             disabled={ disabled }
+            accept={ accept }
             onChange={ handleChange }
           />
           <label className="custom-file-label" htmlFor={ id.current.form }>{ filename }</label>
