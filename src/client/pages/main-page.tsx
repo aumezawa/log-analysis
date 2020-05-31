@@ -218,6 +218,7 @@ const MainPage: React.FC<MainPageProps> = ({
                 { " >> " }
                 <InformationButton
                   label={ data.current.filename }
+                  display={ !!data.current.filename }
                   defaultValue={ "Select File" }
                 />
               </>
