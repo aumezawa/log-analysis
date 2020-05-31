@@ -121,7 +121,7 @@ const MainPage: React.FC<MainPageProps> = ({
         return
       })
     } else {
-      data.current.domain   = "public"
+      data.current.domain   = domain || "public"
       data.current.project  = null
       data.current.bundle   = null
       data.current.filepath = null
