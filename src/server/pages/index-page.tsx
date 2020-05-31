@@ -9,7 +9,8 @@ type IndexPageProps = {
   script?   : string,
   page?     : string,
   user?     : string,
-  userAlias?: string,
+  alias?    : string,
+  privilege?: string,
   query?    : string
 }
 
@@ -22,7 +23,8 @@ const IndexPage = React.memo<IndexPageProps>(({
   script    = "/public/js/bundle.js",
   page      = "main",
   user      = "anonymous",
-  userAlias = "anonymous",
+  alias     = "anonymous",
+  privilege = "user",
   query     = ""
 }) => (
   <html lang={ lang }>
@@ -34,7 +36,7 @@ const IndexPage = React.memo<IndexPageProps>(({
     </head>
 
     <body>
-      <div id="render-main" data-project={ project } data-author={ author } data-version={ version } data-page={ page } data-user={ user } data-useralias={ userAlias } data-query={ query }>
+      <div id="render-main" data-project={ project } data-author={ author } data-version={ version } data-page={ page } data-user={ user } data-alias={ alias } data-privilege={ privilege } data-query={ query }>
         <div id="unsupported-message" className="text-center" style={ { "color": "white" } }>
           <p>This page works with React library.</p>
           <p>If this page won't change, you may be using an unsupported browser.</p>

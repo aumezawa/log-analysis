@@ -6,6 +6,7 @@ declare namespace Express {
       iat: number,
       exp: number,
       usr: string,
+      als: string,
       prv: string
     }
   }
