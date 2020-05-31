@@ -4,14 +4,16 @@ type HelloPageProps = {
   project?  : string,
   author?   : string,
   version?  : string,
-  user?     : string
+  user?     : string,
+  userAlias?: string
 }
 
 const HelloPage = React.memo<HelloPageProps>(({
   project   = "unaffiliated",
   author    = "unnamed",
   version   = "none",
-  user      = "anonymous"
+  user      = "anonymous",
+  userAlias = "anonymous"
 }) => {
   return (
     <div className="container-fluid">
@@ -21,6 +23,7 @@ const HelloPage = React.memo<HelloPageProps>(({
         <p>author = { author }</p>
         <p>version = { version }</p>
         <p>user = { user }</p>
+        <p>userAlias = { userAlias }</p>
       </div>
     </div>
   )

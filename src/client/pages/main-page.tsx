@@ -40,6 +40,7 @@ type MainPageProps = {
   author?   : string,
   version?  : string,
   user?     : string,
+  userAlias?: string,
   query?    : string,
 }
 
@@ -48,6 +49,7 @@ const MainPage: React.FC<MainPageProps> = ({
   author    = "unnamed",
   version   = "none",
   user      = "anonymous",
+  userAlias = "anonymous",
   query     = ""
 }) => {
   const [ignored,   forceUpdate]  = useReducer(x => x + 1, 0)
@@ -178,7 +180,9 @@ const MainPage: React.FC<MainPageProps> = ({
               title={ project }
               items={ [
                 <DropdownHeader key="header" label={ `Version: ${ version }` } />,
-                <DropdownDivider key="divider" />,
+                <DropdownDivider key="divider-1" />,
+                <DropdownHeader key="user" label={ `User: ${ userAlias }` } />,
+                <DropdownDivider key="divider-2" />,
                 <DropdownItem key="status" label="Token Status" toggle="modal" target={ id.current.tokenStatus } />,
                 <DropdownItem key="update" label="Token Update" toggle="modal" target={ id.current.tokenUpdate } />
               ] }
