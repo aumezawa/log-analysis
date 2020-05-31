@@ -1,6 +1,8 @@
 import * as React from "react"
 import { useCallback } from "react"
 
+import Environment from "../../lib/environment"
+
 import MessageCard from "../parts/message-card"
 import ButtonSet from "../sets/button-set"
 
@@ -31,9 +33,9 @@ const ErrorBox = React.memo<ErrorBoxProps>(({
 
   const handleSubmit = useCallback(() => {
     if (params.has("request")) {
-      location.href = `${ location.protocol }//${ location.host }/login?request=${ params.get("request") }`
+      location.href = `${ Environment.getBaseUrl() }/login?request=${ params.get("request") }`
     } else {
-      location.href = `${ location.protocol }//${ location.host }/login`
+      location.href = `${ Environment.getBaseUrl() }/login`
     }
   }, [true])
 

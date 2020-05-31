@@ -6,6 +6,9 @@ import { AxiosResponse, AxiosError } from "axios"
 
 import * as Cookie from "js-cookie"
 
+import Environment from "../../lib/environment"
+import ProjectPath from "../../lib/project-path"
+
 import MessageCard from "../parts/message-card"
 import ProgressBar from "../parts/progress-bar"
 import BundleUploadForm from "../sets/bundle-upload-form"
@@ -34,7 +37,7 @@ const BundleUploadBox = React.memo<BundleUploadBoxProps>(({
   })
 
   const handleSubmit = useCallback((name: string, obj: any, description: string) => {
-    const uri = `${ location.protocol }//${ location.host }/api/v1/log/${ domain }/projects/${ project }/bundles`
+    const uri = `${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project) }/bundles`
     const params = new FormData()
     params.append("bundle", obj)
     params.append("description", description)

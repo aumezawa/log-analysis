@@ -6,6 +6,7 @@ import { AxiosResponse, AxiosError } from "axios"
 
 import * as Cookie from "js-cookie"
 
+import Environment from "../../lib/environment"
 import UniqueId from "../../lib/unique-id"
 
 import ModalFrame from "../frames/modal-frame"
@@ -25,7 +26,7 @@ const TokenStatusModal = React.memo<TokenStatusModalProps>(({
   })
 
   useEffect(() => {
-    const uri = `${ location.protocol }//${ location.host }/api/v1/token`
+    const uri = `${ Environment.getBaseUrl() }/api/v1/token`
     Axios.get(uri, {
       headers : { "X-Access-Token": Cookie.get("token") || "" },
       data    : {}

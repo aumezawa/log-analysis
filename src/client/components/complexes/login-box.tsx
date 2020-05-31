@@ -7,6 +7,8 @@ import { AxiosResponse, AxiosError } from "axios"
 import * as Cookie from "js-cookie"
 import * as Crypto from "crypto"
 
+import Environment from "../../lib/environment"
+
 import MessageCard from "../parts/message-card"
 import LoginForm from "../sets/login-form"
 
@@ -35,13 +37,13 @@ const LoginBox = React.memo<LoginBoxProps>(({
   })
 
   const handleSubmit = useCallback((username: string, password: string) => {
-    const uri = `${ location.protocol }//${ location.host }/api/v1/public-key`
+    const uri = `${ Environment.getBaseUrl() }/api/v1/public-key`
 
     data.current.done = false
     forceUpdate()
     Axios.get(uri)
     .then((res: AxiosResponse) => {
-      const uri = `${ location.protocol }//${ location.host }/api/v1/login`
+      const uri = `${ Environment.getBaseUrl() }/api/v1/login`
       const params = new URLSearchParams()
       params.append("username", username)
       params.append("password", Crypto.publicEncrypt(res.data.key, Buffer.from(password)).toString("base64"))
@@ -57,9 +59,9 @@ const LoginBox = React.memo<LoginBoxProps>(({
       setTimeout(() => {
         if (redirect) {
           if (params.has("request")) {
-            location.href = `${ location.protocol }//${ location.host }${ params.get("request") }`
+            location.href = `${ Environment.getBaseUrl() }${ params.get("request") }`
           } else {
-            location.href = `${ location.protocol }//${ location.host }`
+            location.href = `${ Environment.getBaseUrl() }`
           }
         } else {
           message.current = `Please input your "username" and "password". (between 4 - 16 characters with [0-9a-zA-Z])`
