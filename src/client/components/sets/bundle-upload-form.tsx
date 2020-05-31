@@ -65,6 +65,7 @@ const BundleUploadForm = React.memo<BundleUploadFormProps>(({
         valid={ valid }
         filename={ data.current.name }
         disabled={ disabled }
+        accept=".tgz"
         onChange={ handleChangeFile }
       />
       <TextForm

@@ -6,22 +6,27 @@ import { AxiosResponse, AxiosError } from "axios"
 
 import * as Cookie from "js-cookie"
 
+import Environment from "../../lib/environment"
+import ProjectPath from "../../lib/project-path"
 import UniqueId from "../../lib/unique-id"
 
 import ModalFrame from "../frames/modal-frame"
+import TextForm from "../parts/text-form"
 import ListForm from "../parts/list-form"
 import ButtonSet from "../sets/button-set"
 
 type ProjectSelectButtonProps = {
-  className?: string,
-  domain?   : string,
-  onSubmit? : (value: string) => void
+  className?    : string,
+  domain?       : string,
+  defaultValue? : string,
+  onSubmit?     : (value: string) => void
 }
 
 const ProjectSelectButton = React.memo<ProjectSelectButtonProps>(({
-  className = "",
-  domain    = null,
-  onSubmit  = undefined
+  className     = "",
+  domain        = null,
+  defaultValue  = null,
+  onSubmit      = undefined
 }) => {
   const [project, setProject] = useState<string>(null)
   const [ignored, forceUpdate] = useReducer(x => x + 1, 0)
@@ -31,17 +36,32 @@ const ProjectSelectButton = React.memo<ProjectSelectButtonProps>(({
   })
 
   const data = useRef({
-    project: null,
+    filter  : "",
+    project : null,
     projects: []
   })
 
   useEffect(() => {
-    data.current.project = null
-    setProject(null)
-  }, [domain])
+    if (domain && defaultValue) {
+      data.current.project = defaultValue
+      setProject(defaultValue)
+    } else {
+      data.current.project = null
+      setProject(null)
+    }
+  }, [domain, defaultValue])
+
+  const filter = useCallback((label: string) => {
+    return label.includes(data.current.filter)
+  }, [true])
+
+  const handleChangeFilter = useCallback((value: string) => {
+    data.current.filter = value
+    forceUpdate()
+  }, [true])
 
   const handleClick = useCallback(() => {
-    const uri = `${ location.protocol }//${ location.host }/api/v1/log/${ domain }/projects`
+    const uri = `${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain) }/projects`
     Axios.get(uri, {
       headers : { "X-Access-Token": Cookie.get("token") || "" },
       data    : {}
@@ -77,12 +97,22 @@ const ProjectSelectButton = React.memo<ProjectSelectButtonProps>(({
         id={ id.current.modal }
         title="Project"
         message="Select a project."
+        center={ false }
         body={
-          <ListForm
-            labels={ data.current.projects.map((project: any) => (project.name)) }
-            titles={ data.current.projects.map((project: any) => (project.description)) }
-            onChange={ handleChange }
-          />
+          <>
+            <TextForm
+              className="mb-3"
+              valid={ true }
+              label="Filter"
+              onChange={ handleChangeFilter }
+            />
+            <ListForm
+              labels={ data.current.projects.map((project: any) => (project.name)) }
+              titles={ data.current.projects.map((project: any) => (project.description)) }
+              filter={ filter }
+              onChange={ handleChange }
+            />
+          </>
         }
         foot={
           <ButtonSet

@@ -1,6 +1,7 @@
 import * as express from "express"
 import * as bodyParser from "body-parser"
 import * as cookieParser from "cookie-parser"
+import * as favicon from "serve-favicon"
 import * as path from "path"
 import * as helmet from "helmet"
 import * as log4js from "log4js"
@@ -34,6 +35,7 @@ app.use(log4js.connectLogger(logger, {
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(cookieParser())
+app.use(favicon(path.join(rootPath, "public", "image", "favicon.png")))
 app.use(helmet())
 
 app.use("/public", express.static(path.join(rootPath, "public")))

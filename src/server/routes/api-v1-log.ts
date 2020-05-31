@@ -316,7 +316,8 @@ router.route("/:domain(private|public)/projects/:projectName([0-9a-zA-Z_.#]+)/bu
 
   // OK
   return res.status(200).json({
-    msg: `You get a bundle description of project ${ req.params.projectName }.`,
+    msg: `You get a bundle name and description of project ${ req.params.projectName }.`,
+    name: bundleInfo.name,
     description: bundleInfo.description
   })
 })

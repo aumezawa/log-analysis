@@ -15,9 +15,11 @@ const project: string = main.getAttribute("data-project")
 const author: string = main.getAttribute("data-author")
 const version: string = main.getAttribute("data-version")
 const user: string = main.getAttribute("data-user")
+const userAlias: string = main.getAttribute("data-useralias")
+const query: string = main.getAttribute("data-query")
 switch (main.getAttribute("data-page")) {
   case "main":
-    ReactDom.render(<MainPage project={ project } author={ author } version={ version } user={ user } />, main)
+    ReactDom.render(<MainPage project={ project } author={ author } version={ version } user={ user } userAlias={ userAlias } query={ query } />, main)
     break
 
   case "login":
@@ -29,7 +31,7 @@ switch (main.getAttribute("data-page")) {
     break
 
   case "hello":
-    ReactDom.render(<HelloPage project={ project } author={ author } version={ version } user={ user } />, main)
+    ReactDom.render(<HelloPage project={ project } author={ author } version={ version } user={ user } userAlias={ userAlias } />, main)
     break
 
   default:

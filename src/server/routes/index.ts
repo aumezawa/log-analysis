@@ -8,6 +8,8 @@ import * as jwt from "jsonwebtoken"
 
 import IndexPage from "../pages/index-page"
 
+import mainRouter from "./main"
+
 const router: Router = express.Router()
 
 router.route("/login")
@@ -28,13 +30,13 @@ router.use((req: Request, res: Response, next: NextFunction) => {
   const token = req.query.token || req.body.token || req.header("X-Access-Token") || req.cookies.token
   if (!token) {
     // Unauthorized
-    return res.redirect("/login")
+    return res.redirect(`/login?request=${ req.url }`)
   }
 
   jwt.verify(token, req.app.get("token-key"), (err: jwt.VerifyErrors, decoded: object) => {
     if (err) {
       // Unauthorized
-      return res.redirect(`/error?type=token&msg=${ err.message }`)
+      return res.redirect(`/error?type=token&msg=${ err.message }&request=${ req.url }`)
     }
 
     req.token = {
@@ -54,14 +56,16 @@ router.use((req: Request, res: Response, next: NextFunction) => {
 router.route("/")
 .get((req: Request, res: Response, next: NextFunction) => {
   return res.status(200).send(
-    ReactDomServer.renderToString(React.createElement(IndexPage, { user: req.token.usr, page: "main" }))
+    ReactDomServer.renderToString(React.createElement(IndexPage, { user: req.token.usr, userAlias: req.token.usr, page: "main" }))
   )
 })
+
+router.use("/main", mainRouter)
 
 router.route("/hello")
 .get((req: Request, res: Response, next: NextFunction) => {
   return res.status(200).send(
-    ReactDomServer.renderToString(React.createElement(IndexPage, { user: req.token.usr, page: "hello" }))
+    ReactDomServer.renderToString(React.createElement(IndexPage, { user: req.token.usr, userAlias: req.token.usr, page: "hello" }))
   )
 })
 

@@ -10,6 +10,7 @@ import { Terminal } from "xterm"
 import { FitAddon } from "xterm-addon-fit"
 import "xterm/css/xterm.css"
 
+import Environment from "../../lib/environment"
 import Escape from "../../lib/escape"
 
 type TerminalBoxProps = {
@@ -31,7 +32,7 @@ const TerminalBox = React.memo<TerminalBoxProps>(({
     let socket: SocketIOClient.Socket = null
 
     if (path && !disabled) {
-      const uri = `${ location.protocol }//${ location.host }/api/v1/${ Escape.root(path) }?mode=${ app }`
+      const uri = `${ Environment.getBaseUrl() }/api/v1/${ Escape.root(path) }?mode=${ app }`
       Axios.get(uri, {
         headers : { "X-Access-Token": Cookie.get("token") || "" },
         data    : {}

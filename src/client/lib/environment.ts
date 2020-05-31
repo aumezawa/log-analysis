@@ -9,5 +9,13 @@ export default {
 
   getTimeZone: () => (
     Intl.DateTimeFormat().resolvedOptions().timeZone
-  )
+  ),
+
+  getBaseUrl: () => (
+    `${ location.protocol }//${ location.host }`
+  ),
+
+  updateAddressBar: (url: string) => {
+    window.history.replaceState(null, null, url)
+  }
 }

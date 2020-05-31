@@ -6,6 +6,9 @@ import { AxiosResponse, AxiosError } from "axios"
 
 import * as Cookie from "js-cookie"
 
+import Environment from "../../lib/environment"
+import ProjectPath from "../../lib/project-path"
+
 import MessageCard from "../parts/message-card"
 import ProjectCreateForm from "../sets/project-create-form"
 
@@ -25,7 +28,7 @@ const ProjectCreateBox = React.memo<ProjectCreateBoxProps>(({
   const message = useRef(`Please input a new project "name" and "description". (characters with [0-9a-zA-Z#@_+-])`)
 
   const handleSubmit = useCallback((name: string, description: string) => {
-    const uri = `${ location.protocol }//${ location.host }/api/v1/log/${ domain }/projects`
+    const uri = `${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain) }/projects`
     const params = new URLSearchParams()
     params.append("name", name)
     params.append("description", description)

@@ -3,6 +3,8 @@ import * as nodepty from "node-pty"
 import * as os from "os"
 import * as socketio from "socket.io"
 
+import logger = require("../lib/logger")
+
 const shell = os.platform() === "win32" ? "powershell.exe"  : "bash"
 const opt   = os.platform() === "win32" ? []                : ["-c"]
 
@@ -17,11 +19,13 @@ const terminal = (server: http.Server) => {
       rows: Number(socket.handshake.query.rows || 24),
     })
 
+    logger.info(`terminal opened: ${ cmd }`)
     socket.on("request", (data: string) => {
       pty.write(data)
     })
 
     socket.on("disconnect", () => {
+      logger.info(`terminal disconnected: ${ cmd }`)
       pty.kill()
     })
 
@@ -30,6 +34,7 @@ const terminal = (server: http.Server) => {
     })
 
     pty.on("exit", (exitCode: number) => {
+      logger.info(`terminal closed: ${ cmd }, code=${ exitCode }`)
       socket.disconnect()
     })
   })

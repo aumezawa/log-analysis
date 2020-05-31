@@ -6,10 +6,11 @@ import { AxiosResponse, AxiosError } from "axios"
 
 import * as Cookie from "js-cookie"
 
+import Environment from "../../lib/environment"
+import Escape from "../../lib/escape"
+
 import FileTreeRoot from "../sets/file-tree-root"
 import DropdownItem from "../parts/dropdown-item"
-
-import Escape from "../../lib/escape"
 
 type FileExplorerBoxProps = {
   className?: string,
@@ -32,7 +33,7 @@ const FileExplorerBox = React.memo<FileExplorerBoxProps>(({
 
   useEffect(() => {
     if (path) {
-      const uri = `${ location.protocol }//${ location.host }/api/v1/${ Escape.root(path) }`
+      const uri = `${ Environment.getBaseUrl() }/api/v1/${ Escape.root(path) }`
       Axios.get(uri, {
         headers : { "X-Access-Token": Cookie.get("token") || "" },
         data    : {}
@@ -75,7 +76,7 @@ const FileExplorerBox = React.memo<FileExplorerBoxProps>(({
   }, [onSelect])
 
   const handleClickDownload = useCallback((targetValue: string, parentValue: string) => {
-    const uri = `${ location.protocol }//${ location.host }/api/v1/${ Escape.root(path) }/${ Escape.root(parentValue) }?mode=download`
+    const uri = `${ Environment.getBaseUrl() }/api/v1/${ Escape.root(path) }/${ Escape.root(parentValue) }?mode=download`
     Axios.get(uri, {
       headers : { "X-Access-Token": Cookie.get("token") || "" },
       data    : {},

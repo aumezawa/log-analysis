@@ -7,6 +7,7 @@ type ModalFrameProps = {
   id      : string,
   title?  : string,
   message?: string,
+  center? : boolean,
   size?   : "modal-lg" | "modal-xl",
   body?   : JSX.Element,
   foot?   : JSX.Element
@@ -16,6 +17,7 @@ const ModalFrame: React.FC<ModalFrameProps> = ({
   id      = undefined,
   title   = "Title",
   message = "No message",
+  center  = true,
   size    = "",
   body    = <>No content</>,
   foot    = <button className="btn btn-secondary" type="button" data-dismiss="modal">Close</button>
@@ -26,7 +28,7 @@ const ModalFrame: React.FC<ModalFrameProps> = ({
 
   return (
     <div className="modal fade" id={ id } tabIndex={ -1 } role="dialog" aria-labelledby={ localId.current.label } aria-hidden="true">
-      <div className={ `modal-dialog modal-dialog-centered modal-dialog-scrollable ${ size }` } role="document">
+      <div className={ `modal-dialog ${ center && "modal-dialog-centered" } modal-dialog-scrollable ${ size }` } role="document">
         <div className="modal-content">
           <div className="modal-header">
             <div className="modal-title" id={ localId.current.label }>
