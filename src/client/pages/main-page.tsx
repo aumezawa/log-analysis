@@ -221,11 +221,10 @@ const MainPage: React.FC<MainPageProps> = ({
                   defaultValue={ data.current.bundle }
                   onSubmit={ handleSubmitBundle }
                 />
-                { " >> " }
+                { (!!data.current.filename) ? " >> " : "" }
                 <InformationButton
                   label={ data.current.filename }
-                  display={ !!data.current.filename }
-                  defaultValue={ "Select File" }
+                  hide={ true }
                 />
               </>
             }
