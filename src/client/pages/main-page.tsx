@@ -25,8 +25,10 @@ import TokenUpdateModal from "../components/complexes/token-update-modal"
 import DomainSelectButton from "../components/complexes/domain-select-button"
 import ProjectCreateButton from "../components/complexes/project-create-button"
 import ProjectSelectButton from "../components/complexes/project-select-button"
+import ProjectDeleteModal from "../components/complexes/project-delete-modal"
 import BundleUploadButton from "../components/complexes/bundle-upload-button"
 import BundleSelectButton from "../components/complexes/bundle-select-button"
+import BundleDeleteModal from "../components/complexes/bundle-delete-modal"
 import InformationButton from "../components/parts/information-button"
 
 import FileExplorerBox from "../components/complexes/file-explorer-box"
@@ -63,6 +65,8 @@ const MainPage: React.FC<MainPageProps> = ({
   })
 
   const id = useRef({
+    deleteProject : "modal-" + UniqueId(),
+    deleteBundle  : "modal-" + UniqueId(),
     tokenStatus : "modal-" + UniqueId(),
     tokenUpdate : "modal-" + UniqueId()
   })
@@ -154,12 +158,33 @@ const MainPage: React.FC<MainPageProps> = ({
     updateAddressBar()
   }, [true])
 
+  const handleDeleteProject = useCallback((value: string) => {
+    if (data.current.project == value) {
+      data.current.project = null
+      data.current.bundle = null
+      data.current.filepath = null
+      data.current.filename = null
+      forceUpdate()
+      updateAddressBar()
+    }
+  }, [true])
+
   const handleSubmitBundle = useCallback((value: string) => {
     data.current.bundle = value
     data.current.filepath = null
     data.current.filename = null
     forceUpdate()
     updateAddressBar()
+  }, [true])
+
+  const handleDeleteBundle = useCallback((value: string) => {
+    if (data.current.bundle == value) {
+      data.current.bundle = null
+      data.current.filepath = null
+      data.current.filename = null
+      forceUpdate()
+      updateAddressBar()
+    }
   }, [true])
 
   const handleSelectFile = useCallback((action: string, value: string) => {
@@ -176,6 +201,8 @@ const MainPage: React.FC<MainPageProps> = ({
       <LayerFrame
         head={
           <>
+            <ProjectDeleteModal id={ id.current.deleteProject } domain={ data.current.domain } onSubmit={ handleDeleteProject } />
+            <BundleDeleteModal id={ id.current.deleteBundle } domain={ data.current.domain } project={ data.current.project } onSubmit={ handleDeleteBundle } />
             <TokenStatusModal id={ id.current.tokenStatus } key={ statusKey } />
             <TokenUpdateModal id={ id.current.tokenUpdate } onDone={ handleDoneTokenUpdate } />
             <NavigatorBar
@@ -185,6 +212,9 @@ const MainPage: React.FC<MainPageProps> = ({
                 <DropdownDivider key="divider-1" />,
                 <DropdownHeader key="user" label={ `User: ${ decodeURI(alias) }` } />,
                 <DropdownDivider key="divider-2" />,
+                <DropdownItem key="delete-project" label="Delete Project" disabled={ !data.current.domain || (data.current.domain == "public" && privilege != "root") } toggle="modal" target={ id.current.deleteProject } />,
+                <DropdownItem key="delete-bundle" label="Delete Bundle" disabled={ !data.current.domain || !data.current.project || (data.current.domain == "public" && privilege != "root") } toggle="modal" target={ id.current.deleteBundle } />,
+                <DropdownDivider key="divider-3" />,
                 <DropdownItem key="status" label="Token Status" toggle="modal" target={ id.current.tokenStatus } />,
                 <DropdownItem key="update" label="Token Update" toggle="modal" target={ id.current.tokenUpdate } />
               ] }
