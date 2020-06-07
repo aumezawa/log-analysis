@@ -70,10 +70,6 @@ const ProjectSelectButton = React.memo<ProjectSelectButtonProps>(({
     }
   }, [domain, project, defaultValue])
 
-  const filter = useCallback((label: string) => {
-    return label.includes(data.current.filter)
-  }, [true])
-
   const handleChangeFilter = useCallback((value: string) => {
     data.current.filter = value
     forceUpdate()
@@ -111,6 +107,22 @@ const ProjectSelectButton = React.memo<ProjectSelectButtonProps>(({
     setBundle(data.current.bundleName)
   }, [onSubmit])
 
+  const listLabel = () => (
+    data.current.bundles.filter((bundle: BundleInfo) => (
+      bundle.available && (bundle.name.includes(data.current.filter) || bundle.description.includes(data.current.filter))
+    )).map((bundle: BundleInfo) => (
+      bundle.name
+    ))
+  )
+
+  const listTitle = () => (
+    data.current.bundles.filter((bundle: BundleInfo) => (
+      bundle.available && (bundle.name.includes(data.current.filter) || bundle.description.includes(data.current.filter))
+    )).map((bundle: BundleInfo) => (
+      bundle.description
+    ))
+  )
+
   return (
     <>
       <ModalFrame
@@ -127,9 +139,8 @@ const ProjectSelectButton = React.memo<ProjectSelectButtonProps>(({
               onChange={ handleChangeFilter }
             />
             <ListForm
-              labels={ data.current.bundles.filter((bundle: any) => (bundle.available)).map((bundle: any) => (bundle.name)) }
-              titles={ data.current.bundles.filter((bundle: any) => (bundle.available)).map((bundle: any) => (bundle.description)) }
-              filter={ filter }
+              labels={ listLabel() }
+              titles={ listTitle() }
               onChange={ handleChange }
             />
           </>

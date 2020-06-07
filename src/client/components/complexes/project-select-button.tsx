@@ -51,10 +51,6 @@ const ProjectSelectButton = React.memo<ProjectSelectButtonProps>(({
     }
   }, [domain, defaultValue])
 
-  const filter = useCallback((label: string) => {
-    return label.includes(data.current.filter)
-  }, [true])
-
   const handleChangeFilter = useCallback((value: string) => {
     data.current.filter = value
     forceUpdate()
@@ -91,6 +87,22 @@ const ProjectSelectButton = React.memo<ProjectSelectButtonProps>(({
     setProject(data.current.project)
   }, [onSubmit])
 
+  const listLabel = () => (
+    data.current.projects.filter((project: ProjectInfo) => (
+      project.name.includes(data.current.filter) || project.description.includes(data.current.filter)
+    )).map((project: ProjectInfo) => (
+      project.name
+    ))
+  )
+
+  const listTitle = () => (
+    data.current.projects.filter((project: ProjectInfo) => (
+      project.name.includes(data.current.filter) || project.description.includes(data.current.filter)
+    )).map((project: ProjectInfo) => (
+      project.description
+    ))
+  )
+
   return (
     <>
       <ModalFrame
@@ -107,9 +119,8 @@ const ProjectSelectButton = React.memo<ProjectSelectButtonProps>(({
               onChange={ handleChangeFilter }
             />
             <ListForm
-              labels={ data.current.projects.map((project: any) => (project.name)) }
-              titles={ data.current.projects.map((project: any) => (project.description)) }
-              filter={ filter }
+              labels={ listLabel() }
+              titles={ listTitle() }
               onChange={ handleChange }
             />
           </>
