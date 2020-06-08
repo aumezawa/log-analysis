@@ -19,6 +19,7 @@ type BundleDeleteModalProps = {
   className?: string,
   domain?   : string,
   project?  : string,
+  reload?   : number,
   onSubmit? : (value: string) => void
 }
 
@@ -27,6 +28,7 @@ const BundleDeleteModal = React.memo<BundleDeleteModalProps>(({
   className = "",
   domain    = null,
   project   = null,
+  reload    = 0,
   onSubmit  = undefined
 }) => {
   const [ignored, forceUpdate] = useReducer(x => x + 1, 0)
@@ -41,7 +43,7 @@ const BundleDeleteModal = React.memo<BundleDeleteModalProps>(({
 
   useEffect(() => {
     reloadProject()
-  }, [domain, project])
+  }, [reload])
 
   const reloadProject = () => {
     if (domain && project) {

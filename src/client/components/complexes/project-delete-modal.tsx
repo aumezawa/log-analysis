@@ -18,6 +18,7 @@ type ProjectDeleteModalProps = {
   id        : string,
   className?: string,
   domain?   : string,
+  reload?   : number,
   onSubmit? : (value: string) => void
 }
 
@@ -25,6 +26,7 @@ const ProjectDeleteModal = React.memo<ProjectDeleteModalProps>(({
   id        = null,
   className = "",
   domain    = null,
+  reload    = 0,
   onSubmit  = undefined
 }) => {
   const [ignored, forceUpdate] = useReducer(x => x + 1, 0)
@@ -38,7 +40,7 @@ const ProjectDeleteModal = React.memo<ProjectDeleteModalProps>(({
 
   useEffect(() => {
     reloadProject()
-  }, [domain])
+  }, [reload])
 
   const reloadProject = () => {
     if (domain) {

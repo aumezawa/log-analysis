@@ -58,6 +58,8 @@ const MainPage: React.FC<MainPageProps> = ({
 }) => {
   const [ignored,   forceUpdate]  = useReducer(x => x + 1, 0)
   const [statusKey, reloadStatus] = useReducer(x => x + 1, 0)
+  const [projectKey, reloadProject] = useReducer(x => x + 1, 0)
+  const [bundleKey,  reloadBundle]  = useReducer(x => x + 1, 0)
 
   const refs = useRef({
     files : React.createRef<HTMLAnchorElement>(),
@@ -159,7 +161,7 @@ const MainPage: React.FC<MainPageProps> = ({
   }, [true])
 
   const handleDeleteProject = useCallback((value: string) => {
-    if (data.current.project == value) {
+    if (data.current.project === value) {
       data.current.project = null
       data.current.bundle = null
       data.current.filepath = null
@@ -178,7 +180,7 @@ const MainPage: React.FC<MainPageProps> = ({
   }, [true])
 
   const handleDeleteBundle = useCallback((value: string) => {
-    if (data.current.bundle == value) {
+    if (data.current.bundle === value) {
       data.current.bundle = null
       data.current.filepath = null
       data.current.filename = null
@@ -191,9 +193,17 @@ const MainPage: React.FC<MainPageProps> = ({
     refs.current.viewer.current.click()
     data.current.filepath = value
     data.current.filename = Path.basename(value)
-    data.current.terminal = (action == "terminal")
+    data.current.terminal = (action === "terminal")
     setTimeout(() => forceUpdate(), 1000)
     updateAddressBar()
+  }, [true])
+
+  const handleClickDeleteProject = useCallback((targetValue: string, parentValue: string) => {
+    reloadProject()
+  }, [true])
+
+  const handleClickDeleteBundle = useCallback((targetValue: string, parentValue: string) => {
+    reloadBundle()
   }, [true])
 
   return (
@@ -201,8 +211,8 @@ const MainPage: React.FC<MainPageProps> = ({
       <LayerFrame
         head={
           <>
-            <ProjectDeleteModal id={ id.current.deleteProject } domain={ data.current.domain } onSubmit={ handleDeleteProject } />
-            <BundleDeleteModal id={ id.current.deleteBundle } domain={ data.current.domain } project={ data.current.project } onSubmit={ handleDeleteBundle } />
+            <ProjectDeleteModal id={ id.current.deleteProject } domain={ data.current.domain } reload={ projectKey } onSubmit={ handleDeleteProject } />
+            <BundleDeleteModal id={ id.current.deleteBundle } domain={ data.current.domain } project={ data.current.project } reload={ bundleKey } onSubmit={ handleDeleteBundle } />
             <TokenStatusModal id={ id.current.tokenStatus } key={ statusKey } />
             <TokenUpdateModal id={ id.current.tokenUpdate } onDone={ handleDoneTokenUpdate } />
             <NavigatorBar
@@ -212,8 +222,8 @@ const MainPage: React.FC<MainPageProps> = ({
                 <DropdownDivider key="divider-1" />,
                 <DropdownHeader key="user" label={ `User: ${ decodeURI(alias) }` } />,
                 <DropdownDivider key="divider-2" />,
-                <DropdownItem key="delete-project" label="Delete Project" disabled={ !data.current.domain || (data.current.domain == "public" && privilege != "root") } toggle="modal" target={ id.current.deleteProject } />,
-                <DropdownItem key="delete-bundle" label="Delete Bundle" disabled={ !data.current.domain || !data.current.project || (data.current.domain == "public" && privilege != "root") } toggle="modal" target={ id.current.deleteBundle } />,
+                <DropdownItem key="delete-project" label="Delete Project" disabled={ !data.current.domain || (data.current.domain === "public" && privilege !== "root") } toggle="modal" target={ id.current.deleteProject } onClick={ handleClickDeleteProject } />,
+                <DropdownItem key="delete-bundle" label="Delete Bundle" disabled={ !data.current.domain || !data.current.project || (data.current.domain === "public" && privilege != "root") } toggle="modal" target={ id.current.deleteBundle } onClick={ handleClickDeleteBundle } />,
                 <DropdownDivider key="divider-3" />,
                 <DropdownItem key="status" label="Token Status" toggle="modal" target={ id.current.tokenStatus } />,
                 <DropdownItem key="update" label="Token Update" toggle="modal" target={ id.current.tokenUpdate } />
