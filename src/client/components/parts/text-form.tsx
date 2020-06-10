@@ -5,6 +5,7 @@ type TextFormProps = {
   className?: string,
   valid     : boolean,
   label?    : string,
+  auxiliary?: string,
   type?     : string,
   disabled? : boolean,
   onChange? : (value: string) => void
@@ -14,6 +15,7 @@ const TextForm = React.memo(React.forwardRef<HTMLInputElement, TextFormProps>(({
   className = "",
   valid     = undefined,
   label     = "Text",
+  auxiliary = null,
   type      = "text",
   disabled  = false,
   onChange  = undefined
@@ -30,6 +32,12 @@ const TextForm = React.memo(React.forwardRef<HTMLInputElement, TextFormProps>(({
         <div className="input-group-prepend">
           <span className="input-group-text">{ label }</span>
         </div>
+        {
+          !!auxiliary &&
+          <div className="input-group-prepend">
+            <span className="input-group-text">{ auxiliary }</span>
+          </div>
+        }
         <input
           ref={ ref }
           className={ `form-control text-monospace ${ !valid && "is-invalid" }` }

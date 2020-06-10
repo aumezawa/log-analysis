@@ -7,6 +7,7 @@ import TextForm from "../parts/text-form"
 
 type LoginFormProps = {
   className?: string,
+  domain?   : string,
   disabled? : boolean,
   onSubmit? : (username: string, password: string) => void,
   onCancel? : () => void,
@@ -16,6 +17,7 @@ type LoginFormProps = {
 
 const LoginForm = React.memo<LoginFormProps>(({
   className = "",
+  domain    = null,
   disabled  = false,
   onSubmit  = undefined,
   onCancel  = undefined,
@@ -65,6 +67,7 @@ const LoginForm = React.memo<LoginFormProps>(({
         className="mb-3"
         valid={ validUser }
         label="username"
+        auxiliary={ domain }
         disabled={ disabled }
         onChange={ handleChangeUsername }
       />
