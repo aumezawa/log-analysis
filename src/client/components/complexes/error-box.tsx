@@ -1,5 +1,7 @@
 import * as React from "react"
-import { useCallback } from "react"
+import { useEffect, useCallback } from "react"
+
+import * as Cookie from "js-cookie"
 
 import Environment from "../../lib/environment"
 
@@ -30,6 +32,12 @@ const ErrorBox = React.memo<ErrorBoxProps>(({
       message = "Unknown error or no error."
       break
   }
+
+  useEffect(()=> {
+    if (params.get("type") === "token") {
+      Cookie.remove("token")
+    }
+  }, [true])
 
   const handleSubmit = useCallback(() => {
     if (params.has("request")) {
