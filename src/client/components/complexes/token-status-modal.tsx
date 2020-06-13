@@ -12,11 +12,13 @@ import UniqueId from "../../lib/unique-id"
 import ModalFrame from "../frames/modal-frame"
 
 type TokenStatusModalProps = {
-  id  : string
+  id      : string,
+  reload? : number
 }
 
 const TokenStatusModal = React.memo<TokenStatusModalProps>(({
-  id  = undefined
+  id      = undefined,
+  reload  = 0
 }) => {
   const [ignored, forceUpdate] = useReducer(x => x + 1, 0)
 
@@ -43,7 +45,7 @@ const TokenStatusModal = React.memo<TokenStatusModalProps>(({
       forceUpdate()
       return
     })
-  }, [true])
+  }, [reload])
 
   return (
     <ModalFrame

@@ -1,7 +1,8 @@
+type LocalUserList = Array<LocalUserInfo>
+
 type LocalUserInfo = {
   username  : string,
   password  : string,
-  privilege : string
+  privilege : string,
+  alias     : string
 }
-
-type LocalUserList = Array<LocalUserInfo>

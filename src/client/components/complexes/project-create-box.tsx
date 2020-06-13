@@ -1,5 +1,5 @@
 import * as React from "react"
-import { useState, useRef, useCallback, useReducer } from "react"
+import { useRef, useCallback, useReducer } from "react"
 
 import Axios from "axios"
 import { AxiosResponse, AxiosError } from "axios"
@@ -17,15 +17,20 @@ type ProjectCreateBoxProps = {
   domain?   : string
 }
 
+const defaultMessage = `Please input a new project "name" and "description". (characters with [0-9a-zA-Z#@_+-])`
+
 const ProjectCreateBox = React.memo<ProjectCreateBoxProps>(({
   className = "",
   domain    = null
 }) => {
-  const [done,    setDone]    = useState<boolean>(false)
-  const [success, setSuccess] = useState<boolean>(false)
-  const [formKey, clearFrom]  = useReducer(x => x + 1, 0)
+  const [ignored, forceUpdate] = useReducer(x => x + 1, 0)
+  const [formKey, clearFrom]   = useReducer(x => x + 1, 0)
 
-  const message = useRef(`Please input a new project "name" and "description". (characters with [0-9a-zA-Z#@_+-])`)
+  const data = useRef({
+    message : defaultMessage,
+    done    : false,
+    success : false
+  })
 
   const handleSubmit = useCallback((name: string, description: string) => {
     const uri = `${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain) }/projects`
@@ -34,33 +39,36 @@ const ProjectCreateBox = React.memo<ProjectCreateBoxProps>(({
     params.append("description", description)
     params.append("token", Cookie.get("token") || "")
 
-    setDone(false)
+    data.current.done = false
+    forceUpdate()
     Axios.post(uri, params)
     .then((res: AxiosResponse) => {
-      message.current = res.data.msg
-      setDone(true)
-      setSuccess(true)
+      data.current.message = res.data.msg
+      data.current.done = true
+      data.current.success = true
       clearFrom()
     })
     .catch((err: AxiosError) => {
-      message.current = err.response.data.msg
-      setDone(true)
-      setSuccess(false)
+      data.current.message = err.response.data.msg
+      data.current.done = true
+      data.current.success = false
+      forceUpdate()
     })
   }, [domain])
 
   const handleCancel = useCallback(() => {
-    message.current = `Please input a new project "name" and "description". (characters with [0-9a-zA-Z#@_+-])`
-    setDone(false)
-    setSuccess(false)
+    data.current.message = defaultMessage
+    data.current.done = false
+    data.current.success = false
+    forceUpdate()
   }, [true])
 
   return (
     <div className={ className }>
       <MessageCard
-        message={ message.current }
-        success={ done && success }
-        failure={ done && !success }
+        message={ data.current.message }
+        success={ data.current.done && data.current.success }
+        failure={ data.current.done && !data.current.success }
       />
       <ProjectCreateForm
         key={ formKey }

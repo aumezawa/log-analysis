@@ -52,9 +52,10 @@ rl.question('', function(password) {
 
   // Note: create a new file
   var writeData = JSON.stringify([{
-    'username': 'root',
-    'password': crypto.createHash('sha256').update('root' + password, 'utf8').digest('hex'),
-    'privilege': 'root'
+    'username'  : 'root',
+    'password'  : crypto.createHash('sha256').update('root' + password, 'utf8').digest('hex'),
+    'privilege' : 'root',
+    'alias'     : 'root'
   }]);
   try {
     if (!fs.existsSync(dirPath)) {

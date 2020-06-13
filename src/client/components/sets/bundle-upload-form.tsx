@@ -49,7 +49,7 @@ const BundleUploadForm = React.memo<BundleUploadFormProps>(({
 
   const handleCancel = useCallback(() => {
     data.current.name = refs.current.file.current.value = ""
-    data.current.obj  = undefined
+    data.current.obj  = null
     data.current.desc = refs.current.desc.current.value = ""
     setValid(false)
     if (onCancel) {
@@ -78,7 +78,7 @@ const BundleUploadForm = React.memo<BundleUploadFormProps>(({
       />
       <ButtonSet
         submit="Upload"
-        cancel="Cancel"
+        cancel="Clear"
         valid={ valid }
         disabled={ disabled }
         onSubmit={ handleSubmit }

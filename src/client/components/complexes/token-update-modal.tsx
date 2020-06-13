@@ -4,21 +4,21 @@ import { useCallback } from "react"
 import Axios from "axios"
 import { AxiosResponse, AxiosError } from "axios"
 
-import * as Cookie from "js-cookie"
-
 import UniqueId from "../../lib/unique-id"
 
 import ModalFrame from "../frames/modal-frame"
 import LoginBox from "../complexes/login-box"
 
 type TokenUpdateModalProps = {
-  id      : string,
-  onDone? : () => void
+  id        : string,
+  user?     : string,
+  onDone?   : () => void
 }
 
 const TokenUpdateModal = React.memo<TokenUpdateModalProps>(({
-  id      = undefined,
-  onDone  = undefined
+  id        = undefined,
+  user      = null,
+  onDone    = undefined
 }) => {
   const handleDone = useCallback(() => {
     if (onDone) {
@@ -32,7 +32,7 @@ const TokenUpdateModal = React.memo<TokenUpdateModalProps>(({
       title="Token"
       message="Update validity period of your token."
       body={
-        <LoginBox redirect={ false } onDone={ handleDone } />
+        <LoginBox username={ user } redirect={ false } onDone={ handleDone } />
       }
     />
   )

@@ -13,7 +13,7 @@ const MessageCard = React.memo<MessageCardProps>(({
   success   = false,
   failure   = false
 }) => (
-  <div className={ `${ className } card` }>
+  <div className={ `card ${ className }` }>
     <div className={ `card-body ${ success && "bg-success" } ${ failure && "bg-danger" } ${ success || failure || "bg-light" }` }>
       { message }
     </div>

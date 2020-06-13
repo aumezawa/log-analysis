@@ -35,7 +35,7 @@ const BundleUploadButton = React.memo<BundleUploadButtonProps>(({
         }
       />
       <button
-        className="btn btn-info"
+        className={ `btn btn-info ${ className }` }
         type="button"
         disabled={ !["public", "private"].includes(domain) || !project }
         data-toggle="modal"

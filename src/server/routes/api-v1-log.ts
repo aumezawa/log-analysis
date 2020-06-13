@@ -355,7 +355,7 @@ router.route("/:domain(private|public)/projects/:projectName([0-9a-zA-Z_.#]+)/bu
   })
 })
 .delete((req: Request, res: Response, next: NextFunction) => {
-  if (req.params.domain === "private" && req.token.prv !== "root") {
+  if (req.params.domain === "public" && req.token.prv !== "root") {
     // Bad Request
     return res.status(400).json({
       msg: `bundle: ${ path.basename(req.resPath) } is only deleted by an administrator.`
@@ -628,7 +628,7 @@ router.route("/:domain(private|public)/projects/:projectName([0-9a-zA-Z_.#]+)")
   })
 })
 .delete((req: Request, res: Response, next: NextFunction) => {
-  if (req.params.domain === "private" && req.token.prv !== "root") {
+  if (req.params.domain === "public" && req.token.prv !== "root") {
     // Bad Request
     return res.status(400).json({
       msg: `project: ${ req.params.projectName } is only deleted by an administrator.`

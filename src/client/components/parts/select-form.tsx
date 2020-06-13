@@ -6,7 +6,7 @@ type SelectFormProps = {
   label?    : string,
   options?  : Array<string>,
   disabled? : boolean,
-  onChange  : (value: string) => void
+  onChange? : (value: string) => void
 }
 
 const SelectForm = React.memo(React.forwardRef<HTMLSelectElement, SelectFormProps>(({

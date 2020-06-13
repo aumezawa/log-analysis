@@ -8,6 +8,7 @@ type ButtonSetProps = {
   valid     : boolean,
   disabled? : boolean,
   dismiss?  : string,
+  keep?     : boolean,
   onSubmit? : () => void,
   onCancel? : () => void
 }
@@ -19,6 +20,7 @@ const ButtonSet = React.memo<ButtonSetProps>(({
   valid     = false,
   disabled  = false,
   dismiss   = "",
+  keep      = false,
   onSubmit  = undefined,
   onCancel  = undefined
 }) => {
@@ -42,23 +44,26 @@ const ButtonSet = React.memo<ButtonSetProps>(({
             className="btn btn-primary"
             type="button"
             disabled={ !valid || disabled }
-            data-dismiss={ dismiss }
+            data-dismiss={ !keep ? dismiss : "" }
             onClick={ handleSubmit }
           >
             { submit }
           </button>
         </div>
-        <div className={ `col-auto ${ (cancel === "") && "d-none" }` }>
-          <button
-            className="btn btn-secondary"
-            type="button"
-            disabled={ disabled }
-            data-dismiss={ dismiss }
-            onClick={ handleCancel }
-          >
-            { cancel }
-          </button>
-        </div>
+        {
+          !!cancel &&
+          <div className="col-auto">
+            <button
+              className="btn btn-secondary"
+              type="button"
+              disabled={ disabled }
+              data-dismiss={ dismiss }
+              onClick={ handleCancel }
+            >
+              { cancel }
+            </button>
+          </div>
+        }
       </div>
     </div>
   )

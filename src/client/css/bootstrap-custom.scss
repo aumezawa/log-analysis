@@ -6,6 +6,10 @@
 @import "./table";
 @import "./text";
 
+#unsupported-message {
+  color: red !important;
+}
+
 .dropdown-menu {
   z-index: 9999 !important;
 }

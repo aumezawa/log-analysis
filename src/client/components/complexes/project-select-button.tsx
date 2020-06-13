@@ -16,19 +16,18 @@ import ListForm from "../parts/list-form"
 import ButtonSet from "../sets/button-set"
 
 type ProjectSelectButtonProps = {
-  className?    : string,
-  domain?       : string,
-  defaultValue? : string,
-  onSubmit?     : (value: string) => void
+  className?: string,
+  domain?   : string,
+  project?  : string,
+  onSubmit? : (value: string) => void
 }
 
 const ProjectSelectButton = React.memo<ProjectSelectButtonProps>(({
-  className     = "",
-  domain        = null,
-  defaultValue  = null,
-  onSubmit      = undefined
+  className = "",
+  domain    = null,
+  project   = null,
+  onSubmit  = undefined
 }) => {
-  const [project, setProject] = useState<string>(null)
   const [ignored, forceUpdate] = useReducer(x => x + 1, 0)
 
   const id = useRef({
@@ -36,24 +35,23 @@ const ProjectSelectButton = React.memo<ProjectSelectButtonProps>(({
   })
 
   const data = useRef({
-    filter  : "",
-    project : null,
-    projects: []
+    filter      : "",
+    project     : null,
+    projectName : null,
+    projects    : []
   })
 
   useEffect(() => {
-    if (domain && defaultValue) {
-      data.current.project = defaultValue
-      setProject(defaultValue)
+    if (domain && project) {
+      data.current.project = project
+      data.current.projectName = project
+      forceUpdate()
     } else {
       data.current.project = null
-      setProject(null)
+      data.current.projectName = null
+      forceUpdate()
     }
-  }, [domain, defaultValue])
-
-  const filter = useCallback((label: string) => {
-    return label.includes(data.current.filter)
-  }, [true])
+  }, [domain, project])
 
   const handleChangeFilter = useCallback((value: string) => {
     data.current.filter = value
@@ -79,17 +77,34 @@ const ProjectSelectButton = React.memo<ProjectSelectButtonProps>(({
     })
   }, [domain])
 
-  const handleChange = useCallback((value: string) => {
+  const handleSelectProject = useCallback((value: string) => {
     data.current.project = value
     forceUpdate()
   }, [true])
 
   const handleSubmit = useCallback(() => {
-    if (onSubmit && data.current.project) {
+    if (onSubmit) {
       onSubmit(data.current.project)
     }
-    setProject(data.current.project)
+    data.current.projectName = data.current.project
+    forceUpdate()
   }, [onSubmit])
+
+  const listLabel = () => (
+    data.current.projects.filter((project: ProjectInfo) => (
+      project.name.includes(data.current.filter) || project.description.includes(data.current.filter)
+    )).map((project: ProjectInfo) => (
+      project.name
+    ))
+  )
+
+  const listTitle = () => (
+    data.current.projects.filter((project: ProjectInfo) => (
+      project.name.includes(data.current.filter) || project.description.includes(data.current.filter)
+    )).map((project: ProjectInfo) => (
+      project.description
+    ))
+  )
 
   return (
     <>
@@ -107,15 +122,15 @@ const ProjectSelectButton = React.memo<ProjectSelectButtonProps>(({
               onChange={ handleChangeFilter }
             />
             <ListForm
-              labels={ data.current.projects.map((project: any) => (project.name)) }
-              titles={ data.current.projects.map((project: any) => (project.description)) }
-              filter={ filter }
-              onChange={ handleChange }
+              labels={ listLabel() }
+              titles={ listTitle() }
+              onChange={ handleSelectProject }
             />
           </>
         }
         foot={
           <ButtonSet
+            submit="Select"
             cancel="Close"
             valid={ !!data.current.project }
             dismiss="modal"
@@ -124,14 +139,14 @@ const ProjectSelectButton = React.memo<ProjectSelectButtonProps>(({
         }
       />
       <button
-        className={ `btn ${ (project && "btn-success") || "btn-secondary" }` }
+        className={ `btn ${ className } ${ data.current.projectName ? "btn-success" : "btn-secondary" }` }
         type="button"
         disabled={ !["public", "private"].includes(domain) }
         data-toggle="modal"
         data-target={ "#" + id.current.modal }
         onClick={ handleClick }
       >
-        { project || "Select Project" }
+        { data.current.projectName || "Select Project" }
       </button>
     </>
   )

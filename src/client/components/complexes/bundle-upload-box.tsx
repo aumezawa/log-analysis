@@ -19,6 +19,8 @@ type BundleUploadBoxProps = {
   project?  : string,
 }
 
+const defaultMessage = `Please select a upload file (.tgz) and input a bundle "description".`
+
 const BundleUploadBox = React.memo<BundleUploadBoxProps>(({
   className = "",
   domain    = null,
@@ -27,9 +29,8 @@ const BundleUploadBox = React.memo<BundleUploadBoxProps>(({
   const [ignored, forceUpdate]  = useReducer(x => x + 1, 0)
   const [formKey, clearFrom]    = useReducer(x => x + 1, 0)
 
-  const message = useRef(`Please select a upload file (.tgz) and input a bundle "description".`)
-
   const data = useRef({
+    message   : defaultMessage,
     done      : false,
     success   : false,
     uploading : false,
@@ -54,14 +55,14 @@ const BundleUploadBox = React.memo<BundleUploadBoxProps>(({
       }
     })
     .then((res: AxiosResponse) => {
-      message.current = res.data.msg
+      data.current.message = res.data.msg
       data.current.done = true
       data.current.success = true
       data.current.uploading = false
       clearFrom()
     })
     .catch((err: AxiosError) => {
-      message.current = err.response.data.msg
+      data.current.message = err.response.data.msg
       data.current.done = true
       data.current.success = false
       data.current.uploading = false
@@ -70,7 +71,7 @@ const BundleUploadBox = React.memo<BundleUploadBoxProps>(({
   }, [domain, project])
 
   const handleCancel = useCallback(() => {
-    message.current = `Please select a upload file (.tgz) and input a bundle "description".`
+    data.current.message = defaultMessage
     data.current.done = false
     data.current.success = false
     data.current.uploading = false
@@ -82,7 +83,7 @@ const BundleUploadBox = React.memo<BundleUploadBoxProps>(({
     <div className={ className }>
       <MessageCard
         className=""
-        message={ message.current }
+        message={ data.current.message }
         success={ data.current.done && data.current.success }
         failure={ data.current.done && !data.current.success }
       />

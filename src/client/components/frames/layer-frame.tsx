@@ -15,7 +15,7 @@ const LayerFrame: React.FC<LayerFrameProps> = ({
   foot      = <></>,
   overflow  = true
 }) => (
-  <div className={ `${ className } flex-container-column` }>
+  <div className={ `flex-container-column ${ className }` }>
     <>
       { head }
     </>

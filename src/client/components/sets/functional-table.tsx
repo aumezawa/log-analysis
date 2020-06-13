@@ -24,7 +24,6 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
 }) => {
   const [ignored, forceUpdate]  = useReducer(x => x + 1, 0)
 
-
   const id = useRef({
     textFilter: "modal-" + UniqueId(),
     dateFilter: "modal-" + UniqueId()
@@ -46,8 +45,8 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
     forceUpdate()
   }, [content])
 
-  const handleClickFilter = useCallback((value: string) => {
-    env.current.label = value
+  const handleClickFilter = useCallback((targetValue: string, parentValue: string) => {
+    env.current.label = parentValue
   }, [true])
 
   const handleSubmitTextFilter = useCallback((mode: string, sensitive: boolean, condition: string) => {

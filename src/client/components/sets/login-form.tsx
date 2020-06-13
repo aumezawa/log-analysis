@@ -1,12 +1,13 @@
 import * as React from "react"
-import { useState, useRef, useCallback } from "react"
-
-import ButtonSet from "../sets/button-set"
+import { useState, useEffect, useRef, useCallback } from "react"
 
 import TextForm from "../parts/text-form"
+import ButtonSet from "../sets/button-set"
 
 type LoginFormProps = {
   className?: string,
+  username? : string,
+  domain?   : string,
   disabled? : boolean,
   onSubmit? : (username: string, password: string) => void,
   onCancel? : () => void,
@@ -16,6 +17,8 @@ type LoginFormProps = {
 
 const LoginForm = React.memo<LoginFormProps>(({
   className = "",
+  username  = null,
+  domain    = null,
   disabled  = false,
   onSubmit  = undefined,
   onCancel  = undefined,
@@ -35,9 +38,18 @@ const LoginForm = React.memo<LoginFormProps>(({
     password: ""
   })
 
+  useEffect(() => {
+    if (username) {
+      data.current.username = refs.current.username.current.value = username
+      setValidUser(!!username.match(allowUser))
+    }
+  }, [username])
+
   const handleChangeUsername = useCallback((value: string) => {
-    data.current.username = value
-    setValidUser(!!value.match(allowUser))
+    if (!username) {
+      data.current.username = value
+      setValidUser(!!value.match(allowUser))
+    }
   }, [allowUser])
 
   const handleChangePassword = useCallback((value: string) => {
@@ -52,10 +64,15 @@ const LoginForm = React.memo<LoginFormProps>(({
   }, [onSubmit])
 
   const handleCancel = useCallback(() => {
-    data.current.username = refs.current.username.current.value = ""
+    if (!username) {
+      data.current.username = refs.current.username.current.value = ""
+      setValidUser(false)
+    }
     data.current.password = refs.current.password.current.value = ""
-    setValidUser(false)
     setValidPass(false)
+    if (onCancel) {
+      onCancel()
+    }
   }, [onCancel])
 
   return (
@@ -65,7 +82,8 @@ const LoginForm = React.memo<LoginFormProps>(({
         className="mb-3"
         valid={ validUser }
         label="username"
-        disabled={ disabled }
+        auxiliary={ domain }
+        disabled={ disabled || !!username }
         onChange={ handleChangeUsername }
       />
       <TextForm

@@ -1,5 +1,7 @@
 import * as React from "react"
-import { useCallback } from "react"
+import { useEffect, useCallback } from "react"
+
+import * as Cookie from "js-cookie"
 
 import Environment from "../../lib/environment"
 
@@ -31,6 +33,12 @@ const ErrorBox = React.memo<ErrorBoxProps>(({
       break
   }
 
+  useEffect(()=> {
+    if (params.get("type") === "token") {
+      Cookie.remove("token")
+    }
+  }, [true])
+
   const handleSubmit = useCallback(() => {
     if (params.has("request")) {
       location.href = `${ Environment.getBaseUrl() }/login?request=${ params.get("request") }`
@@ -47,7 +55,7 @@ const ErrorBox = React.memo<ErrorBoxProps>(({
       />
       <ButtonSet
         submit="Login Page"
-        cancel=""
+        cancel={ null }
         valid={ true }
         onSubmit={ handleSubmit }
       />

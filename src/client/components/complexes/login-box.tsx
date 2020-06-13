@@ -14,12 +14,16 @@ import LoginForm from "../sets/login-form"
 
 type LoginBoxProps = {
   className?: string,
+  username? : string,
   redirect? : boolean,
   onDone?   : () => void
 }
 
+const defaultMessage = `Please input your "username" and "password". (between 4 - 16 characters with [0-9a-zA-Z])`
+
 const LoginBox = React.memo<LoginBoxProps>(({
   className = "",
+  username  = null,
   redirect  = true,
   onDone    = undefined
 }) => {
@@ -29,9 +33,8 @@ const LoginBox = React.memo<LoginBoxProps>(({
   const url = new URL(location.href)
   const params = new URLSearchParams(url.search)
 
-  const message = useRef(`Please input your "username" and "password". (between 4 - 16 characters with [0-9a-zA-Z])`)
-
   const data = useRef({
+    message   : defaultMessage,
     done      : false,
     success   : false
   })
@@ -52,7 +55,7 @@ const LoginBox = React.memo<LoginBoxProps>(({
     })
     .then((res: AxiosResponse) => {
       Cookie.set("token", res.data.token)
-      message.current = `${ res.data.msg }` + (redirect ? " Will redirect automatically in 3 sec." : "")
+      data.current.message = `${ res.data.msg }` + (redirect ? " Will redirect automatically in 3 sec." : "")
       data.current.done = true
       data.current.success = true
       forceUpdate()
@@ -64,7 +67,7 @@ const LoginBox = React.memo<LoginBoxProps>(({
             location.href = `${ Environment.getBaseUrl() }`
           }
         } else {
-          message.current = `Please input your "username" and "password". (between 4 - 16 characters with [0-9a-zA-Z])`
+          data.current.message = defaultMessage
           data.current.done = false
           clearFrom()
           if (onDone) {
@@ -74,23 +77,33 @@ const LoginBox = React.memo<LoginBoxProps>(({
       }, 3000)
     })
     .catch((err: AxiosError) => {
+      data.current.message = err.response.data.msg
       data.current.done = true
       data.current.success = false
       forceUpdate()
     })
   }, [redirect, onDone])
 
+  const handleCancel = useCallback(() => {
+    data.current.message = defaultMessage
+    data.current.done = false
+    data.current.success = false
+    forceUpdate()
+  }, [true])
+
   return (
     <div className={ className }>
       <MessageCard
-        message={ message.current }
+        message={ data.current.message }
         success={ data.current.done && data.current.success }
         failure={ data.current.done && !data.current.success }
       />
       <LoginForm
         key={ formKey }
+        username={ username }
         disabled={ data.current.done && data.current.success }
         onSubmit={ handleSubmit }
+        onCancel={ handleCancel }
       />
     </div>
   )

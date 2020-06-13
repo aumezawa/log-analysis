@@ -1,5 +1,5 @@
 import * as React from "react"
-import { useState, useEffect, useRef, useCallback } from "react"
+import { useEffect, useRef, useCallback, useReducer } from "react"
 
 import UniqueId from "../../lib/unique-id"
 
@@ -8,19 +8,20 @@ import RadioForm from "../parts/radio-form"
 import ButtonSet from "../sets/button-set"
 
 type DomainSelectButtonProps = {
-  className?    : string,
-  defaultValue? : string,
-  onSubmit?     : (value: string) => void
+  className?: string,
+  domain?   : string,
+  onSubmit? : (value: string) => void
 }
 
 const DOMAIN = ["public", "private"]
+const defaultValue = "public"
 
 const DomainSelectButton = React.memo<DomainSelectButtonProps>(({
-  className     = "",
-  defaultValue  = "public",
-  onSubmit      = undefined
+  className = "",
+  domain    = defaultValue,
+  onSubmit  = undefined
 }) => {
-  const [domain, setDomain] = useState<string>(null)
+  const [ignored, forceUpdate] = useReducer(x => x + 1, 0)
 
   const id = useRef({
     modal: "modal-" + UniqueId()
@@ -31,14 +32,14 @@ const DomainSelectButton = React.memo<DomainSelectButtonProps>(({
   })
 
   useEffect(() => {
-    if (DOMAIN.includes(defaultValue)) {
-      data.current.domain = defaultValue
-      setDomain(defaultValue)
+    if (DOMAIN.includes(domain)) {
+      data.current.domain = domain
+      forceUpdate()
     } else {
-      data.current.domain = "public"
-      setDomain("public")
+      data.current.domain = defaultValue
+      forceUpdate()
     }
-  }, [defaultValue])
+  }, [domain])
 
   const handleChange = useCallback((value: string) => {
     data.current.domain = value
@@ -48,7 +49,7 @@ const DomainSelectButton = React.memo<DomainSelectButtonProps>(({
     if (onSubmit) {
       onSubmit(data.current.domain)
     }
-    setDomain(data.current.domain)
+    forceUpdate()
   }, [onSubmit])
 
   return (
@@ -59,14 +60,14 @@ const DomainSelectButton = React.memo<DomainSelectButtonProps>(({
         message="Select access domain."
         body={
           <RadioForm
-            key={ domain }
             labels={ DOMAIN }
-            defaultChecked={ DOMAIN.indexOf(domain) }
+            defaultChecked={ DOMAIN.indexOf(defaultValue) }
             onChange={ handleChange }
           />
         }
         foot={
           <ButtonSet
+            submit="Select"
             cancel="Close"
             valid={ true }
             dismiss="modal"
@@ -75,12 +76,12 @@ const DomainSelectButton = React.memo<DomainSelectButtonProps>(({
         }
       />
       <button
-        className={ `btn ${ domain === "public" ? "btn-success" : "btn-warning" }` }
+        className={ `btn ${ data.current.domain === "public" ? "btn-success" : "btn-warning" }` }
         type="button"
         data-toggle="modal"
         data-target={ "#" + id.current.modal }
       >
-        { domain }
+        { data.current.domain }
       </button>
     </>
   )

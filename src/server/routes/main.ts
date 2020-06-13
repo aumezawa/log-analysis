@@ -50,4 +50,18 @@ router.route("/log/:domain(private|public)/projects/:projectName([0-9a-zA-Z_.#]+
   })
 })
 
+router.route("/log/:domain(private|public)")
+.get((req: Request, res: Response, next: NextFunction) => {
+  const query = `?domain=${ req.params.domain }`
+  return res.status(200).send(
+    ReactDomServer.renderToString(React.createElement(IndexPage, { user: req.token.usr, page: "main", query: query }))
+  )
+})
+.all((req: Request, res: Response, next: NextFunction) => {
+  // Method Not Allowed
+  return res.status(405).json({
+    msg: "GET method is only supported."
+  })
+})
+
 export default router

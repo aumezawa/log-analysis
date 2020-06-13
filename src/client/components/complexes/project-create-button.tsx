@@ -32,7 +32,7 @@ const ProjectCreateButton = React.memo<ProjectCreateButtonProps>(({
         }
       />
       <button
-        className="btn btn-info"
+        className={ `btn btn-info ${ className }` }
         type="button"
         disabled={ !["public", "private"].includes(domain) }
         data-toggle="modal"

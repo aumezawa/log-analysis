@@ -1,3 +1,5 @@
+type NodeType = FileType | DirectoryType
+
 type FileType = {
   name  : string,
   file  : boolean,
@@ -10,5 +12,3 @@ type DirectoryType = {
   file      : boolean,
   children  : Array<NodeType>
 }
-
-type NodeType = FileType | DirectoryType
