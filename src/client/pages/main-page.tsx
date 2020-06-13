@@ -207,7 +207,7 @@ const MainPage: React.FC<MainPageProps> = ({
     updateBundleList()
   }, [true])
 
-  const handleClickTableContent = useCallback((line: number) => {
+  const handleChangeTableLine = useCallback((line: number) => {
     data.current.line = line
     updateAddressBar()
   }, [true])
@@ -343,7 +343,7 @@ const MainPage: React.FC<MainPageProps> = ({
                       <FunctionalTableBox
                         path={ ProjectPath.strictEncodeFilepath(data.current.domain, data.current.project, data.current.bundle, data.current.filepath) }
                         line={ data.current.line }
-                        onClick={ handleClickTableContent }
+                        onChange={ handleChangeTableLine }
                       />
                     }
                     { data.current.terminal &&

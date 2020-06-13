@@ -7,6 +7,7 @@ import DateFilterForm from "../sets/date-filter-form"
 import EmbeddedButton from "../parts/embedded-button"
 import SelectForm from "../parts/select-form"
 import Pagination from "../parts/pagination"
+import TextForm from "../parts/text-form"
 
 import Escape from "../../lib/escape"
 import UniqueId from "../../lib/unique-id"
@@ -16,7 +17,7 @@ type FunctionalTableProps = {
   content?  : TableContent,
   line?     : number,
   copy?     : boolean,
-  onClick?  : (line: number) => void
+  onChange? : (line: number) => void
 }
 
 const DEFAULT_ROW = 100
@@ -27,11 +28,13 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
   content   = null,
   line      = null,
   copy      = true,
-  onClick   = undefined
+  onChange  = undefined
 }) => {
   const [ignored, forceUpdate]  = useReducer(x => x + 1, 0)
 
-  const ref = React.createRef<HTMLDivElement>()
+  const divRef = React.createRef<HTMLDivElement>()
+  const tableRef = React.createRef<HTMLTableElement>()
+  const textRef = React.createRef<HTMLInputElement>()
 
   const id = useRef({
     textFilter: "modal-" + UniqueId(),
@@ -42,6 +45,7 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
     page    : 1,
     maxRow  : DEFAULT_ROW,
     rows    : 0,
+    line    : null,
     label   : null,
     filters : {} as FilterSettings
   })
@@ -49,15 +53,24 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
   useEffect(() => {
     env.current.page = line ? Math.ceil(line / DEFAULT_ROW) : 1
     env.current.maxRow = DEFAULT_ROW
+    env.current.line = null
     env.current.label = null
     env.current.filters = {} as FilterSettings
+    textRef.current.value = ""
     forceUpdate()
-
-    // Note: Scroll
-    const element: Element = (ref.current as Element)
-    const scrollRate = line ? ((line - 1) % DEFAULT_ROW) / DEFAULT_ROW : 0
-    element.scrollTo(0, Math.round(element.scrollHeight * scrollRate))
+    scrollToLine(line)
   }, [content, line])
+
+  const scrollToLine = (targetLine: number) => {
+    if (targetLine > 0) {
+      const pageLine = (targetLine - 1) % env.current.maxRow
+      if (pageLine > 0 && pageLine < tableRef.current.tBodies[0].childNodes.length) {
+        divRef.current.scrollTo(0, (tableRef.current.tBodies[0].childNodes[pageLine - 1] as HTMLElement).offsetTop)
+        return
+      }
+    }
+    divRef.current.scrollTo(0, 0)
+  }
 
   const handleClickFilter = useCallback((targetValue: string, parentValue: string) => {
     env.current.label = parentValue
@@ -71,6 +84,7 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
         sensitive : sensitive,
         condition : condition
       }
+      env.current.page = 1
       forceUpdate()
     }
   }, [true])
@@ -89,6 +103,7 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
         from      : from,
         to        : to
       }
+      env.current.page = 1
       forceUpdate()
     }
   }, [true])
@@ -109,10 +124,10 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
       document.execCommand("copy")
       textarea.remove()
     }
-    if (onClick) {
-      onClick(Number((e.currentTarget.parentNode as HTMLElement).title))
+    if (onChange) {
+      onChange(Number((e.currentTarget.parentNode as HTMLElement).title))
     }
-  }, [copy, onClick])
+  }, [copy, onChange])
 
   const handleChangeMaxRow = useCallback((value: string) => {
     env.current.page = 1
@@ -124,6 +139,20 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
     env.current.page = Number(value)
     forceUpdate()
   }, [true])
+
+  const handleChangeLine = useCallback((value: string) => {
+    env.current.line = value.match(/^[0-9]+$/) ? Number(value) : null
+    forceUpdate()
+  }, [true])
+
+  const handleClickGoToLine = useCallback(() => {
+    env.current.page = Math.ceil(env.current.line / env.current.maxRow)
+    forceUpdate()
+    scrollToLine(env.current.line)
+    if (onChange) {
+      onChange(env.current.line)
+    }
+  }, [onChange, env.current.line, env.current.maxRow])
 
   const renderHeader = () => {
     if (content) {
@@ -177,7 +206,7 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
           row.push(
             <td
               key={ label }
-              title=""
+              title="Click to copy"
               className={ `${ (label === content.format.contentKey) ? "table-main-content" : "table-sub-content" }` }
               onClick={ handleClickContent }
             >
@@ -282,7 +311,7 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
 
   return (
     <div className={ `flex-container-column ${ className }` }>
-      <div ref={ ref } className="flex-main-area flex-main-overflow table-responsive">
+      <div ref={ divRef } className="flex-main-area flex-main-overflow table-responsive">
         <ModalFrame
           id={ id.current.textFilter }
           title="Text Filter"
@@ -305,7 +334,7 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
             />
           }
         />
-        <table className="table table-hover table-header-fixed text-monospace">
+        <table ref={ tableRef } className="table table-hover table-header-fixed text-monospace">
           <thead className="thead-dark">{ renderHeader() }</thead>
           <tbody>{ renderBody() }</tbody>
           <tfoot></tfoot>
@@ -319,10 +348,22 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
           onChange={ handleChangeMaxRow }
         />
         <Pagination
-          className="flex-area-right"
+          className="flex-area-center"
           current={ env.current.page }
           last={ Math.ceil(env.current.rows / env.current.maxRow) }
           onChange={ handleChangePage }
+        />
+        <TextForm
+          ref={ textRef }
+          className="flex-area-right"
+          label="line"
+          button="GoTo"
+          size={ 4 }
+          valid={ !!env.current.line && env.current.line > 0 && env.current.line <= env.current.rows }
+          validation={ false }
+          disabled={ !!Object.keys(env.current.filters).length }
+          onChange={ handleChangeLine }
+          onSubmit={ handleClickGoToLine }
         />
       </div>
     </div>

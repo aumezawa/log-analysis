@@ -15,14 +15,14 @@ type FunctionalTableBoxProps = {
   className?: string,
   path?     : string,
   line?     : number,
-  onClick   : (line: number) => void
+  onChange  : (line: number) => void
 }
 
 const FunctionalTableBox = React.memo<FunctionalTableBoxProps>(({
   className = "",
   path      = null,
   line      = null,
-  onClick   = undefined
+  onChange  = undefined
 }) => {
   const [ignored, forceUpdate] = useReducer(x => x + 1, 0)
 
@@ -52,11 +52,11 @@ const FunctionalTableBox = React.memo<FunctionalTableBoxProps>(({
     }
   }, [path])
 
-  const handleClick = useCallback((line: number) => {
-    if (onClick) {
-      onClick(line)
+  const handleChangeLine = useCallback((line: number) => {
+    if (onChange) {
+      onChange(line)
     }
-  }, [onClick])
+  }, [onChange])
 
   return (
     <>
@@ -64,7 +64,7 @@ const FunctionalTableBox = React.memo<FunctionalTableBoxProps>(({
         className={ className }
         content={ data.current.content }
         line={ line }
-        onClick={ handleClick }
+        onChange={ handleChangeLine }
       />
     </>
   )
