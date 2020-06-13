@@ -111,6 +111,9 @@ const MainPage: React.FC<MainPageProps> = ({
         data.current.bundle   = domain && project && bundle
         data.current.filepath = domain && project && bundle && filepath
         data.current.filename = domain && project && bundle && filepath && Path.basename(filepath)
+        if (filepath) {
+          refs.current.viewer.current.click()
+        }
         forceUpdate()
         updateAddressBar()
         return
@@ -120,6 +123,8 @@ const MainPage: React.FC<MainPageProps> = ({
         updateAddressBar()
         return
       })
+    } else {
+      updateAddressBar()
     }
   }, [true])
 
