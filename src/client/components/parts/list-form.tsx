@@ -1,5 +1,5 @@
 import * as React from "react"
-import { useState, useCallback } from "react"
+import { useState, useEffect, useCallback } from "react"
 
 type ListFormProps = {
   className?: string,
@@ -15,6 +15,11 @@ const ListForm = React.memo<ListFormProps>(({
   onChange  = undefined
 }) => {
   const [active, setActive] = useState<string>(null)
+
+  useEffect(() => {
+    console.log
+    setActive(null)
+  }, [labels.toString()])
 
   const handleClick = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
     if (onChange) {
@@ -41,6 +46,11 @@ const ListForm = React.memo<ListFormProps>(({
       }
     </ul>
   )
-})
+}, (prevProps: ListFormProps, nextProps: ListFormProps) => (
+  (prevProps.className === nextProps.className)
+  && (prevProps.labels.toString() === nextProps.labels.toString())
+  && (prevProps.titles.toString() === nextProps.titles.toString())
+  && (prevProps.onChange === nextProps.onChange)
+))
 
 export default ListForm

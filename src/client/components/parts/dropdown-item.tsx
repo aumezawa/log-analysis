@@ -6,7 +6,6 @@ type DropdownItemProps = {
   label?    : string,
   title?    : string,
   disabled? : boolean,
-  display?  : boolean,
   toggle?   : string,
   target?   : string,
   onClick?  : (targetValue: string, parentValue: string) => void
@@ -17,7 +16,6 @@ const DropdownItem: React.FC<DropdownItemProps> = ({
   label     = "action",
   title     = "",
   disabled  = false,
-  display   = true,
   toggle    = "",
   target    = "",
   onClick   = undefined
@@ -30,7 +28,7 @@ const DropdownItem: React.FC<DropdownItemProps> = ({
 
   return (
     <button
-      className={ `dropdown-item text-monospace ${ className } ${ !display && "d-none" }` }
+      className={ `dropdown-item text-monospace ${ className }` }
       type="button"
       title={ title }
       disabled={ disabled }

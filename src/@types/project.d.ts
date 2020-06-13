@@ -1,8 +1,6 @@
-type BundleInfo = {
-  id          : number,
+type ProjectSummary = {
   name        : string,
-  description : string,
-  available   : boolean
+  description : string
 }
 
 type ProjectInfo = {
@@ -12,7 +10,9 @@ type ProjectInfo = {
   bundles     : Array<BundleInfo>
 }
 
-type ProjectSummary = {
+type BundleInfo = {
+  id          : number,
   name        : string,
-  description : string
+  description : string,
+  available   : boolean
 }

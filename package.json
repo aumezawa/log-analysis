@@ -7,7 +7,7 @@
     "https-port": "3443",
     "num-workers": "4",
     "token-period": "1h",
-    "userlist-path": "./local/userlist.json",
+    "userlist-path": "./local/user/userlist.json",
     "public-key-path": "./local/cert/public-key.pem",
     "private-key-path": "./local/cert/private-key.pem",
     "certificate-path": "./local/cert/server-cert.pem",

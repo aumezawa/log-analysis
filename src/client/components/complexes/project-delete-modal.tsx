@@ -16,7 +16,6 @@ import ButtonSet from "../sets/button-set"
 
 type ProjectDeleteModalProps = {
   id        : string,
-  className?: string,
   domain?   : string,
   reload?   : number,
   onSubmit? : (value: string) => void
@@ -24,7 +23,6 @@ type ProjectDeleteModalProps = {
 
 const ProjectDeleteModal = React.memo<ProjectDeleteModalProps>(({
   id        = null,
-  className = "",
   domain    = null,
   reload    = 0,
   onSubmit  = undefined
@@ -32,10 +30,10 @@ const ProjectDeleteModal = React.memo<ProjectDeleteModalProps>(({
   const [ignored, forceUpdate] = useReducer(x => x + 1, 0)
 
   const data = useRef({
-    doing   : false,
-    filter  : "",
-    project : null,
-    projects: []
+    processing: false,
+    filter    : "",
+    project   : null,
+    projects  : []
   })
 
   useEffect(() => {
@@ -74,9 +72,10 @@ const ProjectDeleteModal = React.memo<ProjectDeleteModalProps>(({
   }, [true])
 
   const handleSubmit = useCallback(() => {
-    data.current.doing = true
-    forceUpdate()
     const uri = `${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, data.current.project) }`
+
+    data.current.processing = true
+    forceUpdate()
     Axios.delete(uri, {
       headers : { "X-Access-Token": Cookie.get("token") || "" },
       data    : {}
@@ -86,12 +85,12 @@ const ProjectDeleteModal = React.memo<ProjectDeleteModalProps>(({
         onSubmit(data.current.project)
       }
       data.current.project = null
-      data.current.doing = false
+      data.current.processing = false
       reloadProject()
       return
     })
     .catch((err: AxiosError) => {
-      data.current.doing = false
+      data.current.processing = false
       forceUpdate()
       alert(err.response.data.msg)
       return
@@ -139,7 +138,7 @@ const ProjectDeleteModal = React.memo<ProjectDeleteModalProps>(({
         <ButtonSet
           submit="Delete"
           cancel="Close"
-          valid={ !!data.current.project && !data.current.doing }
+          valid={ !!data.current.project && !data.current.processing }
           dismiss="modal"
           keep={ true }
           onSubmit={ handleSubmit }

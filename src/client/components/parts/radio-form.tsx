@@ -29,7 +29,7 @@ const RadioForm = React.memo<RadioFormProps>(({
   }, [onChange])
 
   return (
-    <div className={ `${ className }` }>
+    <div className={ className }>
       {
         labels.map((label: string, index: number) => (
           <div key={ label } className="form-check">

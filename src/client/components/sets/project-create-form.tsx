@@ -1,9 +1,8 @@
 import * as React from "react"
 import { useState, useRef, useCallback } from "react"
 
-import ButtonSet from "../sets/button-set"
-
 import TextForm from "../parts/text-form"
+import ButtonSet from "../sets/button-set"
 
 type ProjectCreateFormProps = {
   className?: string,

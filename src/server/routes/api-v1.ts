@@ -107,7 +107,7 @@ router.route("/login")
     iss: process.env.npm_package_author_name,
     sub: "token-" + process.env.npm_package_name,
     usr: userinfo.username,
-    als: userinfo.username,
+    als: userinfo.alias,
     prv: userinfo.privilege
   }, req.app.get("token-key"), { expiresIn: req.app.get("token-period") })
   return res.status(200).json({

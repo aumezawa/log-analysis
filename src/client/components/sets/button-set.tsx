@@ -50,17 +50,20 @@ const ButtonSet = React.memo<ButtonSetProps>(({
             { submit }
           </button>
         </div>
-        <div className={ `col-auto ${ (cancel === "") && "d-none" }` }>
-          <button
-            className="btn btn-secondary"
-            type="button"
-            disabled={ disabled }
-            data-dismiss={ dismiss }
-            onClick={ handleCancel }
-          >
-            { cancel }
-          </button>
-        </div>
+        {
+          !!cancel &&
+          <div className="col-auto">
+            <button
+              className="btn btn-secondary"
+              type="button"
+              disabled={ disabled }
+              data-dismiss={ dismiss }
+              onClick={ handleCancel }
+            >
+              { cancel }
+            </button>
+          </div>
+        }
       </div>
     </div>
   )

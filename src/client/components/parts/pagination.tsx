@@ -57,7 +57,7 @@ const Pagination = React.memo<PaginationProps>(({
         <li className="page-item">
           <a className="page-link" href="#" title={ `${ first }` } onClick={ handleClick }>&laquo;</a>
         </li>
-          { renderItem() }
+        { renderItem() }
         <li className="page-item">
           <a className="page-link" href="#" title={ `${ last }` } onClick={ handleClick }>&raquo;</a>
         </li>

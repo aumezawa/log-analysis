@@ -17,7 +17,7 @@ const TFrame: React.FC<TFrameProps> = ({
   overflowL = true,
   overflowR = true
 }) => (
-  <div className={ `${ className } flex-container-column` }>
+  <div className={ `flex-container-column ${ className }` }>
     <div className="flex-area-top">
       { head }
     </div>
@@ -35,7 +35,5 @@ const TFrame: React.FC<TFrameProps> = ({
     </div>
   </div>
 )
-
-
 
 export default TFrame

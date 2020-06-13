@@ -53,13 +53,13 @@ const MainPage: React.FC<MainPageProps> = ({
   version   = "none",
   user      = "anonymous",
   alias     = "anonymous",
-  privilege = "user",
+  privilege = "none",
   query     = ""
 }) => {
-  const [ignored,   forceUpdate]  = useReducer(x => x + 1, 0)
-  const [statusKey, reloadStatus] = useReducer(x => x + 1, 0)
-  const [projectKey, reloadProject] = useReducer(x => x + 1, 0)
-  const [bundleKey,  reloadBundle]  = useReducer(x => x + 1, 0)
+  const [ignored,           forceUpdate]       = useReducer(x => x + 1, 0)
+  const [reloadTokenStatus, updateTokenStatus] = useReducer(x => x + 1, 0)
+  const [reloadProjectList, updateProjectList] = useReducer(x => x + 1, 0)
+  const [reloadBundleList,  updateBundleList]  = useReducer(x => x + 1, 0)
 
   const refs = useRef({
     files : React.createRef<HTMLAnchorElement>(),
@@ -67,10 +67,10 @@ const MainPage: React.FC<MainPageProps> = ({
   })
 
   const id = useRef({
-    deleteProject : "modal-" + UniqueId(),
-    deleteBundle  : "modal-" + UniqueId(),
-    tokenStatus : "modal-" + UniqueId(),
-    tokenUpdate : "modal-" + UniqueId()
+    projectDelete : "modal-" + UniqueId(),
+    bundleDelete  : "modal-" + UniqueId(),
+    tokenStatus   : "modal-" + UniqueId(),
+    tokenUpdate   : "modal-" + UniqueId()
   })
 
   const data = useRef({
@@ -117,31 +117,17 @@ const MainPage: React.FC<MainPageProps> = ({
       })
       .catch((err: AxiosError) => {
         alert(`No resource: ${ uri }`)
-        data.current.domain   = "public"
-        data.current.project  = null
-        data.current.bundle   = null
-        data.current.filepath = null
-        data.current.filename = null
-        forceUpdate()
         updateAddressBar()
         return
       })
-    } else {
-      data.current.domain   = domain || "public"
-      data.current.project  = null
-      data.current.bundle   = null
-      data.current.filepath = null
-      data.current.filename = null
-      forceUpdate()
-      updateAddressBar()
     }
-  }, [query])
-
-  const handleDoneTokenUpdate = useCallback(() => {
-    reloadStatus()
   }, [true])
 
-  const handleSubmitDomain = useCallback((value: string) => {
+  const handleDoneTokenUpdate = useCallback(() => {
+    updateTokenStatus()
+  }, [true])
+
+  const handleSubmitDomainSelect = useCallback((value: string) => {
     data.current.domain = value
     data.current.project = null
     data.current.bundle = null
@@ -151,7 +137,7 @@ const MainPage: React.FC<MainPageProps> = ({
     updateAddressBar()
   }, [true])
 
-  const handleSubmitProject = useCallback((value: string) => {
+  const handleSubmitProjectSelect = useCallback((value: string) => {
     data.current.project = value
     data.current.bundle = null
     data.current.filepath = null
@@ -160,7 +146,7 @@ const MainPage: React.FC<MainPageProps> = ({
     updateAddressBar()
   }, [true])
 
-  const handleDeleteProject = useCallback((value: string) => {
+  const handleSubmitProjectDelete = useCallback((value: string) => {
     if (data.current.project === value) {
       data.current.project = null
       data.current.bundle = null
@@ -171,7 +157,7 @@ const MainPage: React.FC<MainPageProps> = ({
     }
   }, [true])
 
-  const handleSubmitBundle = useCallback((value: string) => {
+  const handleSubmitBundleSelect = useCallback((value: string) => {
     data.current.bundle = value
     data.current.filepath = null
     data.current.filename = null
@@ -179,7 +165,7 @@ const MainPage: React.FC<MainPageProps> = ({
     updateAddressBar()
   }, [true])
 
-  const handleDeleteBundle = useCallback((value: string) => {
+  const handleSubmitBundleDelete = useCallback((value: string) => {
     if (data.current.bundle === value) {
       data.current.bundle = null
       data.current.filepath = null
@@ -199,11 +185,11 @@ const MainPage: React.FC<MainPageProps> = ({
   }, [true])
 
   const handleClickDeleteProject = useCallback((targetValue: string, parentValue: string) => {
-    reloadProject()
+    updateProjectList()
   }, [true])
 
   const handleClickDeleteBundle = useCallback((targetValue: string, parentValue: string) => {
-    reloadBundle()
+    updateBundleList()
   }, [true])
 
   return (
@@ -211,22 +197,70 @@ const MainPage: React.FC<MainPageProps> = ({
       <LayerFrame
         head={
           <>
-            <ProjectDeleteModal id={ id.current.deleteProject } domain={ data.current.domain } reload={ projectKey } onSubmit={ handleDeleteProject } />
-            <BundleDeleteModal id={ id.current.deleteBundle } domain={ data.current.domain } project={ data.current.project } reload={ bundleKey } onSubmit={ handleDeleteBundle } />
-            <TokenStatusModal id={ id.current.tokenStatus } key={ statusKey } />
-            <TokenUpdateModal id={ id.current.tokenUpdate } onDone={ handleDoneTokenUpdate } />
+            <ProjectDeleteModal
+              id={ id.current.projectDelete }
+              domain={ data.current.domain }
+              reload={ reloadProjectList }
+              onSubmit={ handleSubmitProjectDelete }
+            />
+            <BundleDeleteModal
+              id={ id.current.bundleDelete }
+              domain={ data.current.domain }
+              project={ data.current.project }
+              reload={ reloadBundleList }
+              onSubmit={ handleSubmitBundleDelete }
+            />
+            <TokenStatusModal
+              id={ id.current.tokenStatus }
+              reload={ reloadTokenStatus }
+            />
+            <TokenUpdateModal
+              id={ id.current.tokenUpdate }
+              user={ user }
+              onDone={ handleDoneTokenUpdate }
+            />
             <NavigatorBar
               title={ project }
               items={ [
-                <DropdownHeader key="header" label={ `Version: ${ version }` } />,
+                <DropdownHeader
+                  key="header"
+                  label={ `Version: ${ version }` }
+                />,
                 <DropdownDivider key="divider-1" />,
-                <DropdownHeader key="user" label={ `User: ${ decodeURI(alias) }` } />,
+                <DropdownHeader
+                  key="user"
+                  label={ `User: ${ decodeURI(alias) }` }
+                />,
                 <DropdownDivider key="divider-2" />,
-                <DropdownItem key="delete-project" label="Delete Project" disabled={ !data.current.domain || (data.current.domain === "public" && privilege !== "root") } toggle="modal" target={ id.current.deleteProject } onClick={ handleClickDeleteProject } />,
-                <DropdownItem key="delete-bundle" label="Delete Bundle" disabled={ !data.current.domain || !data.current.project || (data.current.domain === "public" && privilege != "root") } toggle="modal" target={ id.current.deleteBundle } onClick={ handleClickDeleteBundle } />,
+                <DropdownItem
+                  key="delete-project"
+                  label="Delete Project"
+                  disabled={ !data.current.domain || (data.current.domain === "public" && privilege !== "root") }
+                  toggle="modal"
+                  target={ id.current.projectDelete }
+                  onClick={ handleClickDeleteProject }
+                />,
+                <DropdownItem
+                  key="delete-bundle"
+                  label="Delete Bundle"
+                  disabled={ !data.current.domain || !data.current.project || (data.current.domain === "public" && privilege != "root") }
+                  toggle="modal"
+                  target={ id.current.bundleDelete }
+                  onClick={ handleClickDeleteBundle }
+                />,
                 <DropdownDivider key="divider-3" />,
-                <DropdownItem key="status" label="Token Status" toggle="modal" target={ id.current.tokenStatus } />,
-                <DropdownItem key="update" label="Token Update" toggle="modal" target={ id.current.tokenUpdate } />
+                <DropdownItem
+                  key="token-status"
+                  label="Show Token Status"
+                  toggle="modal"
+                  target={ id.current.tokenStatus }
+                />,
+                <DropdownItem
+                  key="token-update"
+                  label="Update Token"
+                  toggle="modal"
+                  target={ id.current.tokenUpdate }
+                />
               ] }
             />
           </>
@@ -236,8 +270,8 @@ const MainPage: React.FC<MainPageProps> = ({
             head={
               <>
                 <DomainSelectButton
-                  defaultValue={ data.current.domain }
-                  onSubmit={ handleSubmitDomain }
+                  domain={ data.current.domain }
+                  onSubmit={ handleSubmitDomainSelect }
                 />
                 { " >> " }
                 <ProjectCreateButton
@@ -246,8 +280,8 @@ const MainPage: React.FC<MainPageProps> = ({
                 { " | " }
                 <ProjectSelectButton
                   domain={ data.current.domain }
-                  defaultValue={ data.current.project }
-                  onSubmit={ handleSubmitProject }
+                  project={ data.current.project }
+                  onSubmit={ handleSubmitProjectSelect }
                 />
                 { " >> " }
                 <BundleUploadButton
@@ -258,8 +292,8 @@ const MainPage: React.FC<MainPageProps> = ({
                 <BundleSelectButton
                   domain={ data.current.domain }
                   project={ data.current.project }
-                  defaultValue={ data.current.bundle }
-                  onSubmit={ handleSubmitBundle }
+                  bundle={ data.current.bundle }
+                  onSubmit={ handleSubmitBundleSelect }
                 />
                 { (!!data.current.filename) ? " >> " : "" }
                 <InformationButton

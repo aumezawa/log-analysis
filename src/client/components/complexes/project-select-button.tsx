@@ -16,19 +16,18 @@ import ListForm from "../parts/list-form"
 import ButtonSet from "../sets/button-set"
 
 type ProjectSelectButtonProps = {
-  className?    : string,
-  domain?       : string,
-  defaultValue? : string,
-  onSubmit?     : (value: string) => void
+  className?: string,
+  domain?   : string,
+  project?  : string,
+  onSubmit? : (value: string) => void
 }
 
 const ProjectSelectButton = React.memo<ProjectSelectButtonProps>(({
-  className     = "",
-  domain        = null,
-  defaultValue  = null,
-  onSubmit      = undefined
+  className = "",
+  domain    = null,
+  project   = null,
+  onSubmit  = undefined
 }) => {
-  const [project, setProject] = useState<string>(null)
   const [ignored, forceUpdate] = useReducer(x => x + 1, 0)
 
   const id = useRef({
@@ -36,20 +35,23 @@ const ProjectSelectButton = React.memo<ProjectSelectButtonProps>(({
   })
 
   const data = useRef({
-    filter  : "",
-    project : null,
-    projects: []
+    filter      : "",
+    project     : null,
+    projectName : null,
+    projects    : []
   })
 
   useEffect(() => {
-    if (domain && defaultValue) {
-      data.current.project = defaultValue
-      setProject(defaultValue)
+    if (domain && project) {
+      data.current.project = project
+      data.current.projectName = project
+      forceUpdate()
     } else {
       data.current.project = null
-      setProject(null)
+      data.current.projectName = null
+      forceUpdate()
     }
-  }, [domain, defaultValue])
+  }, [domain, project])
 
   const handleChangeFilter = useCallback((value: string) => {
     data.current.filter = value
@@ -75,16 +77,17 @@ const ProjectSelectButton = React.memo<ProjectSelectButtonProps>(({
     })
   }, [domain])
 
-  const handleChange = useCallback((value: string) => {
+  const handleSelectProject = useCallback((value: string) => {
     data.current.project = value
     forceUpdate()
   }, [true])
 
   const handleSubmit = useCallback(() => {
-    if (onSubmit && data.current.project) {
+    if (onSubmit) {
       onSubmit(data.current.project)
     }
-    setProject(data.current.project)
+    data.current.projectName = data.current.project
+    forceUpdate()
   }, [onSubmit])
 
   const listLabel = () => (
@@ -121,12 +124,13 @@ const ProjectSelectButton = React.memo<ProjectSelectButtonProps>(({
             <ListForm
               labels={ listLabel() }
               titles={ listTitle() }
-              onChange={ handleChange }
+              onChange={ handleSelectProject }
             />
           </>
         }
         foot={
           <ButtonSet
+            submit="Select"
             cancel="Close"
             valid={ !!data.current.project }
             dismiss="modal"
@@ -135,14 +139,14 @@ const ProjectSelectButton = React.memo<ProjectSelectButtonProps>(({
         }
       />
       <button
-        className={ `btn ${ (project && "btn-success") || "btn-secondary" }` }
+        className={ `btn ${ className } ${ data.current.projectName ? "btn-success" : "btn-secondary" }` }
         type="button"
         disabled={ !["public", "private"].includes(domain) }
         data-toggle="modal"
         data-target={ "#" + id.current.modal }
         onClick={ handleClick }
       >
-        { project || "Select Project" }
+        { data.current.projectName || "Select Project" }
       </button>
     </>
   )

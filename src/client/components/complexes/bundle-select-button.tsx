@@ -1,5 +1,5 @@
 import * as React from "react"
-import { useState, useEffect, useRef, useCallback, useReducer } from "react"
+import { useEffect, useRef, useCallback, useReducer } from "react"
 
 import Axios from "axios"
 import { AxiosResponse, AxiosError } from "axios"
@@ -15,22 +15,21 @@ import TextForm from "../parts/text-form"
 import ListForm from "../parts/list-form"
 import ButtonSet from "../sets/button-set"
 
-type ProjectSelectButtonProps = {
-  className?    : string,
-  domain?       : string,
-  project?      : string,
-  defaultValue? : string,
-  onSubmit?     : (value: string) => void
+type BundleSelectButtonProps = {
+  className?: string,
+  domain?   : string,
+  project?  : string,
+  bundle?   : string,
+  onSubmit? : (value: string) => void
 }
 
-const ProjectSelectButton = React.memo<ProjectSelectButtonProps>(({
-  className     = "",
-  domain        = null,
-  project       = null,
-  defaultValue  = null,
-  onSubmit      = undefined
+const BundleSelectButton = React.memo<BundleSelectButtonProps>(({
+  className = "",
+  domain    = null,
+  project   = null,
+  bundle    = null,
+  onSubmit  = undefined
 }) => {
-  const [bundle, setBundle] = useState<string>(null)
   const [ignored, forceUpdate] = useReducer(x => x + 1, 0)
 
   const id = useRef({
@@ -45,35 +44,30 @@ const ProjectSelectButton = React.memo<ProjectSelectButtonProps>(({
   })
 
   useEffect(() => {
-    if (domain && project && defaultValue) {
-      const uri = `${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project, defaultValue) }`
+    if (domain && project && bundle) {
+      const uri = `${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project, bundle) }`
       Axios.get(uri, {
         headers : { "X-Access-Token": Cookie.get("token") || "" },
         data    : {}
       })
       .then((res: AxiosResponse) => {
-        data.current.bundleId = defaultValue
+        data.current.bundleId = bundle
         data.current.bundleName = res.data.name
-        setBundle(res.data.name)
+        forceUpdate()
         return
       })
       .catch((err: AxiosError) => {
         data.current.bundleId = null
         data.current.bundleName = null
-        setBundle(null)
+        forceUpdate()
         return
       })
     } else {
       data.current.bundleId = null
       data.current.bundleName = null
-      setBundle(null)
+      forceUpdate()
     }
-  }, [domain, project, defaultValue])
-
-  const handleChangeFilter = useCallback((value: string) => {
-    data.current.filter = value
-    forceUpdate()
-  }, [true])
+  }, [domain, project, bundle])
 
   const handleClick = useCallback(() => {
     const uri = `${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project) }/bundles`
@@ -94,17 +88,22 @@ const ProjectSelectButton = React.memo<ProjectSelectButtonProps>(({
     })
   }, [domain, project])
 
-  const handleChange = useCallback((value: string) => {
-    data.current.bundleId = data.current.bundles.find((bundle: any) => (bundle.name === value)).id.toString()
-    data.current.bundleName = value
+  const handleChangeFilter = useCallback((value: string) => {
+    data.current.filter = value
+    forceUpdate()
+  }, [true])
+
+  const handleSelectBundle = useCallback((value: string) => {
+    data.current.bundleId = data.current.bundles.find((bundle: BundleInfo) => (bundle.name === value)).id.toString()
     forceUpdate()
   }, [true])
 
   const handleSubmit = useCallback(() => {
-    if (onSubmit && data.current.bundleId) {
+    if (onSubmit) {
       onSubmit(data.current.bundleId)
     }
-    setBundle(data.current.bundleName)
+    data.current.bundleName = data.current.bundles.find((bundle: BundleInfo) => (bundle.id.toString() === data.current.bundleId)).name
+    forceUpdate()
   }, [onSubmit])
 
   const listLabel = () => (
@@ -141,12 +140,13 @@ const ProjectSelectButton = React.memo<ProjectSelectButtonProps>(({
             <ListForm
               labels={ listLabel() }
               titles={ listTitle() }
-              onChange={ handleChange }
+              onChange={ handleSelectBundle }
             />
           </>
         }
         foot={
           <ButtonSet
+            submit="Select"
             cancel="Close"
             valid={ !!data.current.bundleId }
             dismiss="modal"
@@ -155,17 +155,17 @@ const ProjectSelectButton = React.memo<ProjectSelectButtonProps>(({
         }
       />
       <button
-        className={ `btn ${ (bundle && "btn-success") || "btn-secondary" }` }
+        className={ `btn ${ className } ${ data.current.bundleName ? "btn-success" : "btn-secondary" }` }
         type="button"
         disabled={ !["public", "private"].includes(domain) || !project }
         data-toggle="modal"
         data-target={ "#" + id.current.modal }
         onClick={ handleClick }
       >
-        { bundle || "Select Bundle" }
+        { data.current.bundleName || "Select Bundle" }
       </button>
     </>
   )
 })
 
-export default ProjectSelectButton
+export default BundleSelectButton

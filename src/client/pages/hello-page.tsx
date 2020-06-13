@@ -15,21 +15,19 @@ const HelloPage = React.memo<HelloPageProps>(({
   version   = "none",
   user      = "anonymous",
   alias     = "anonymous",
-  privilege = "user"
-}) => {
-  return (
-    <div className="container-fluid">
-      <div className="text-center">
-        <p>Hello World.</p>
-        <p>project = { project }</p>
-        <p>author = { author }</p>
-        <p>version = { version }</p>
-        <p>user = { user }</p>
-        <p>alias = { decodeURI(alias) }</p>
-        <p>privilege = { privilege }</p>
-      </div>
+  privilege = "none"
+}) => (
+  <div className="container-fluid">
+    <div className="text-center">
+      <p>Hello World.</p>
+      <p>project = { project }</p>
+      <p>author = { author }</p>
+      <p>version = { version }</p>
+      <p>user = { user }</p>
+      <p>alias = { decodeURI(alias) }</p>
+      <p>privilege = { privilege }</p>
     </div>
-  )
-})
+  </div>
+))
 
 export default HelloPage

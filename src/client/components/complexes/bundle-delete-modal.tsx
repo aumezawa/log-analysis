@@ -16,7 +16,6 @@ import ButtonSet from "../sets/button-set"
 
 type BundleDeleteModalProps = {
   id        : string,
-  className?: string,
   domain?   : string,
   project?  : string,
   reload?   : number,
@@ -25,7 +24,6 @@ type BundleDeleteModalProps = {
 
 const BundleDeleteModal = React.memo<BundleDeleteModalProps>(({
   id        = null,
-  className = "",
   domain    = null,
   project   = null,
   reload    = 0,
@@ -34,7 +32,7 @@ const BundleDeleteModal = React.memo<BundleDeleteModalProps>(({
   const [ignored, forceUpdate] = useReducer(x => x + 1, 0)
 
   const data = useRef({
-    doing     : false,
+    processing: false,
     filter    : "",
     bundleId  : null,
     bundleName: null,
@@ -78,9 +76,10 @@ const BundleDeleteModal = React.memo<BundleDeleteModalProps>(({
   }, [true])
 
   const handleSubmit = useCallback(() => {
-    data.current.doing = true
-    forceUpdate()
     const uri = `${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project, data.current.bundleId) }`
+
+    data.current.processing = true
+    forceUpdate()
     Axios.delete(uri, {
       headers : { "X-Access-Token": Cookie.get("token") || "" },
       data    : {}
@@ -91,12 +90,12 @@ const BundleDeleteModal = React.memo<BundleDeleteModalProps>(({
       }
       data.current.bundleId = null
       data.current.bundleName = null
-      data.current.doing = false
+      data.current.processing = false
       reloadProject()
       return
     })
     .catch((err: AxiosError) => {
-      data.current.doing = false
+      data.current.processing = false
       forceUpdate()
       alert(err.response.data.msg)
       return
@@ -144,7 +143,7 @@ const BundleDeleteModal = React.memo<BundleDeleteModalProps>(({
         <ButtonSet
           submit="Delete"
           cancel="Close"
-          valid={ !!data.current.bundleId && !data.current.doing }
+          valid={ !!data.current.bundleId && !data.current.processing }
           dismiss="modal"
           keep={ true }
           onSubmit={ handleSubmit }
