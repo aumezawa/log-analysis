@@ -14,15 +14,24 @@ import UniqueId from "../../lib/unique-id"
 type FunctionalTableProps = {
   className?: string,
   content?  : TableContent,
+  line?     : number,
+  copy?     : boolean,
+  onClick?  : (line: number) => void
 }
 
-const ROWS = ["100", "500", "1000", "5000"]
+const DEFAULT_ROW = 100
+const ROWS = [String(DEFAULT_ROW), "500", "1000", "5000"]
 
 const FunctionalTable = React.memo<FunctionalTableProps>(({
   className = "",
-  content   = null
+  content   = null,
+  line      = null,
+  copy      = true,
+  onClick   = undefined
 }) => {
   const [ignored, forceUpdate]  = useReducer(x => x + 1, 0)
+
+  const ref = React.createRef<HTMLDivElement>()
 
   const id = useRef({
     textFilter: "modal-" + UniqueId(),
@@ -31,19 +40,24 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
 
   const env = useRef({
     page    : 1,
-    maxRow  : Number(ROWS[0]),
+    maxRow  : DEFAULT_ROW,
     rows    : 0,
     label   : null,
     filters : {} as FilterSettings
   })
 
   useEffect(() => {
-    env.current.page = 1
-    env.current.maxRow = Number(ROWS[0])
+    env.current.page = line ? Math.ceil(line / DEFAULT_ROW) : 1
+    env.current.maxRow = DEFAULT_ROW
     env.current.label = null
     env.current.filters = {} as FilterSettings
     forceUpdate()
-  }, [content])
+
+    // Note: Scroll
+    const element: Element = (ref.current as Element)
+    const scrollRate = line ? ((line - 1) % DEFAULT_ROW) / DEFAULT_ROW : 0
+    element.scrollTo(0, Math.round(element.scrollHeight * scrollRate))
+  }, [content, line])
 
   const handleClickFilter = useCallback((targetValue: string, parentValue: string) => {
     env.current.label = parentValue
@@ -85,6 +99,20 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
       forceUpdate()
     }
   }, [true])
+
+  const handleClickContent = useCallback((e: React.MouseEvent<HTMLTableCellElement>) => {
+    if (copy) {
+      const textarea = document.createElement("textarea")
+      textarea.value = (e.currentTarget as HTMLElement).innerText
+      document.body.appendChild(textarea)
+      textarea.select()
+      document.execCommand("copy")
+      textarea.remove()
+    }
+    if (onClick) {
+      onClick(Number((e.currentTarget.parentNode as HTMLElement).title))
+    }
+  }, [copy, onClick])
 
   const handleChangeMaxRow = useCallback((value: string) => {
     env.current.page = 1
@@ -149,13 +177,15 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
           row.push(
             <td
               key={ label }
-              className={ `${ (label === content.format.contentKey) ? "text-wrap text-break" : "text-nowrap" }` }
+              title=""
+              className={ `${ (label === content.format.contentKey) ? "table-main-content" : "table-sub-content" }` }
+              onClick={ handleClickContent }
             >
               { highlight(datum, label) }
             </td>
           )
         }
-        return <tr key={ "row" + index }>{ row }</tr>
+        return <tr key={ "row" + index } title={ `${ index + 1 }` } >{ row }</tr>
       })
     } else {
       return <tr><td>{ "No content" }</td></tr>
@@ -252,7 +282,7 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
 
   return (
     <div className={ `flex-container-column ${ className }` }>
-      <div className="flex-main-area flex-main-overflow table-responsive">
+      <div ref={ ref } className="flex-main-area flex-main-overflow table-responsive">
         <ModalFrame
           id={ id.current.textFilter }
           title="Text Filter"

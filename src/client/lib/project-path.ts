@@ -1,5 +1,5 @@
 export default {
-  encode: (domain: string = null, project: string = null, bundle: string = null, filepath: string = null) => {
+  encode: (domain: string = null, project: string = null, bundle: string = null, filepath: string = null, line: number = null) => {
     let path: string = null
     if (domain) {
       path = `log/${ domain }`
@@ -9,6 +9,9 @@ export default {
           path = `${ path }/bundles/${ bundle }`
           if (filepath) {
             path = `${ path }/files/${ filepath }`
+            if (line) {
+              path = `${ path }?line=${ line }`
+            }
           }
         }
       }

@@ -1,5 +1,5 @@
 import * as React from "react"
-import { useEffect, useRef, useReducer } from "react"
+import { useEffect, useRef, useCallback, useReducer } from "react"
 
 import Axios from "axios"
 import { AxiosResponse, AxiosError } from "axios"
@@ -13,12 +13,16 @@ import FunctionalTable from "../sets/functional-table"
 
 type FunctionalTableBoxProps = {
   className?: string,
-  path?     : string
+  path?     : string,
+  line?     : number,
+  onClick   : (line: number) => void
 }
 
 const FunctionalTableBox = React.memo<FunctionalTableBoxProps>(({
   className = "",
-  path      = null
+  path      = null,
+  line      = null,
+  onClick   = undefined
 }) => {
   const [ignored, forceUpdate] = useReducer(x => x + 1, 0)
 
@@ -48,11 +52,19 @@ const FunctionalTableBox = React.memo<FunctionalTableBoxProps>(({
     }
   }, [path])
 
+  const handleClick = useCallback((line: number) => {
+    if (onClick) {
+      onClick(line)
+    }
+  }, [onClick])
+
   return (
     <>
       <FunctionalTable
         className={ className }
         content={ data.current.content }
+        line={ line }
+        onClick={ handleClick }
       />
     </>
   )
