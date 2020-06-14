@@ -27,7 +27,7 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
   className = "",
   content   = null,
   line      = null,
-  copy      = true,
+  copy      = false,
   onChange  = undefined
 }) => {
   const [ignored, forceUpdate]  = useReducer(x => x + 1, 0)
@@ -50,12 +50,17 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
     filters : {} as FilterSettings
   })
 
+  const input = useRef({
+    line    : null
+  })
+
   useEffect(() => {
     env.current.page = line ? Math.ceil(line / DEFAULT_ROW) : 1
     env.current.maxRow = DEFAULT_ROW
-    env.current.line = null
+    env.current.line = line
     env.current.label = null
     env.current.filters = {} as FilterSettings
+    input.current.line = null
     textRef.current.value = ""
     forceUpdate()
     scrollToLine(line)
@@ -116,6 +121,8 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
   }, [true])
 
   const handleClickContent = useCallback((e: React.MouseEvent<HTMLTableCellElement>) => {
+    env.current.line = Number((e.currentTarget.parentNode as HTMLElement).title)
+    forceUpdate()
     if (copy) {
       const textarea = document.createElement("textarea")
       textarea.value = (e.currentTarget as HTMLElement).innerText
@@ -125,7 +132,7 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
       textarea.remove()
     }
     if (onChange) {
-      onChange(Number((e.currentTarget.parentNode as HTMLElement).title))
+      onChange(env.current.line)
     }
   }, [copy, onChange])
 
@@ -141,18 +148,19 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
   }, [true])
 
   const handleChangeLine = useCallback((value: string) => {
-    env.current.line = value.match(/^[0-9]+$/) ? Number(value) : null
+    input.current.line = value.match(/^[0-9]+$/) ? Number(value) : null
     forceUpdate()
   }, [true])
 
   const handleClickGoToLine = useCallback(() => {
+    env.current.line = input.current.line
     env.current.page = Math.ceil(env.current.line / env.current.maxRow)
     forceUpdate()
     scrollToLine(env.current.line)
     if (onChange) {
       onChange(env.current.line)
     }
-  }, [onChange, env.current.line, env.current.maxRow])
+  }, [onChange, input.current.line, env.current.maxRow])
 
   const renderHeader = () => {
     if (content) {
@@ -206,7 +214,7 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
           row.push(
             <td
               key={ label }
-              title="Click to copy"
+              title=""
               className={ `${ (label === content.format.contentKey) ? "table-main-content" : "table-sub-content" }` }
               onClick={ handleClickContent }
             >
@@ -214,7 +222,7 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
             </td>
           )
         }
-        return <tr key={ "row" + index } title={ `${ index + 1 }` } >{ row }</tr>
+        return <tr key={ "row" + index } className={ `${ index + 1 === env.current.line ? "table-success" : "" }` } title={ `${ index + 1 }` } >{ row }</tr>
       })
     } else {
       return <tr><td>{ "No content" }</td></tr>
@@ -359,7 +367,7 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
           label="line"
           button="GoTo"
           size={ 4 }
-          valid={ !!env.current.line && env.current.line > 0 && env.current.line <= env.current.rows }
+          valid={ !!input.current.line && input.current.line > 0 && input.current.line <= env.current.rows }
           validation={ false }
           disabled={ !!Object.keys(env.current.filters).length }
           onChange={ handleChangeLine }

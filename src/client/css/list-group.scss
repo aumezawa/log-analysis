@@ -10,6 +10,13 @@
   display: flex !important;
 }
 
+.list-group-item-container > .list-group-item-inner-single {
+  padding-top: 0.5rem !important;
+  padding-bottom: 0.5rem !important;
+  padding-left: 0.5rem !important;
+  padding-right: 0.5rem !important;
+}
+
 .list-group-item-container > .list-group-item-inner-left {
   padding-top: 0.5rem !important;
   padding-bottom: 0.5rem !important;

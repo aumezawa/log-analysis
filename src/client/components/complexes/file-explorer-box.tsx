@@ -9,6 +9,7 @@ import * as Cookie from "js-cookie"
 import Environment from "../../lib/environment"
 import Escape from "../../lib/escape"
 
+import TextForm from "../parts/text-form"
 import FileTreeRoot from "../sets/file-tree-root"
 import DropdownItem from "../parts/dropdown-item"
 
@@ -25,13 +26,18 @@ const FileExplorerBox = React.memo<FileExplorerBoxProps>(({
 }) => {
   const [ignored, forceUpdate] = useReducer(x => x + 1, 0)
 
+  const ref = React.createRef<HTMLInputElement>()
+
+  const filter = useRef<string>("")
+
   const files = useRef({
-    name: "",
-    file: false,
+    name    : "",
+    file    : false,
     children: []
   })
 
   useEffect(() => {
+    filter.current = ref.current.value = ""
     if (path) {
       const uri = `${ Environment.getBaseUrl() }/api/v1/${ Escape.root(path) }`
       Axios.get(uri, {
@@ -62,6 +68,13 @@ const FileExplorerBox = React.memo<FileExplorerBoxProps>(({
       forceUpdate()
     }
   }, [path])
+
+  const handleChangeFilter = useCallback((value: string) => {
+    if (value.length !== 1) {
+      filter.current = value
+      forceUpdate()
+    }
+  }, [true])
 
   const handleClickView = useCallback((targetValue: string, parentValue: string) => {
     if (onSelect) {
@@ -111,8 +124,16 @@ const FileExplorerBox = React.memo<FileExplorerBoxProps>(({
 
   return (
     <div className={ `${ className } text-left text-monospace` }>
+      <TextForm
+        ref={ ref }
+        className="mb-3"
+        valid={ true }
+        label="Filter"
+        onChange={ handleChangeFilter }
+      />
       <FileTreeRoot
         root={ files.current }
+        filter={ filter.current }
         actions={ [
           <DropdownItem
             key="view"
