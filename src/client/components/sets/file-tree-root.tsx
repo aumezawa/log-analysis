@@ -8,12 +8,14 @@ import * as Path from "path"
 type FileTreeRootProps = {
   root    : NodeType,
   path?   : string,
+  filter? : string,
   actions?: Array<JSX.Element>
 }
 
 const FileTreeRoot: React.FC<FileTreeRootProps> = ({
   root    = undefined,
   path    = "/",
+  filter  = "",
   actions = []
 }) => {
   const render = () => {
@@ -24,6 +26,7 @@ const FileTreeRoot: React.FC<FileTreeRootProps> = ({
           leaf={ leaf }
           path={ (leaf.link) || Path.join(path, leaf.name) }
           depth={ 0 }
+          filter={ filter }
           actions={ actions }
         />
       )
@@ -34,6 +37,7 @@ const FileTreeRoot: React.FC<FileTreeRootProps> = ({
           node={ node }
           path={ path }
           depth={ 0 }
+          filter={ filter }
           actions={ actions }
         />
       )

@@ -21,3 +21,12 @@
 .table-header-fixed thead th:first-child {
   z-index: 3 !important;
 }
+
+.table-main-content {
+  word-break : break-all !important;
+  word-wrap : break-word !important;;
+}
+
+.table-sub-content {
+  white-space: nowrap !important;
+}

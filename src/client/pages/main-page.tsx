@@ -61,7 +61,7 @@ const MainPage: React.FC<MainPageProps> = ({
   const [reloadProjectList, updateProjectList] = useReducer(x => x + 1, 0)
   const [reloadBundleList,  updateBundleList]  = useReducer(x => x + 1, 0)
 
-  const refs = useRef({
+  const ref = useRef({
     files : React.createRef<HTMLAnchorElement>(),
     viewer: React.createRef<HTMLAnchorElement>()
   })
@@ -79,6 +79,7 @@ const MainPage: React.FC<MainPageProps> = ({
     bundle  : null,
     filepath: null,
     filename: null,
+    line    : null,
     terminal: false
   })
 
@@ -87,7 +88,8 @@ const MainPage: React.FC<MainPageProps> = ({
       data.current.domain,
       data.current.project,
       data.current.bundle,
-      data.current.filepath
+      data.current.filepath,
+      data.current.line
     ))
   }
 
@@ -97,6 +99,7 @@ const MainPage: React.FC<MainPageProps> = ({
     const project = params.get("project")
     const bundle = params.get("bundle")
     const filepath = params.get("filepath")
+    const line = params.get("line")
 
     if (domain && project) {
       const uri = `${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project, bundle, filepath) }`
@@ -111,6 +114,11 @@ const MainPage: React.FC<MainPageProps> = ({
         data.current.bundle   = domain && project && bundle
         data.current.filepath = domain && project && bundle && filepath
         data.current.filename = domain && project && bundle && filepath && Path.basename(filepath)
+        data.current.line     = domain && project && bundle && filepath && Number(line)
+        if (filepath) {
+          ref.current.files.current.click()
+          ref.current.viewer.current.click()
+        }
         forceUpdate()
         updateAddressBar()
         return
@@ -120,6 +128,8 @@ const MainPage: React.FC<MainPageProps> = ({
         updateAddressBar()
         return
       })
+    } else {
+      updateAddressBar()
     }
   }, [true])
 
@@ -133,6 +143,7 @@ const MainPage: React.FC<MainPageProps> = ({
     data.current.bundle = null
     data.current.filepath = null
     data.current.filename = null
+    data.current.line = null
     forceUpdate()
     updateAddressBar()
   }, [true])
@@ -142,6 +153,7 @@ const MainPage: React.FC<MainPageProps> = ({
     data.current.bundle = null
     data.current.filepath = null
     data.current.filename = null
+    data.current.line = null
     forceUpdate()
     updateAddressBar()
   }, [true])
@@ -152,6 +164,7 @@ const MainPage: React.FC<MainPageProps> = ({
       data.current.bundle = null
       data.current.filepath = null
       data.current.filename = null
+      data.current.line = null
       forceUpdate()
       updateAddressBar()
     }
@@ -161,6 +174,7 @@ const MainPage: React.FC<MainPageProps> = ({
     data.current.bundle = value
     data.current.filepath = null
     data.current.filename = null
+    data.current.line = null
     forceUpdate()
     updateAddressBar()
   }, [true])
@@ -170,15 +184,17 @@ const MainPage: React.FC<MainPageProps> = ({
       data.current.bundle = null
       data.current.filepath = null
       data.current.filename = null
+      data.current.line = null
       forceUpdate()
       updateAddressBar()
     }
   }, [true])
 
   const handleSelectFile = useCallback((action: string, value: string) => {
-    refs.current.viewer.current.click()
+    ref.current.viewer.current.click()
     data.current.filepath = value
     data.current.filename = Path.basename(value)
+    data.current.line = null
     data.current.terminal = (action === "terminal")
     setTimeout(() => forceUpdate(), 1000)
     updateAddressBar()
@@ -190,6 +206,11 @@ const MainPage: React.FC<MainPageProps> = ({
 
   const handleClickDeleteBundle = useCallback((targetValue: string, parentValue: string) => {
     updateBundleList()
+  }, [true])
+
+  const handleChangeTableLine = useCallback((line: number) => {
+    data.current.line = line
+    updateAddressBar()
   }, [true])
 
   return (
@@ -311,7 +332,7 @@ const MainPage: React.FC<MainPageProps> = ({
                     onSelect={ handleSelectFile }
                   />
                 ] }
-                refs={ [refs.current.files] }
+                refs={ [ref.current.files] }
               />
             }
             right={
@@ -319,11 +340,23 @@ const MainPage: React.FC<MainPageProps> = ({
                 labels={ ["Viewer"] }
                 items={ [
                   <>
-                    { !data.current.terminal && <FunctionalTableBox path={ ProjectPath.strictEncodeFilepath(data.current.domain, data.current.project, data.current.bundle, data.current.filepath) }/> }
-                    {  data.current.terminal && <TerminalBox app="term" path={ ProjectPath.strictEncodeFilepath(data.current.domain, data.current.project, data.current.bundle, data.current.filepath) } disabled={ !data.current.terminal } /> }
+                    { !data.current.terminal &&
+                      <FunctionalTableBox
+                        path={ ProjectPath.strictEncodeFilepath(data.current.domain, data.current.project, data.current.bundle, data.current.filepath) }
+                        line={ data.current.line }
+                        onChange={ handleChangeTableLine }
+                      />
+                    }
+                    { data.current.terminal &&
+                      <TerminalBox
+                        app="term"
+                        path={ ProjectPath.strictEncodeFilepath(data.current.domain, data.current.project, data.current.bundle, data.current.filepath) }
+                        disabled={ !data.current.terminal }
+                      />
+                    }
                   </>
                 ] }
-                refs={ [refs.current.viewer] }
+                refs={ [ref.current.viewer] }
               />
              }
           />

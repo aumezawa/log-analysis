@@ -1,6 +1,6 @@
 {
   "name": "log-analysis",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "log analysis tools",
   "config": {
     "http-port": "3000",

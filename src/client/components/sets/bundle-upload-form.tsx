@@ -18,9 +18,9 @@ const BundleUploadForm = React.memo<BundleUploadFormProps>(({
   onSubmit  = undefined,
   onCancel  = undefined
 }) => {
-  const [valid, setValid] = useState(false)
+  const [valid, setValid] = useState<boolean>(false)
 
-  const refs = useRef({
+  const ref = useRef({
     file: React.createRef<HTMLInputElement>(),
     desc: React.createRef<HTMLInputElement>()
   })
@@ -48,9 +48,9 @@ const BundleUploadForm = React.memo<BundleUploadFormProps>(({
   }, [onSubmit])
 
   const handleCancel = useCallback(() => {
-    data.current.name = refs.current.file.current.value = ""
+    data.current.name = ref.current.file.current.value = ""
     data.current.obj  = null
-    data.current.desc = refs.current.desc.current.value = ""
+    data.current.desc = ref.current.desc.current.value = ""
     setValid(false)
     if (onCancel) {
       onCancel()
@@ -60,7 +60,7 @@ const BundleUploadForm = React.memo<BundleUploadFormProps>(({
   return (
     <div className={ className }>
       <FileForm
-        ref={ refs.current.file }
+        ref={ ref.current.file }
         className="mb-3"
         valid={ valid }
         filename={ data.current.name }
@@ -69,7 +69,7 @@ const BundleUploadForm = React.memo<BundleUploadFormProps>(({
         onChange={ handleChangeFile }
       />
       <TextForm
-        ref={ refs.current.desc }
+        ref={ ref.current.desc }
         className="mb-3"
         valid={ true }
         label="description"

@@ -32,6 +32,10 @@ const BundleSelectButton = React.memo<BundleSelectButtonProps>(({
 }) => {
   const [ignored, forceUpdate] = useReducer(x => x + 1, 0)
 
+  const ref = useRef({
+    text  : React.createRef<HTMLInputElement>()
+  })
+
   const id = useRef({
     modal: "modal-" + UniqueId()
   })
@@ -43,7 +47,17 @@ const BundleSelectButton = React.memo<BundleSelectButtonProps>(({
     bundles   : []
   })
 
+  const input = useRef({
+    bundleId  : null,
+    bundleName: null,
+  })
+
   useEffect(() => {
+    data.current.filter = ref.current.text.current.value = ""
+    data.current.bundleId   = input.current.bundleId   = null
+    data.current.bundleName = input.current.bundleName = null
+
+
     if (domain && project && bundle) {
       const uri = `${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project, bundle) }`
       Axios.get(uri, {
@@ -57,14 +71,10 @@ const BundleSelectButton = React.memo<BundleSelectButtonProps>(({
         return
       })
       .catch((err: AxiosError) => {
-        data.current.bundleId = null
-        data.current.bundleName = null
         forceUpdate()
         return
       })
     } else {
-      data.current.bundleId = null
-      data.current.bundleName = null
       forceUpdate()
     }
   }, [domain, project, bundle])
@@ -89,20 +99,24 @@ const BundleSelectButton = React.memo<BundleSelectButtonProps>(({
   }, [domain, project])
 
   const handleChangeFilter = useCallback((value: string) => {
-    data.current.filter = value
-    forceUpdate()
+    if (value.length !== 1) {
+      data.current.filter = value
+      forceUpdate()
+    }
   }, [true])
 
   const handleSelectBundle = useCallback((value: string) => {
-    data.current.bundleId = data.current.bundles.find((bundle: BundleInfo) => (bundle.name === value)).id.toString()
+    input.current.bundleId = data.current.bundles.find((bundle: BundleInfo) => (bundle.name === value)).id.toString()
+    input.current.bundleName = value
     forceUpdate()
   }, [true])
 
   const handleSubmit = useCallback(() => {
+    data.current.bundleId   = input.current.bundleId
+    data.current.bundleName = input.current.bundleName
     if (onSubmit) {
       onSubmit(data.current.bundleId)
     }
-    data.current.bundleName = data.current.bundles.find((bundle: BundleInfo) => (bundle.id.toString() === data.current.bundleId)).name
     forceUpdate()
   }, [onSubmit])
 
@@ -132,6 +146,7 @@ const BundleSelectButton = React.memo<BundleSelectButtonProps>(({
         body={
           <>
             <TextForm
+              ref={ ref.current.text }
               className="mb-3"
               valid={ true }
               label="Filter"
@@ -148,7 +163,7 @@ const BundleSelectButton = React.memo<BundleSelectButtonProps>(({
           <ButtonSet
             submit="Select"
             cancel="Close"
-            valid={ !!data.current.bundleId }
+            valid={ !!input.current.bundleId }
             dismiss="modal"
             onSubmit={ handleSubmit }
           />

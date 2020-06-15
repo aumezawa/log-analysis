@@ -11,6 +11,7 @@ type FileTreeNodeProps = {
   node    : DirectoryType,
   path?   : string,
   depth?  : number,
+  filter? : string,
   actions?: Array<JSX.Element>
 }
 
@@ -18,6 +19,7 @@ const FileTreeNode: React.FC<FileTreeNodeProps> = ({
   node    = undefined,
   path    = "/",
   depth   = 0,
+  filter  = "",
   actions = []
 }) => {
   const [open, setOpen] = useState<boolean>(false)
@@ -40,6 +42,7 @@ const FileTreeNode: React.FC<FileTreeNodeProps> = ({
             leaf={ childLeaf }
             path={ (childLeaf.link) || Path.join(path, childLeaf.name) }
             depth={ depth + 1 }
+            filter={ filter }
             actions={ actions }
           />
         )
@@ -51,6 +54,7 @@ const FileTreeNode: React.FC<FileTreeNodeProps> = ({
             node={ childNode }
             path={ Path.join(path, childNode.name) }
             depth={ depth + 1 }
+            filter={ filter }
             actions={ actions }
           />
         )
@@ -60,28 +64,41 @@ const FileTreeNode: React.FC<FileTreeNodeProps> = ({
 
   return (
     <ul className="list-group">
-      <button
-        className="list-group-item list-group-item-action list-group-item-info list-group-item-container flex-container-row"
-        type="button"
-        data-toggle="collapse"
-        data-target={ "#" + id.current.collapse }
-        aria-expanded="false"
-        aria-controls={ id.current.collapse }
-        onClick={ handleClick }
-      >
-        <div className="list-group-item-inner-left text-nowrap">
-          { "-".repeat(depth) }
-        </div>
-        <div className="list-group-item-inner-center text-nowrap">
-          { open ? "[-]" : "[+]" }
-        </div>
-        <div className="list-group-item-inner-right flex-main-area text-break">
-          { node && node.name }
-        </div>
-      </button>
-      <ul className="list-group collapse" id={ id.current.collapse }>
-        { renderChildren() }
-      </ul>
+      {
+        !filter &&
+        <>
+          <button
+            className="list-group-item list-group-item-action list-group-item-info list-group-item-container flex-container-row"
+            type="button"
+            data-toggle="collapse"
+            data-target={ "#" + id.current.collapse }
+            aria-expanded="false"
+            aria-controls={ id.current.collapse }
+            onClick={ handleClick }
+          >
+            <div className="list-group-item-inner-left text-nowrap">
+              { "-".repeat(depth) }
+            </div>
+            <div className="list-group-item-inner-center text-nowrap">
+              { open ? "[-]" : "[+]" }
+            </div>
+            <div className="list-group-item-inner-right flex-main-area text-break">
+              { node && node.name }
+            </div>
+          </button>
+          <ul className="list-group collapse" id={ id.current.collapse }>
+            { renderChildren() }
+          </ul>
+        </>
+      }
+      {
+        !!filter &&
+        <>
+          <ul className="list-group">
+            { renderChildren() }
+          </ul>
+        </>
+      }
     </ul>
   )
 }
