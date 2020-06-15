@@ -61,7 +61,7 @@ const MainPage: React.FC<MainPageProps> = ({
   const [reloadProjectList, updateProjectList] = useReducer(x => x + 1, 0)
   const [reloadBundleList,  updateBundleList]  = useReducer(x => x + 1, 0)
 
-  const refs = useRef({
+  const ref = useRef({
     files : React.createRef<HTMLAnchorElement>(),
     viewer: React.createRef<HTMLAnchorElement>()
   })
@@ -116,7 +116,8 @@ const MainPage: React.FC<MainPageProps> = ({
         data.current.filename = domain && project && bundle && filepath && Path.basename(filepath)
         data.current.line     = domain && project && bundle && filepath && Number(line)
         if (filepath) {
-          refs.current.viewer.current.click()
+          ref.current.files.current.click()
+          ref.current.viewer.current.click()
         }
         forceUpdate()
         updateAddressBar()
@@ -190,7 +191,7 @@ const MainPage: React.FC<MainPageProps> = ({
   }, [true])
 
   const handleSelectFile = useCallback((action: string, value: string) => {
-    refs.current.viewer.current.click()
+    ref.current.viewer.current.click()
     data.current.filepath = value
     data.current.filename = Path.basename(value)
     data.current.line = null
@@ -331,7 +332,7 @@ const MainPage: React.FC<MainPageProps> = ({
                     onSelect={ handleSelectFile }
                   />
                 ] }
-                refs={ [refs.current.files] }
+                refs={ [ref.current.files] }
               />
             }
             right={
@@ -355,7 +356,7 @@ const MainPage: React.FC<MainPageProps> = ({
                     }
                   </>
                 ] }
-                refs={ [refs.current.viewer] }
+                refs={ [ref.current.viewer] }
               />
              }
           />

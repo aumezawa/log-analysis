@@ -21,9 +21,9 @@ const TextFilterForm = React.memo<TextFilterFormProps>(({
   onSubmit  = undefined,
   onCancel  = undefined
 }) => {
-  const [valid, setValid] = useState(false)
+  const [valid, setValid] = useState<boolean>(false)
 
-  const refs = useRef({
+  const ref = useRef({
     mode      : React.createRef<HTMLSelectElement>(),
     sensitive : React.createRef<HTMLInputElement>(),
     condition : React.createRef<HTMLInputElement>()
@@ -55,9 +55,9 @@ const TextFilterForm = React.memo<TextFilterFormProps>(({
   }, [onSubmit])
 
   const handleCancel = useCallback(() => {
-    data.current.mode       = refs.current.mode.current.value         = options[0]
-    data.current.sensitive  = refs.current.sensitive.current.checked  = true
-    data.current.condition  = refs.current.condition.current.value    = ""
+    data.current.mode       = ref.current.mode.current.value         = options[0]
+    data.current.sensitive  = ref.current.sensitive.current.checked  = true
+    data.current.condition  = ref.current.condition.current.value    = ""
     setValid(false)
     if (onCancel) {
       onCancel()
@@ -67,7 +67,7 @@ const TextFilterForm = React.memo<TextFilterFormProps>(({
   return (
     <div className={ className }>
       <SelectForm
-        ref={ refs.current.mode }
+        ref={ ref.current.mode }
         className="mb-3"
         label="Mode"
         options={ options }
@@ -75,14 +75,14 @@ const TextFilterForm = React.memo<TextFilterFormProps>(({
         onChange={ handleChangeMode }
       />
       <CheckForm
-        ref={ refs.current.sensitive }
+        ref={ ref.current.sensitive }
         className="mb-3"
         label="Case-Sensitive"
         disabled={ disabled }
         onChange={ handleChangeCheck }
       />
       <TextForm
-        ref={ refs.current.condition }
+        ref={ ref.current.condition }
         className="mb-3"
         valid={ valid }
         label="Condition"

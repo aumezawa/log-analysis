@@ -26,18 +26,27 @@ const FileExplorerBox = React.memo<FileExplorerBoxProps>(({
 }) => {
   const [ignored, forceUpdate] = useReducer(x => x + 1, 0)
 
-  const ref = React.createRef<HTMLInputElement>()
+  const ref = useRef({
+    text  : React.createRef<HTMLInputElement>()
+  })
 
-  const filter = useRef<string>("")
-
-  const files = useRef({
-    name    : "",
-    file    : false,
-    children: []
+  const data = useRef({
+    filter: "",
+    files : {
+      name    : "",
+      file    : false,
+      children: []
+    }
   })
 
   useEffect(() => {
-    filter.current = ref.current.value = ""
+    data.current.filter = ref.current.text.current.value = ""
+    data.current.files = {
+      name    : "",
+      file    : false,
+      children: []
+    }
+
     if (path) {
       const uri = `${ Environment.getBaseUrl() }/api/v1/${ Escape.root(path) }`
       Axios.get(uri, {
@@ -45,33 +54,23 @@ const FileExplorerBox = React.memo<FileExplorerBoxProps>(({
         data    : {}
       })
       .then((res: AxiosResponse) => {
-        files.current = res.data.files
+        data.current.files = res.data.files
         forceUpdate()
         return
       })
       .catch((err: AxiosError) => {
-        files.current = {
-          name: "",
-          file: false,
-          children: []
-        }
         forceUpdate()
         alert(err.response.data.msg)
         return
       })
     } else {
-      files.current = {
-        name: "",
-        file: false,
-        children: []
-      }
       forceUpdate()
     }
   }, [path])
 
   const handleChangeFilter = useCallback((value: string) => {
     if (value.length !== 1) {
-      filter.current = value
+      data.current.filter = value
       forceUpdate()
     }
   }, [true])
@@ -125,15 +124,15 @@ const FileExplorerBox = React.memo<FileExplorerBoxProps>(({
   return (
     <div className={ `${ className } text-left text-monospace` }>
       <TextForm
-        ref={ ref }
+        ref={ ref.current.text }
         className="mb-3"
         valid={ true }
         label="Filter"
         onChange={ handleChangeFilter }
       />
       <FileTreeRoot
-        root={ files.current }
-        filter={ filter.current }
+        root={ data.current.files }
+        filter={ data.current.filter }
         actions={ [
           <DropdownItem
             key="view"

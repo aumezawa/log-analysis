@@ -1,5 +1,5 @@
 import * as React from "react"
-import { useState, useEffect, useRef, useCallback, useReducer } from "react"
+import { useEffect, useRef, useCallback, useReducer } from "react"
 
 import Axios from "axios"
 import { AxiosResponse, AxiosError } from "axios"
@@ -30,6 +30,10 @@ const ProjectSelectButton = React.memo<ProjectSelectButtonProps>(({
 }) => {
   const [ignored, forceUpdate] = useReducer(x => x + 1, 0)
 
+  const ref = useRef({
+    text  : React.createRef<HTMLInputElement>()
+  })
+
   const id = useRef({
     modal: "modal-" + UniqueId()
   })
@@ -37,25 +41,25 @@ const ProjectSelectButton = React.memo<ProjectSelectButtonProps>(({
   const data = useRef({
     filter      : "",
     project     : null,
-    projectName : null,
     projects    : []
   })
 
+  const input = useRef({
+    project     : null
+  })
+
   useEffect(() => {
-    if (domain && project) {
-      data.current.project = project
-      data.current.projectName = project
-      forceUpdate()
-    } else {
-      data.current.project = null
-      data.current.projectName = null
-      forceUpdate()
-    }
+    data.current.filter = ref.current.text.current.value = ""
+    data.current.project = (domain && project) ? project : null
+    input.current.project = null
+    forceUpdate()
   }, [domain, project])
 
   const handleChangeFilter = useCallback((value: string) => {
-    data.current.filter = value
-    forceUpdate()
+    if (value.length !== 1) {
+      data.current.filter = value
+      forceUpdate()
+    }
   }, [true])
 
   const handleClick = useCallback(() => {
@@ -78,15 +82,15 @@ const ProjectSelectButton = React.memo<ProjectSelectButtonProps>(({
   }, [domain])
 
   const handleSelectProject = useCallback((value: string) => {
-    data.current.project = value
+    input.current.project = value
     forceUpdate()
   }, [true])
 
   const handleSubmit = useCallback(() => {
+    data.current.project = input.current.project
     if (onSubmit) {
       onSubmit(data.current.project)
     }
-    data.current.projectName = data.current.project
     forceUpdate()
   }, [onSubmit])
 
@@ -116,6 +120,7 @@ const ProjectSelectButton = React.memo<ProjectSelectButtonProps>(({
         body={
           <>
             <TextForm
+              ref={ ref.current.text }
               className="mb-3"
               valid={ true }
               label="Filter"
@@ -132,21 +137,21 @@ const ProjectSelectButton = React.memo<ProjectSelectButtonProps>(({
           <ButtonSet
             submit="Select"
             cancel="Close"
-            valid={ !!data.current.project }
+            valid={ !!input.current.project }
             dismiss="modal"
             onSubmit={ handleSubmit }
           />
         }
       />
       <button
-        className={ `btn ${ className } ${ data.current.projectName ? "btn-success" : "btn-secondary" }` }
+        className={ `btn ${ className } ${ data.current.project ? "btn-success" : "btn-secondary" }` }
         type="button"
         disabled={ !["public", "private"].includes(domain) }
         data-toggle="modal"
         data-target={ "#" + id.current.modal }
         onClick={ handleClick }
       >
-        { data.current.projectName || "Select Project" }
+        { data.current.project || "Select Project" }
       </button>
     </>
   )

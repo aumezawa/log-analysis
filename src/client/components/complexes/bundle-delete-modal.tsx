@@ -31,6 +31,10 @@ const BundleDeleteModal = React.memo<BundleDeleteModalProps>(({
 }) => {
   const [ignored, forceUpdate] = useReducer(x => x + 1, 0)
 
+  const ref = useRef({
+    text  : React.createRef<HTMLInputElement>()
+  })
+
   const data = useRef({
     processing: false,
     filter    : "",
@@ -42,6 +46,13 @@ const BundleDeleteModal = React.memo<BundleDeleteModalProps>(({
   useEffect(() => {
     reloadProject()
   }, [reload])
+
+  useEffect(() => {
+    data.current.filter = ref.current.text.current.value = ""
+    data.current.bundleId = null
+    data.current.bundleName = null
+    data.current.bundles = []
+  }, [domain, project])
 
   const reloadProject = () => {
     if (domain && project) {
@@ -56,17 +67,20 @@ const BundleDeleteModal = React.memo<BundleDeleteModalProps>(({
         return
       })
       .catch((err: AxiosError) => {
-        data.current.bundles = []
         forceUpdate()
         alert(err.response.data.msg)
         return
       })
+    } else {
+      forceUpdate()
     }
   }
 
   const handleChangeFilter = useCallback((value: string) => {
-    data.current.filter = value
-    forceUpdate()
+    if (value.length !== 1) {
+      data.current.filter = value
+      forceUpdate()
+    }
   }, [true])
 
   const handleSelectBundle = useCallback((value: string) => {
@@ -127,6 +141,7 @@ const BundleDeleteModal = React.memo<BundleDeleteModalProps>(({
       body={
         <>
           <TextForm
+            ref={ ref.current.text }
             className="mb-3"
             valid={ true }
             label="Filter"

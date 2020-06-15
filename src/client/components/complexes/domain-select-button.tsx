@@ -32,13 +32,8 @@ const DomainSelectButton = React.memo<DomainSelectButtonProps>(({
   })
 
   useEffect(() => {
-    if (DOMAIN.includes(domain)) {
-      data.current.domain = domain
-      forceUpdate()
-    } else {
-      data.current.domain = defaultValue
-      forceUpdate()
-    }
+    data.current.domain = DOMAIN.includes(domain) ? domain : defaultValue
+    forceUpdate()
   }, [domain])
 
   const handleChange = useCallback((value: string) => {

@@ -19,7 +19,7 @@ const ProjectCreateForm = React.memo<ProjectCreateFormProps>(({
 }) => {
   const [valid, setValid] = useState<boolean>(false)
 
-  const refs = useRef({
+  const ref = useRef({
     name: React.createRef<HTMLInputElement>(),
     desc: React.createRef<HTMLInputElement>()
   })
@@ -45,8 +45,8 @@ const ProjectCreateForm = React.memo<ProjectCreateFormProps>(({
   }, [onSubmit])
 
   const handleCancel = useCallback(() => {
-    data.current.name = refs.current.name.current.value = ""
-    data.current.desc = refs.current.desc.current.value = ""
+    data.current.name = ref.current.name.current.value = ""
+    data.current.desc = ref.current.desc.current.value = ""
     setValid(false)
     if (onCancel) {
       onCancel()
@@ -56,7 +56,7 @@ const ProjectCreateForm = React.memo<ProjectCreateFormProps>(({
   return (
     <div className={ className }>
       <TextForm
-        ref={ refs.current.name }
+        ref={ ref.current.name }
         className="mb-3"
         valid={ valid }
         label="project name"
@@ -64,7 +64,7 @@ const ProjectCreateForm = React.memo<ProjectCreateFormProps>(({
         onChange={ handleChangeName }
       />
       <TextForm
-        ref={ refs.current.desc }
+        ref={ ref.current.desc }
         className="mb-3"
         valid={ true }
         label="description"

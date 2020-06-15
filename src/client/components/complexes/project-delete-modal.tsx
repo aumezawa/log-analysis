@@ -29,6 +29,10 @@ const ProjectDeleteModal = React.memo<ProjectDeleteModalProps>(({
 }) => {
   const [ignored, forceUpdate] = useReducer(x => x + 1, 0)
 
+  const ref = useRef({
+    text  : React.createRef<HTMLInputElement>()
+  })
+
   const data = useRef({
     processing: false,
     filter    : "",
@@ -39,6 +43,12 @@ const ProjectDeleteModal = React.memo<ProjectDeleteModalProps>(({
   useEffect(() => {
     reloadProject()
   }, [reload])
+
+  useEffect(() => {
+    data.current.filter = ref.current.text.current.value = ""
+    data.current.project = null
+    data.current.projects = []
+  }, [domain])
 
   const reloadProject = () => {
     if (domain) {
@@ -53,17 +63,20 @@ const ProjectDeleteModal = React.memo<ProjectDeleteModalProps>(({
         return
       })
       .catch((err: AxiosError) => {
-        data.current.projects = []
         forceUpdate()
         alert(err.response.data.msg)
         return
       })
+    } else {
+      forceUpdate()
     }
   }
 
   const handleChangeFilter = useCallback((value: string) => {
-    data.current.filter = value
-    forceUpdate()
+    if (value.length !== 1) {
+      data.current.filter = value
+      forceUpdate()
+    }
   }, [true])
 
   const handleSelectProject = useCallback((value: string) => {
@@ -122,6 +135,7 @@ const ProjectDeleteModal = React.memo<ProjectDeleteModalProps>(({
       body={
         <>
           <TextForm
+            ref={ ref.current.text }
             className="mb-3"
             valid={ true }
             label="Filter"
