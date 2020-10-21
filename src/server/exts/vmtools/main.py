@@ -77,7 +77,7 @@ def GetArgs():
     group_common.add_argument('-g', '--get',
         action='store_true',
         required=False,
-        help='get information ("-b" option will be needed, "-e" or "-v" option will be needed)'
+        help='get information ("-b" option will be needed, "-e", "-v", or "-z" option will be needed)'
     )
     group_common.add_argument('-d', '--decomp',
         action='store_true',
@@ -105,6 +105,12 @@ def GetArgs():
         action='store',
         required=False,
         help='LIST: get vm list, <NAME>: get a specific vm information',
+        metavar='LIST | <NAME>'
+    )
+    group_get.add_argument('-z', '--zdump',
+        action='store',
+        required=False,
+        help='LIST: get zdump list, <NAME>: get a specific zdump information',
         metavar='LIST | <NAME>'
     )
     #
@@ -159,6 +165,14 @@ if __name__ == '__main__':
                     printResult(vmlogtool.GetVmList(args.bundle))
                 else:
                     printResult(vmlogtool.GetVmInfo(args.bundle, args.vm))
+                logger.info('Succeeded.')
+                sys.exit(RET_NORMAL_END)
+            if args.zdump:
+                logger.info('Get ZDUMP Information. ZDUMP = %s' % args.zdump)
+                if args.zdump == 'LIST':
+                    printResult(vmlogtool.GetZdumpList(args.bundle))
+                else:
+                    printResult(vmlogtool.GetZdumpInfo(args.bundle, args.zdump))
                 logger.info('Succeeded.')
                 sys.exit(RET_NORMAL_END)
         # Bad options

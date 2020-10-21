@@ -1,5 +1,15 @@
 ***
 
+Version: **0.6.x** [2020/10/25]
+
+New Features:
+  - **vmkernel-zdump** information display
+
+Bug Fixes:
+  - *None*
+
+***
+
 Version: **0.6.0** [2020/10/25]
 
 New Features:

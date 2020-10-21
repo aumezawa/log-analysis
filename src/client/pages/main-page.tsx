@@ -42,6 +42,8 @@ import TerminalBox from "../components/complexes/terminal-box"
 import HostInfoBox from "../components/specifics/vmlog/host-info-box"
 import VmExplorerBox from "../components/specifics/vmlog/vm-explorer-box"
 import VmInfoBox from "../components/specifics/vmlog/vm-info-box"
+import ZdumpExplorerBox from "../components/specifics/vmlog/zdump-explorer-box"
+import ZdumpInfoBox from "../components/specifics/vmlog/zdump-info-box"
 
 type MainPageProps = {
   project?  : string,
@@ -71,9 +73,11 @@ const MainPage: React.FC<MainPageProps> = ({
     files   : React.createRef<HTMLAnchorElement>(),
     search  : React.createRef<HTMLAnchorElement>(),
     vms     : React.createRef<HTMLAnchorElement>(),
+    zdumps  : React.createRef<HTMLAnchorElement>(),
     whatsnew: React.createRef<HTMLAnchorElement>(),
     host    : React.createRef<HTMLAnchorElement>(),
     vm      : React.createRef<HTMLAnchorElement>(),
+    zdump   : React.createRef<HTMLAnchorElement>(),
     viewer  : React.createRef<HTMLAnchorElement>()
   })
 
@@ -89,6 +93,7 @@ const MainPage: React.FC<MainPageProps> = ({
     project : null,
     bundle  : null,
     vmname  : null,
+    dumpname: null,
     filepath: null,
     filename: null,
     line    : null,
@@ -159,6 +164,7 @@ const MainPage: React.FC<MainPageProps> = ({
     data.current.project = null
     data.current.bundle = null
     data.current.vmname = null
+    data.current.dumpname = null
     data.current.filepath = null
     data.current.filename = null
     data.current.line = null
@@ -171,6 +177,7 @@ const MainPage: React.FC<MainPageProps> = ({
     data.current.project = value
     data.current.bundle = null
     data.current.vmname = null
+    data.current.dumpname = null
     data.current.filepath = null
     data.current.filename = null
     data.current.line = null
@@ -183,6 +190,8 @@ const MainPage: React.FC<MainPageProps> = ({
     if (data.current.project === value) {
       data.current.project = null
       data.current.bundle = null
+      data.current.vmname = null
+      data.current.dumpname = null
       data.current.filepath = null
       data.current.filename = null
       data.current.line = null
@@ -195,10 +204,12 @@ const MainPage: React.FC<MainPageProps> = ({
   const handleSubmitBundleSelect = useCallback((value: string) => {
     data.current.bundle = value
     data.current.vmname = null
+    data.current.dumpname = null
     data.current.filepath = null
     data.current.filename = null
     data.current.line = null
     data.current.filter = null
+    ref.current.host.current.click()
     forceUpdate()
     updateAddressBar()
   }, [true])
@@ -206,10 +217,13 @@ const MainPage: React.FC<MainPageProps> = ({
   const handleSubmitBundleDelete = useCallback((value: string) => {
     if (data.current.bundle === value) {
       data.current.bundle = null
+      data.current.vmname = null
+      data.current.dumpname = null
       data.current.filepath = null
       data.current.filename = null
       data.current.line = null
       data.current.filter = null
+      ref.current.host.current.click()
       forceUpdate()
       updateAddressBar()
     }
@@ -218,6 +232,12 @@ const MainPage: React.FC<MainPageProps> = ({
   const handleSelectVm = useCallback((value: string) => {
     data.current.vmname = value
     ref.current.vm.current.click()
+    forceUpdate()
+  }, [true])
+
+  const handleSelectZdump = useCallback((value: string) => {
+    data.current.dumpname = value
+    ref.current.zdump.current.click()
     forceUpdate()
   }, [true])
 
@@ -400,7 +420,7 @@ const MainPage: React.FC<MainPageProps> = ({
             }
             left={
               <TabFrame
-                labels={ ["Files", "Search", "VMs"] }
+                labels={ ["Files", "Search", "VMs", "Dumps"] }
                 items={ [
                   <FileExplorerBox
                     path={ ProjectPath.strictEncodeFiles(data.current.domain, data.current.project, data.current.bundle) }
@@ -415,14 +435,20 @@ const MainPage: React.FC<MainPageProps> = ({
                     project={ data.current.project }
                     bundle={ data.current.bundle }
                     onSelect={ handleSelectVm }
+                  />,
+                  <ZdumpExplorerBox
+                    domain={ data.current.domain }
+                    project={ data.current.project }
+                    bundle={ data.current.bundle }
+                    onSelect={ handleSelectZdump }
                   />
                 ] }
-                refs={ [ref.current.files, ref.current.search, ref.current.vms] }
+                refs={ [ref.current.files, ref.current.search, ref.current.vms, ref.current.zdump] }
               />
             }
             right={
               <TabFrame
-                labels={ ["What's New", "Host", "VM", "Viewer"] }
+                labels={ ["What's New", "Host", "VM", "Dump", "Viewer"] }
                 items={ [
                   <MarddownViewerBox />,
                   <HostInfoBox
@@ -435,6 +461,12 @@ const MainPage: React.FC<MainPageProps> = ({
                     project={ data.current.project }
                     bundle={ data.current.bundle }
                     vm={ data.current.vmname }
+                  />,
+                  <ZdumpInfoBox
+                    domain={ data.current.domain }
+                    project={ data.current.project }
+                    bundle={ data.current.bundle }
+                    zdump={ data.current.dumpname }
                   />,
                   <>
                     { !data.current.terminal &&
@@ -455,7 +487,7 @@ const MainPage: React.FC<MainPageProps> = ({
                     }
                   </>
                 ] }
-                refs={ [ref.current.whatsnew, ref.current.host, ref.current.vm, ref.current.viewer] }
+                refs={ [ref.current.whatsnew, ref.current.host, ref.current.vm, ref.current.zdump, ref.current.viewer] }
               />
              }
           />

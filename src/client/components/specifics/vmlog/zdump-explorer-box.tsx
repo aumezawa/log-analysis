@@ -12,7 +12,7 @@ import ProjectPath from "../../../lib/project-path"
 import FileTreeRoot from "../../../components/sets/file-tree-root"
 import DropdownItem from "../../../components/parts/dropdown-item"
 
-type VmExplorerBoxProps = {
+type ZdumpExplorerBoxProps = {
   className?: string,
   domain?   : string,
   project?  : string,
@@ -20,7 +20,7 @@ type VmExplorerBoxProps = {
   onSelect? : (value: string) => void
 }
 
-const VmExplorerBox = React.memo<VmExplorerBoxProps>(({
+const ZdumpExplorerBox = React.memo<ZdumpExplorerBoxProps>(({
   className = "",
   domain    = null,
   project   = null,
@@ -29,25 +29,25 @@ const VmExplorerBox = React.memo<VmExplorerBoxProps>(({
 }) => {
   const [ignored, forceUpdate] = useReducer(x => x + 1, 0)
 
-  const vms = useRef({
-    name: "No VM inventory",
+  const zdumps = useRef({
+    name: "No zdump file",
     file: false,
     children: []
   })
 
   useEffect(() => {
-    vms.current.name = "No VM inventory"
-    vms.current.children = []
+    zdumps.current.name = "No zdump file"
+    zdumps.current.children = []
     if (domain && project && bundle) {
-      const uri = `${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project, bundle) }/vms`
+      const uri = `${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project, bundle) }/zdumps`
       Axios.get(uri, {
         headers : { "X-Access-Token": Cookie.get("token") || "" },
         data    : {}
       })
       .then((res: AxiosResponse) => {
-        if (res.data.vms.length > 0) {
-          vms.current.name = "Virtual Machines"
-          vms.current.children = res.data.vms.map((vm: string) => ({ name: vm, file: true }))
+        if (res.data.zdumps.length > 0) {
+          zdumps.current.name = "zdump files"
+          zdumps.current.children = res.data.zdumps.map((vm: string) => ({ name: vm, file: true }))
         }
         forceUpdate()
         return
@@ -71,7 +71,7 @@ const VmExplorerBox = React.memo<VmExplorerBoxProps>(({
   return (
     <div className={ `${ className } text-left text-monospace` }>
       <FileTreeRoot
-        root={ vms.current }
+        root={ zdumps.current }
         actions={ [
           <DropdownItem
             key="select"
@@ -84,4 +84,4 @@ const VmExplorerBox = React.memo<VmExplorerBoxProps>(({
   )
 })
 
-export default VmExplorerBox
+export default ZdumpExplorerBox

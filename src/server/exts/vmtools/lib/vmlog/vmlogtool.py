@@ -5,7 +5,7 @@
 
 from __future__ import print_function
 
-__all__     = ['DecompressBundle', 'GetHostList', 'GetHostInfo', 'GetVmList', 'GetVmInfo']
+__all__     = ['DecompressBundle', 'GetHostList', 'GetHostInfo', 'GetVmList', 'GetVmInfo', 'GetZdumpList' 'GetZdumpInfo']
 __author__  = 'aume'
 __version   = '0.0.0'
 
@@ -13,6 +13,7 @@ __version   = '0.0.0'
 ################################################################################
 ### Required Modules
 ################################################################################
+from datetime import datetime as dt
 import gzip
 import logging
 import os
@@ -47,6 +48,8 @@ except Exception as e:
 def DecompressBundle(filePath, compressLargeFiles=False, preserveOriginalFile=False):
     dirPath = ExtractFiles(filePath)
     MargeFragmentFiles(os.path.join(dirPath, 'commands'))
+    MargeFragmentFiles(os.path.join(dirPath, 'var', 'core'))
+    MargeFragmentFiles(os.path.join(dirPath, 'var', 'log'))
     MargeCompressedFragmentFiles(os.path.join(dirPath, 'var', 'run', 'log'))
     CleanupFile(os.path.join(dirPath, 'commands', 'esxcfg-info_-a--F-xml.txt'), r"^ResourceGroup:.*$")
     if compressLargeFiles:
@@ -132,6 +135,93 @@ def GetVmInfo(dirPath, vmName):
 
 
 ################################################################################
+### External Functions - Get Zdump Information
+################################################################################
+def GetZdumpList(dirPath):
+    dirPath = os.path.join(dirPath, 'var', 'core')
+    zdumpList = []
+    repattern = re.compile(r"^vmkernel-zdump[.][0-9]+$")
+    if os.path.exists(dirPath):
+        for filename in os.listdir(dirPath):
+            match = repattern.match(filename)
+            if match:
+                zdumpList.append(filename)
+    zdumpList.sort()
+    return zdumpList
+
+
+def GetZdumpInfo(dirPath, zdumpName):
+    filePath = os.path.join(dirPath, 'var', 'core', zdumpName)
+    if os.path.exists(filePath):
+        build       = None
+        panic_date  = None
+        panic_msg   = None
+        uptime      = None
+        trace       = []
+        log         = []
+        #
+        reBuild = re.compile(r"^.*(build-[0-9]+)\s.*$")
+        reLog = re.compile(r"^([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.*)$")
+        rePanic = re.compile(r"^([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}).*@BlueScreen: (.*)$")
+        reUptime = re.compile(r"^.*VMK uptime: ([0-9:.]+)$")
+        reTrace = re.compile(r"^.*(0x[0-9a-f]+:\[0x[0-9a-f]+\].*)$")
+        reEnd = re.compile(r"^.*Coredump to disk.*$")
+        #
+        logFlag = True
+        traceFlag = False
+        with open(filePath, 'r') as fp:
+            for line in fp:
+                match = reBuild.match(line)
+                if match:
+                    build = match.groups()[0]
+                #
+                if logFlag:
+                    match = reLog.match(line)
+                    if match:
+                        log.append(match.groups()[0])
+                #
+                match = rePanic.match(line)
+                if match:
+                    panic_date = match.groups()[0]
+                    panic_msg = match.groups()[1]
+                    logFlag = False
+                    traceFlag = True
+                #
+                if traceFlag:
+                    match = reUptime.match(line)
+                    if match:
+                        uptime = match.groups()[0]
+                    #
+                    match = reTrace.match(line)
+                    if match:
+                        trace.append(match.groups()[0])
+                #
+                match = reEnd.match(line)
+                if match:
+                    break
+        #
+        # for latest 3 days
+        pd = dt.strptime(panic_date, '%Y-%m-%dT%H:%M:%S')
+        count = 0
+        for line in log:
+            if (pd - dt.strptime(line[:19], '%Y-%m-%dT%H:%M:%S')).days <= 2:
+                break
+            count = count + 1
+        log = log[count:]
+        #
+        return {
+            'build'     : build,
+            'panic_date': panic_date,
+            'panic_msg' : panic_msg,
+            'uptime'    : uptime,
+            'trace'     : trace,
+            'log'       : log
+        }
+    else:
+        return None
+
+
+################################################################################
 ### Internal Functions - Decompress
 ################################################################################
 def ExtractFiles(filePath, override=True, rmRetry=5):
@@ -201,7 +291,7 @@ def MargeFragmentFiles(dirPath, suffix=r"[.]FRAG-[0-9]{5}"):
     return True
 
 
-def MargeCompressedFragmentFiles(dirPath, suffix=r"[.][0-9][.]gz"):
+def MargeCompressedFragmentFiles(dirPath, suffix=r"[.][0-9]+[.]gz"):
     repattern = re.compile(r"^(.+)%s$" % suffix)
     targets = {}
     try:

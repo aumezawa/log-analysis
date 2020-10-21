@@ -252,6 +252,98 @@ router.route("/:domain(private|public)/projects/:projectName([0-9a-zA-Z_.#]+)/bu
   })
 })
 
+router.route("/:domain(private|public)/projects/:projectName([0-9a-zA-Z_.#]+)/bundles/:bundleId([0-9]+)/zdumps/:dumpName")
+.get((req: Request, res: Response, next: NextFunction) => {
+  const result = child_process.spawnSync("python", [
+    "main.py",
+    "-g",
+    "-z", req.params.dumpName,
+    "-b", req.resPath,
+    "-l", path.join(rootPath, "local", "log")
+  ], {
+    cwd: path.join("src", "server", "exts", "vmtools"),
+    encoding: "utf-8"
+  })
+
+  if (result.status !== 0) {
+    logger.error(`child_process: pid=${ result.pid }, status=${ result.status | 0 }, error=${ result.error }`)  // unsigned to signed
+    // Internal Server Error
+    return res.status(500).json({
+      msg: "Contact an administrator."
+    })
+  }
+
+  let zdumpInfo: ZdumpInfo
+  try {
+    zdumpInfo = JSON.parse(result.stdout)
+  } catch (err) {
+    if (err instanceof Error) {
+      logger.error(`${ err.name }: ${ err.message }`)
+    }
+    // Internal Server Error
+    return res.status(500).json({
+      msg: "Contact an administrator."
+    })
+  }
+
+  return res.status(200).json({
+    msg: "You get a virtual machine information.",
+    zdump: zdumpInfo
+  })
+})
+.all((req: Request, res: Response, next: NextFunction) => {
+  // Method Not Allowed
+  return res.status(405).json({
+    msg: "GET method is only supported."
+  })
+})
+
+router.route("/:domain(private|public)/projects/:projectName([0-9a-zA-Z_.#]+)/bundles/:bundleId([0-9]+)/zdumps")
+.get((req: Request, res: Response, next: NextFunction) => {
+  const result = child_process.spawnSync("python", [
+    "main.py",
+    "-g",
+    "-z", "LIST",
+    "-b", req.resPath,
+    "-l", path.join(rootPath, "local", "log")
+  ], {
+    cwd: path.join("src", "server", "exts", "vmtools"),
+    encoding: "utf-8"
+  })
+
+  if (result.status !== 0) {
+    logger.error(`child_process: pid=${ result.pid }, status=${ result.status | 0 }, error=${ result.error }`)  // unsigned to signed
+    // Internal Server Error
+    return res.status(500).json({
+      msg: "Contact an administrator."
+    })
+  }
+
+  let zdumps: Array<string>
+  try {
+    zdumps = JSON.parse(result.stdout)
+  } catch (err) {
+    if (err instanceof Error) {
+      logger.error(`${ err.name }: ${ err.message }`)
+    }
+    // Internal Server Error
+    return res.status(500).json({
+      msg: "Contact an administrator."
+    })
+  }
+
+  return res.status(200).json({
+    msg: "You get a zdump list.",
+    zdumps: zdumps
+  })
+})
+.all((req: Request, res: Response, next: NextFunction) => {
+  // Method Not Allowed
+  return res.status(405).json({
+    msg: "GET method is only supported."
+  })
+})
+
 router.route("/:domain(private|public)/projects/:projectName([0-9a-zA-Z_.#]+)/bundles/:bundleId([0-9]+)/hosts/:hostName")
 .get((req: Request, res: Response, next: NextFunction) => {
   const result = child_process.spawnSync("python", [
