@@ -33,6 +33,7 @@ import InformationButton from "../components/parts/information-button"
 
 import FileExplorerBox from "../components/complexes/file-explorer-box"
 
+import MarddownViewerBox from "../components/complexes/markdown-viewer-box"
 import FunctionalTableBox from "../components/complexes/functional-table-box"
 
 import TerminalBox from "../components/complexes/terminal-box"
@@ -62,8 +63,9 @@ const MainPage: React.FC<MainPageProps> = ({
   const [reloadBundleList,  updateBundleList]  = useReducer(x => x + 1, 0)
 
   const ref = useRef({
-    files : React.createRef<HTMLAnchorElement>(),
-    viewer: React.createRef<HTMLAnchorElement>()
+    files   : React.createRef<HTMLAnchorElement>(),
+    whatsnew: React.createRef<HTMLAnchorElement>(),
+    viewer  : React.createRef<HTMLAnchorElement>()
   })
 
   const id = useRef({
@@ -337,8 +339,9 @@ const MainPage: React.FC<MainPageProps> = ({
             }
             right={
               <TabFrame
-                labels={ ["Viewer"] }
+                labels={ ["What's New", "Viewer"] }
                 items={ [
+                  <MarddownViewerBox />,
                   <>
                     { !data.current.terminal &&
                       <FunctionalTableBox
@@ -356,7 +359,7 @@ const MainPage: React.FC<MainPageProps> = ({
                     }
                   </>
                 ] }
-                refs={ [ref.current.viewer] }
+                refs={ [ref.current.whatsnew, ref.current.viewer] }
               />
              }
           />
