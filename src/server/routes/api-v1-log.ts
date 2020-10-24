@@ -9,6 +9,7 @@ import * as tar from "tar"
 
 import logger = require("../lib/logger")
 
+import FSTool from "../lib/fs-tool"
 import TypeGurad from "../lib/type-guard"
 
 const rootPath: string = process.cwd()
@@ -583,6 +584,9 @@ router.route("/:domain(private|public)/projects/:projectName([0-9a-zA-Z_.#]+)")
   let projectInfo: ProjectInfo
   try {
     projectInfo = JSON.parse(fs.readFileSync(req.projectInfoPath, "utf8"))
+    if (projectInfo.status === undefined) {
+      projectInfo.status = "open"
+    }
   } catch (err) {
     if (err instanceof Error) {
       logger.error(`${ err.name }: ${ err.message }`)
@@ -595,22 +599,33 @@ router.route("/:domain(private|public)/projects/:projectName([0-9a-zA-Z_.#]+)")
 
   // OK
   return res.status(200).json({
-    msg: "You get a project description.",
+    msg: "You get a project status and description.",
+    status: projectInfo.status,
     description: projectInfo.description
   })
 })
 .put((req: Request, res: Response, next: NextFunction) => {
-  if (!req.body.description) {
+  if (!req.body.description && !req.body.status) {
     // Bad Request
     return res.status(400).json({
-      msg: "Project description is required. (param name: description)"
+      msg: "Project status or description is required. (param name: status, description)"
     })
   }
 
   let projectInfo: ProjectInfo
   try {
     projectInfo = JSON.parse(fs.readFileSync(req.projectInfoPath, "utf8"))
-    projectInfo.description = req.body.description
+
+    if (projectInfo.status === undefined) {
+      projectInfo.status = "open"
+    }
+    if (req.body.status && (req.body.status === "open" || req.body.status === "close")) {
+      projectInfo.status = req.body.status
+    }
+
+    if (req.body.description) {
+      projectInfo.description = req.body.description
+    }
     fs.writeFileSync(req.projectInfoPath, JSON.stringify(projectInfo))
   } catch (err) {
     if (err instanceof Error) {
@@ -622,9 +637,71 @@ router.route("/:domain(private|public)/projects/:projectName([0-9a-zA-Z_.#]+)")
     })
   }
 
+  projectInfo.bundles.forEach((bundleInfo: BundleInfo) => {
+    let bundleDirPath = path.join(req.resPath, bundleInfo.name)
+    let bundleZipPath = bundleDirPath + ".tgz"
+
+    if (fs.existsSync(bundleDirPath) && fs.existsSync(bundleZipPath)) {
+      let rmNode = (projectInfo.status === "open") ? bundleZipPath : bundleDirPath
+      FSTool.rmRecursive(rmNode, (err: Error) => {
+        if (err) {
+          logger.error(`${ err.name }: ${ err.message }`)
+        }
+      })
+    } else if (!fs.existsSync(bundleDirPath) && fs.existsSync(bundleZipPath)) {
+      if (projectInfo.status === "open") {
+        FSTool.decompressTgz(bundleInfo.name, req.resPath, (err: Error) => {
+          if (err) {
+            logger.error(`${ err.name }: ${ err.message }`)
+            return
+          }
+          try {
+            const projectInfo = JSON.parse(fs.readFileSync(req.projectInfoPath, "utf8"))
+            projectInfo.bundles = projectInfo.bundles.map((bundle: BundleInfo) => {
+              if (bundle.id === bundleInfo.id) {
+                bundle.available = true
+              }
+              return bundle
+            })
+            fs.writeFileSync(req.projectInfoPath, JSON.stringify(projectInfo))
+          } catch (err) {
+            if (err instanceof Error) {
+              logger.error(`${ err.name }: ${ err.message }`)
+            }
+          }
+          logger.info(`${ bundleInfo.name } was decompressed successfully.`)
+        })
+      }
+    } else if (fs.existsSync(bundleDirPath) && !fs.existsSync(bundleZipPath)) {
+      if (projectInfo.status === "close") {
+        FSTool.compressTgz(bundleInfo.name, req.resPath, (err: Error) => {
+          if (err) {
+            logger.error(`${ err.name }: ${ err.message }`)
+            return
+          }
+          try {
+            const projectInfo = JSON.parse(fs.readFileSync(req.projectInfoPath, "utf8"))
+            projectInfo.bundles = projectInfo.bundles.map((bundle: BundleInfo) => {
+              if (bundle.id === bundleInfo.id) {
+                bundle.available = false
+              }
+              return bundle
+            })
+            fs.writeFileSync(req.projectInfoPath, JSON.stringify(projectInfo))
+          } catch (err) {
+            if (err instanceof Error) {
+              logger.error(`${ err.name }: ${ err.message }`)
+            }
+          }
+          logger.info(`${ bundleInfo.name } was compressed successfully.`)
+        })
+      }
+    }
+  })
+
   // OK
   return res.status(200).json({
-    msg: `project: ${ req.params.projectName } description was updated successfully.`
+    msg: `project: ${ req.params.projectName } was updated successfully.`
   })
 })
 .delete((req: Request, res: Response, next: NextFunction) => {
@@ -685,8 +762,12 @@ router.route("/:domain(private|public)/projects")
   const projectList: Array<ProjectSummary> = dirList.map((project: string) => {
     try {
       const projectInfo: ProjectInfo = JSON.parse(fs.readFileSync(path.join(req.resPath, project, "project.inf"), "utf8"))
+      if (projectInfo.status === undefined) {
+        projectInfo.status = "open"
+      }
       return ({
         name        : projectInfo.name,
+        status      : projectInfo.status,
         description : projectInfo.description
       })
     } catch (err) {
@@ -740,6 +821,7 @@ router.route("/:domain(private|public)/projects")
   try {
     fs.writeFileSync(path.join(projectPath, "project.inf"), JSON.stringify({
       name: req.body.name,
+      status: "open",
       description: req.body.description || "",
       index: 0,
       bundles: []

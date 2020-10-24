@@ -25,7 +25,7 @@ import TokenUpdateModal from "../components/complexes/token-update-modal"
 import DomainSelectButton from "../components/complexes/domain-select-button"
 import ProjectCreateButton from "../components/complexes/project-create-button"
 import ProjectSelectButton from "../components/complexes/project-select-button"
-import ProjectDeleteModal from "../components/complexes/project-delete-modal"
+import ProjectManageModal from "../components/complexes/project-manage-modal"
 import BundleUploadButton from "../components/complexes/bundle-upload-button"
 import BundleSelectButton from "../components/complexes/bundle-select-button"
 import BundleDeleteModal from "../components/complexes/bundle-delete-modal"
@@ -69,7 +69,7 @@ const MainPage: React.FC<MainPageProps> = ({
   })
 
   const id = useRef({
-    projectDelete : "modal-" + UniqueId(),
+    projectManage : "modal-" + UniqueId(),
     bundleDelete  : "modal-" + UniqueId(),
     tokenStatus   : "modal-" + UniqueId(),
     tokenUpdate   : "modal-" + UniqueId()
@@ -82,7 +82,8 @@ const MainPage: React.FC<MainPageProps> = ({
     filepath: null,
     filename: null,
     line    : null,
-    terminal: false
+    terminal: false,
+    action  : "delete"
   })
 
   const updateAddressBar = () => {
@@ -160,7 +161,7 @@ const MainPage: React.FC<MainPageProps> = ({
     updateAddressBar()
   }, [true])
 
-  const handleSubmitProjectDelete = useCallback((value: string) => {
+  const handleSubmitProjectManage = useCallback((value: string) => {
     if (data.current.project === value) {
       data.current.project = null
       data.current.bundle = null
@@ -202,7 +203,18 @@ const MainPage: React.FC<MainPageProps> = ({
     updateAddressBar()
   }, [true])
 
+  const handleClickReopenProject = useCallback((targetValue: string, parentValue: string) => {
+    data.current.action = "open"
+    updateProjectList()
+  }, [true])
+
+  const handleClickCloseProject = useCallback((targetValue: string, parentValue: string) => {
+    data.current.action = "close"
+    updateProjectList()
+  }, [true])
+
   const handleClickDeleteProject = useCallback((targetValue: string, parentValue: string) => {
+    data.current.action = "delete"
     updateProjectList()
   }, [true])
 
@@ -220,11 +232,12 @@ const MainPage: React.FC<MainPageProps> = ({
       <LayerFrame
         head={
           <>
-            <ProjectDeleteModal
-              id={ id.current.projectDelete }
+            <ProjectManageModal
+              id={ id.current.projectManage }
               domain={ data.current.domain }
+              action={ data.current.action }
               reload={ reloadProjectList }
-              onSubmit={ handleSubmitProjectDelete }
+              onSubmit={ handleSubmitProjectManage }
             />
             <BundleDeleteModal
               id={ id.current.bundleDelete }
@@ -256,13 +269,30 @@ const MainPage: React.FC<MainPageProps> = ({
                 />,
                 <DropdownDivider key="divider-2" />,
                 <DropdownItem
+                  key="reopen-project"
+                  label="Reopen Project"
+                  disabled={ !data.current.domain }
+                  toggle="modal"
+                  target={ id.current.projectManage }
+                  onClick={ handleClickReopenProject }
+                />,
+                <DropdownItem
+                  key="close-project"
+                  label="Close Project"
+                  disabled={ !data.current.domain }
+                  toggle="modal"
+                  target={ id.current.projectManage }
+                  onClick={ handleClickCloseProject }
+                />,
+                <DropdownItem
                   key="delete-project"
                   label="Delete Project"
                   disabled={ !data.current.domain || (data.current.domain === "public" && privilege !== "root") }
                   toggle="modal"
-                  target={ id.current.projectDelete }
+                  target={ id.current.projectManage }
                   onClick={ handleClickDeleteProject }
                 />,
+                <DropdownDivider key="divider-3" />,
                 <DropdownItem
                   key="delete-bundle"
                   label="Delete Bundle"
@@ -271,7 +301,7 @@ const MainPage: React.FC<MainPageProps> = ({
                   target={ id.current.bundleDelete }
                   onClick={ handleClickDeleteBundle }
                 />,
-                <DropdownDivider key="divider-3" />,
+                <DropdownDivider key="divider-4" />,
                 <DropdownItem
                   key="token-status"
                   label="Show Token Status"

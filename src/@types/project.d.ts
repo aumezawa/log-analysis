@@ -5,6 +5,7 @@ type ProjectSummary = {
 
 type ProjectInfo = {
   name        : string,
+  status?     : "open" | "close",
   description : string,
   index       : number,
   bundles     : Array<BundleInfo>
