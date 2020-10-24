@@ -381,15 +381,7 @@ router.route("/:domain(private|public)/projects/:projectName([0-9a-zA-Z_.#]+)/bu
   }
 
   try {
-    const rmRecursive: (node: string) => void = (node) => {
-      if (fs.statSync(node).isDirectory()) {
-        fs.readdirSync(node).forEach((child) => rmRecursive(path.join(node, child)))
-        fs.rmdirSync(node)
-      } else {
-        fs.unlinkSync(node)
-      }
-    }
-    rmRecursive(req.resPath)
+    FSTool.rmRecursiveSync(req.resPath)
   } catch (err) {
     if (err instanceof Error) {
       logger.error(`${ err.name }: ${ err.message }`)
@@ -532,24 +524,12 @@ router.route("/:domain(private|public)/projects/:projectName([0-9a-zA-Z_.#]+)/bu
     }
 
     // TODO: temporary code, want to kick other scripts
-    fs.createReadStream(uploadFilePath)
-    .pipe(tar.extract({ cwd: req.resPath }))
-    .on("error", (err: Error) => {
-      logger.error(`${ err.name }: ${ err.message }`)
-    })
-    .on("close", () => {
-      try {
-        fs.unlinkSync(uploadFilePath)
-      } catch (err) {
-        if (err instanceof Error) {
-          logger.error(`${ err.name }: ${ err.message }`)
-        }
+    FSTool.decompressTgz(path.basename(uploadFilePath, ".tgz"), req.resPath, (err: Error) => {
+      if (err) {
+        logger.error(`${ err.name }: ${ err.message }`)
+        return
       }
-    })
-    .on("finish", () => {
       try {
-        fs.statSync(path.join(req.resPath, bundleName))
-
         const projectInfo = JSON.parse(fs.readFileSync(req.projectInfoPath, "utf8"))
         projectInfo.bundles = projectInfo.bundles.map((bundle: BundleInfo) => {
           if (bundle.id === bundleId) {
@@ -558,12 +538,12 @@ router.route("/:domain(private|public)/projects/:projectName([0-9a-zA-Z_.#]+)/bu
           return bundle
         })
         fs.writeFileSync(req.projectInfoPath, JSON.stringify(projectInfo))
-        logger.info(`${ uploadFilePath } was decompressed successfully.`)
       } catch (err) {
         if (err instanceof Error) {
           logger.error(`${ err.name }: ${ err.message }`)
         }
       }
+      logger.info(`${ uploadFilePath } was decompressed successfully.`)
     })
 
     // Created
@@ -713,15 +693,7 @@ router.route("/:domain(private|public)/projects/:projectName([0-9a-zA-Z_.#]+)")
   }
 
   try {
-    const rmRecursive: (node: string) => void = (node) => {
-      if (fs.statSync(node).isDirectory()) {
-        fs.readdirSync(node).forEach((child) => rmRecursive(path.join(node, child)))
-        fs.rmdirSync(node)
-      } else {
-        fs.unlinkSync(node)
-      }
-    }
-    rmRecursive(req.resPath)
+    FSTool.rmRecursiveSync(req.resPath)
   } catch (err) {
     if (err instanceof Error) {
       logger.error(`${ err.name }: ${ err.message }`)
