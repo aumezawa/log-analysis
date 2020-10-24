@@ -14,6 +14,9 @@ router.route("/log/:domain(private|public)/projects/:projectName([0-9a-zA-Z_.#]+
   if (req.query.line) {
     query = `${ query }&line=${ req.query.line }`
   }
+  if (req.query.filter) {
+    query = `${ query }&filter=${ req.query.filter }`
+  }
   return res.status(200).send(
     ReactDomServer.renderToString(React.createElement(IndexPage, { user: req.token.usr, alias: req.token.als, privilege: req.token.prv, page: "main", query: query }))
   )

@@ -13,22 +13,26 @@ import Escape from "../../lib/escape"
 import UniqueId from "../../lib/unique-id"
 
 type FunctionalTableProps = {
-  className?: string,
-  content?  : TableContent,
-  line?     : number,
-  copy?     : boolean,
-  onChange? : (line: number) => void
+  className?      : string,
+  content?        : TableContent,
+  line?           : number,
+  filter?         : string,
+  copy?           : boolean,
+  onChangeLine?   : (line: number) => void,
+  onChangeFilter? : (filter: string) => void
 }
 
 const DEFAULT_ROW = 100
 const ROWS = [String(DEFAULT_ROW), "500", "1000", "5000"]
 
 const FunctionalTable = React.memo<FunctionalTableProps>(({
-  className = "",
-  content   = null,
-  line      = null,
-  copy      = false,
-  onChange  = undefined
+  className       = "",
+  content         = null,
+  line            = null,
+  filter          = null,
+  copy            = false,
+  onChangeLine    = undefined,
+  onChangeFilter  = undefined
 }) => {
   const [ignored, forceUpdate]  = useReducer(x => x + 1, 0)
 
@@ -63,7 +67,18 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
       env.current.maxRow = DEFAULT_ROW
       env.current.page = Math.ceil(env.current.line / env.current.maxRow)
       env.current.label = null
-      env.current.filters = {} as FilterSettings
+      if (filter) {
+        env.current.filters = {
+          Content : {
+            type      : "text",
+            mode      : "Be included",
+            sensitive : true,
+            condition : decodeURI(filter)
+          }
+        }
+      } else {
+        env.current.filters = {} as FilterSettings
+      }
 
       ref.current.select.current.value = String(DEFAULT_ROW)
       ref.current.text.current.value = ""
@@ -71,7 +86,7 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
       forceUpdate()
       scrollToLine(env.current.line)
     }
-  }, [content, line])
+  }, [content, line, filter])
 
   const scrollToLine = (line: number) => {
     setImmediate(() => {
@@ -95,6 +110,13 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
         sensitive : sensitive,
         condition : condition
       }
+      if (onChangeFilter) {
+        if ((env.current.label === "Content") && (mode === "Be included") && (sensitive === true)) {
+          onChangeFilter(encodeURI(condition))
+        } else {
+          onChangeFilter(null)
+        }
+      }
       forceUpdate()
       scrollToLine(1)
     }
@@ -104,6 +126,9 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
     if (env.current.label) {
       delete env.current.filters[env.current.label]
       env.current.page = Math.ceil(env.current.line / env.current.maxRow)
+      if (onChangeFilter) {
+        onChangeFilter(null)
+      }
       forceUpdate()
       scrollToLine(env.current.line)
     }
@@ -117,6 +142,9 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
         from      : from,
         to        : to
       }
+      if (onChangeFilter) {
+        onChangeFilter(null)
+      }
       forceUpdate()
       scrollToLine(1)
     }
@@ -126,6 +154,9 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
     if (env.current.label) {
       delete env.current.filters[env.current.label]
       env.current.page = Math.ceil(env.current.line / env.current.maxRow)
+      if (onChangeFilter) {
+        onChangeFilter(null)
+      }
       forceUpdate()
       scrollToLine(env.current.line)
     }
@@ -134,8 +165,8 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
   const handleClickContent = useCallback((e: React.MouseEvent<HTMLTableCellElement>) => {
     env.current.line = Number((e.currentTarget.parentNode as HTMLElement).title)
     forceUpdate()
-    if (onChange) {
-      onChange(env.current.line)
+    if (onChangeLine) {
+      onChangeLine(env.current.line)
     }
     // TODO: Automatically copy by click
     /*
@@ -146,7 +177,7 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
     document.execCommand("copy")
     textarea.remove()
     */
-  }, [onChange])
+  }, [onChangeLine])
 
   const handleChangeMaxRow = useCallback((value: string) => {
     env.current.maxRow = Number(value)
@@ -171,10 +202,10 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
     env.current.page = Math.ceil(env.current.line / env.current.maxRow)
     forceUpdate()
     scrollToLine(env.current.line)
-    if (onChange) {
-      onChange(env.current.line)
+    if (onChangeLine) {
+      onChangeLine(env.current.line)
     }
-  }, [onChange])
+  }, [onChangeLine])
 
   const renderHeader = () => {
     if (content) {

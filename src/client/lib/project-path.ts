@@ -1,5 +1,5 @@
 export default {
-  encode: (domain: string = null, project: string = null, bundle: string = null, filepath: string = null, line: number = null) => {
+  encode: (domain: string = null, project: string = null, bundle: string = null, filepath: string = null, line: number = null, filter: string = null) => {
     let path: string = null
     if (domain) {
       path = `log/${ domain }`
@@ -9,8 +9,14 @@ export default {
           path = `${ path }/bundles/${ bundle }`
           if (filepath) {
             path = `${ path }/files/${ filepath }`
+            let firstParam: boolean = true
             if (line) {
-              path = `${ path }?line=${ line }`
+              path = `${ path }${ firstParam ? "?" : "&" }line=${ line }`
+              firstParam = false
+            }
+            if (filter) {
+              path = `${ path }${ firstParam ? "?" : "&" }filter=${ filter }`
+              firstParam = false
             }
           }
         }

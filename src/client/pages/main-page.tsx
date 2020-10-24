@@ -82,6 +82,7 @@ const MainPage: React.FC<MainPageProps> = ({
     filepath: null,
     filename: null,
     line    : null,
+    filter  : null,
     terminal: false,
     action  : "delete"
   })
@@ -92,7 +93,8 @@ const MainPage: React.FC<MainPageProps> = ({
       data.current.project,
       data.current.bundle,
       data.current.filepath,
-      data.current.line
+      data.current.line,
+      data.current.filter
     ))
   }
 
@@ -103,6 +105,7 @@ const MainPage: React.FC<MainPageProps> = ({
     const bundle = params.get("bundle")
     const filepath = params.get("filepath")
     const line = params.get("line")
+    const filter = params.get("filter")
 
     if (domain && project) {
       const uri = `${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project, bundle, filepath) }`
@@ -118,6 +121,7 @@ const MainPage: React.FC<MainPageProps> = ({
         data.current.filepath = domain && project && bundle && filepath
         data.current.filename = domain && project && bundle && filepath && Path.basename(filepath)
         data.current.line     = domain && project && bundle && filepath && Number(line)
+        data.current.filter   = domain && project && bundle && filepath && filter
         if (filepath) {
           ref.current.files.current.click()
           ref.current.viewer.current.click()
@@ -147,6 +151,7 @@ const MainPage: React.FC<MainPageProps> = ({
     data.current.filepath = null
     data.current.filename = null
     data.current.line = null
+    data.current.filter = null
     forceUpdate()
     updateAddressBar()
   }, [true])
@@ -157,6 +162,7 @@ const MainPage: React.FC<MainPageProps> = ({
     data.current.filepath = null
     data.current.filename = null
     data.current.line = null
+    data.current.filter = null
     forceUpdate()
     updateAddressBar()
   }, [true])
@@ -168,6 +174,7 @@ const MainPage: React.FC<MainPageProps> = ({
       data.current.filepath = null
       data.current.filename = null
       data.current.line = null
+      data.current.filter = null
       forceUpdate()
       updateAddressBar()
     }
@@ -178,6 +185,7 @@ const MainPage: React.FC<MainPageProps> = ({
     data.current.filepath = null
     data.current.filename = null
     data.current.line = null
+    data.current.filter = null
     forceUpdate()
     updateAddressBar()
   }, [true])
@@ -188,6 +196,7 @@ const MainPage: React.FC<MainPageProps> = ({
       data.current.filepath = null
       data.current.filename = null
       data.current.line = null
+      data.current.filter = null
       forceUpdate()
       updateAddressBar()
     }
@@ -198,6 +207,7 @@ const MainPage: React.FC<MainPageProps> = ({
     data.current.filepath = value
     data.current.filename = Path.basename(value)
     data.current.line = null
+    data.current.filter = null
     data.current.terminal = (action === "terminal")
     setTimeout(() => forceUpdate(), 1000)
     updateAddressBar()
@@ -224,6 +234,11 @@ const MainPage: React.FC<MainPageProps> = ({
 
   const handleChangeTableLine = useCallback((line: number) => {
     data.current.line = line
+    updateAddressBar()
+  }, [true])
+
+  const handleChangeTableFilter = useCallback((filter: string) => {
+    data.current.filter = filter
     updateAddressBar()
   }, [true])
 
@@ -377,7 +392,9 @@ const MainPage: React.FC<MainPageProps> = ({
                       <FunctionalTableBox
                         path={ ProjectPath.strictEncodeFilepath(data.current.domain, data.current.project, data.current.bundle, data.current.filepath) }
                         line={ data.current.line }
-                        onChange={ handleChangeTableLine }
+                        filter={ data.current.filter }
+                        onChangeLine={ handleChangeTableLine }
+                        onChangeFilter={ handleChangeTableFilter }
                       />
                     }
                     { data.current.terminal &&
