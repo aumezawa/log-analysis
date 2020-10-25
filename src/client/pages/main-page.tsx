@@ -32,6 +32,7 @@ import BundleDeleteModal from "../components/complexes/bundle-delete-modal"
 import InformationButton from "../components/parts/information-button"
 
 import FileExplorerBox from "../components/complexes/file-explorer-box"
+import FileSearchBox from "../components/complexes/file-search-box"
 
 import MarddownViewerBox from "../components/complexes/markdown-viewer-box"
 import FunctionalTableBox from "../components/complexes/functional-table-box"
@@ -64,6 +65,7 @@ const MainPage: React.FC<MainPageProps> = ({
 
   const ref = useRef({
     files   : React.createRef<HTMLAnchorElement>(),
+    search  : React.createRef<HTMLAnchorElement>(),
     whatsnew: React.createRef<HTMLAnchorElement>(),
     viewer  : React.createRef<HTMLAnchorElement>()
   })
@@ -202,12 +204,16 @@ const MainPage: React.FC<MainPageProps> = ({
     }
   }, [true])
 
-  const handleSelectFile = useCallback((action: string, value: string) => {
+  const handleSelectFile = useCallback((action: string, value: string, option: any) => {
     ref.current.viewer.current.click()
     data.current.filepath = value
     data.current.filename = Path.basename(value)
     data.current.line = null
-    data.current.filter = null
+    if (option && option.search && option.search !== "") {
+      data.current.filter = option.search
+    } else {
+      data.current.filter = null
+    }
     data.current.terminal = (action === "terminal")
     setTimeout(() => forceUpdate(), 1000)
     updateAddressBar()
@@ -372,14 +378,18 @@ const MainPage: React.FC<MainPageProps> = ({
             }
             left={
               <TabFrame
-                labels={ ["Files"] }
+                labels={ ["Files", "Search"] }
                 items={ [
                   <FileExplorerBox
                     path={ ProjectPath.strictEncodeFiles(data.current.domain, data.current.project, data.current.bundle) }
                     onSelect={ handleSelectFile }
+                  />,
+                  <FileSearchBox
+                    path={ ProjectPath.strictEncodeFiles(data.current.domain, data.current.project, data.current.bundle) }
+                    onSelect={ handleSelectFile }
                   />
                 ] }
-                refs={ [ref.current.files] }
+                refs={ [ref.current.files, ref.current.search] }
               />
             }
             right={

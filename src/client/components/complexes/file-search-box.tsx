@@ -13,13 +13,13 @@ import TextForm from "../parts/text-form"
 import FileTreeRoot from "../sets/file-tree-root"
 import DropdownItem from "../parts/dropdown-item"
 
-type FileExplorerBoxProps = {
+type FileSearchBoxProps = {
   className?: string,
   path?     : string,
   onSelect? : (action: string, value: string, option: any) => void
 }
 
-const FileExplorerBox = React.memo<FileExplorerBoxProps>(({
+const FileSearchBox = React.memo<FileSearchBoxProps>(({
   className = "",
   path      = null,
   onSelect  = undefined
@@ -31,7 +31,9 @@ const FileExplorerBox = React.memo<FileExplorerBoxProps>(({
   })
 
   const data = useRef({
-    filter: "",
+    searchable: false,
+    searchtext: "",
+    done      : true,
     files : {
       name    : "",
       file    : false,
@@ -40,44 +42,54 @@ const FileExplorerBox = React.memo<FileExplorerBoxProps>(({
   })
 
   useEffect(() => {
-    data.current.filter = ref.current.text.current.value = ""
+    data.current.searchable = false
+    data.current.searchtext = ref.current.text.current.value = ""
+    data.current.done = true
     data.current.files = {
       name    : "",
       file    : false,
       children: []
     }
-
-    if (path) {
-      const uri = `${ Environment.getBaseUrl() }/api/v1/${ Escape.root(path) }`
-      Axios.get(uri, {
-        headers : { "X-Access-Token": Cookie.get("token") || "" },
-        data    : {}
-      })
-      .then((res: AxiosResponse) => {
-        data.current.files = res.data.files
-        forceUpdate()
-        return
-      })
-      .catch((err: AxiosError) => {
-        forceUpdate()
-        alert(err.response.data.msg)
-        return
-      })
-    } else {
-      forceUpdate()
-    }
+    forceUpdate()
   }, [path])
 
-  const handleChangeFilter = useCallback((value: string) => {
-    if (value.length !== 1) {
-      data.current.filter = value
-      forceUpdate()
-    }
+  const handleChangeText = useCallback((value: string) => {
+    data.current.searchable = (value.length >= 2)
+    data.current.searchtext = value
+    forceUpdate()
   }, [true])
+
+  const handleClickSubmit = useCallback(() => {
+    const uri = `${ Environment.getBaseUrl() }/api/v1/${ Escape.root(path) }?search=${ encodeURI(data.current.searchtext) }`
+
+    data.current.done = false
+    forceUpdate()
+    Axios.get(uri, {
+      headers : { "X-Access-Token": Cookie.get("token") || "" },
+      data    : {}
+    })
+    .then((res: AxiosResponse) => {
+      data.current.files = res.data.files
+      data.current.done = true
+      forceUpdate()
+      return
+    })
+    .catch((err: AxiosError) => {
+      data.current.done = true
+      data.current.files = {
+        name    : "",
+        file    : false,
+        children: []
+      }
+      forceUpdate()
+      alert(err.response.data.msg)
+      return
+    })
+  }, [path])
 
   const handleClickView = useCallback((targetValue: string, parentValue: string) => {
     if (onSelect) {
-      onSelect("view", Escape.root(parentValue), null)
+      onSelect("view", Escape.root(parentValue), { search: data.current.searchtext })
     }
   }, [onSelect])
 
@@ -126,13 +138,16 @@ const FileExplorerBox = React.memo<FileExplorerBoxProps>(({
       <TextForm
         ref={ ref.current.text }
         className="mb-3"
-        valid={ true }
-        label="Filter"
-        onChange={ handleChangeFilter }
+        label="Search"
+        button="Go"
+        valid={ data.current.searchable }
+        disabled={ !path || !data.current.done }
+        onChange={ handleChangeText }
+        onSubmit={ handleClickSubmit }
       />
       <FileTreeRoot
         root={ data.current.files }
-        filter={ data.current.filter }
+        filter="FILEONLY"
         actions={ [
           <DropdownItem
             key="view"
@@ -155,4 +170,4 @@ const FileExplorerBox = React.memo<FileExplorerBoxProps>(({
   )
 })
 
-export default FileExplorerBox
+export default FileSearchBox

@@ -17,7 +17,7 @@ const TreeLeaf: React.FC<FileTreeLeafProps> = ({
   filter  = "",
   actions = []
 }) => (
-  leaf.name.includes(filter) &&
+  (filter === "FILEONLY" || leaf.name.includes(filter)) &&
   <div className="list-group-item list-group-item-action list-group-item-light list-group-item-container flex-container-row">
     {
       !filter &&

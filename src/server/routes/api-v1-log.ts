@@ -264,9 +264,12 @@ router.route("/:domain(private|public)/projects/:projectName([0-9a-zA-Z_.#]+)/bu
         return ({
           name: path.basename(node),
           file: false,
-          children: fs.readdirSync(node).map((name: string) => lsRecursive(path.join(node, name)))
+          children: fs.readdirSync(node).map((name: string) => lsRecursive(path.join(node, name))).filter((node: NodeType) => (!!node))
         })
       } else {
+        if (req.query.search && typeof(req.query.search) === "string" && !fs.readFileSync(node, "utf8").includes(decodeURI(req.query.search))) {
+          return null
+        }
         return ({
           name: path.basename(node),
           file: true
