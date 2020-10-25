@@ -17,7 +17,13 @@ const rootPath: string = process.cwd()
 const router: Router = express.Router()
 
 router.param("domain", (req: Request, res: Response, next: NextFunction, domain: string) => {
-  const domainPath: string = path.join(path.join(rootPath, req.app.get("storage-path")), (domain === "private") ? req.token.usr : "public")
+  let domainPath: string
+  if (req.app.get("storage-path").slice(0, 1) === "/" || req.app.get("storage-path").slice(1, 3) === ":\\") {
+    domainPath = req.app.get("storage-path")
+  } else {
+    domainPath = path.join(rootPath, req.app.get("storage-path"))
+  }
+  domainPath = path.join(domainPath, (domain === "private") ? req.token.usr : "public")
 
   try {
     fs.mkdirSync(domainPath)
