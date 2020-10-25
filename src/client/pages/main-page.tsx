@@ -396,7 +396,7 @@ const MainPage: React.FC<MainPageProps> = ({
               <TabFrame
                 labels={ ["What's New", "Viewer"] }
                 items={ [
-                  <MarddownViewerBox />,
+                  <MarddownViewerBox path="whatsnew" />,
                   <>
                     { !data.current.terminal &&
                       <FunctionalTableBox

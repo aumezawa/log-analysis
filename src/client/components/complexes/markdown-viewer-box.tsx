@@ -11,11 +11,13 @@ import Environment from "../../lib/environment"
 import MarkdownViewer from "../parts/markdown-viewer"
 
 type MarkdownViewerBoxProps = {
-  className?: string
+  className?: string,
+  path      : string
 }
 
 const MarkdownViewerBox = React.memo<MarkdownViewerBoxProps>(({
-  className = ""
+  className = "p-2",
+  path      = undefined
 }) => {
   const [ignored, forceUpdate] = useReducer(x => x + 1, 0)
 
@@ -24,7 +26,7 @@ const MarkdownViewerBox = React.memo<MarkdownViewerBoxProps>(({
   })
 
   useEffect(() => {
-    const uri = `${ Environment.getBaseUrl() }/api/v1/whatsnew`
+    const uri = `${ Environment.getBaseUrl() }/api/v1/${ path }`
     Axios.get(uri, {
       headers : { "X-Access-Token": Cookie.get("token") || "" },
       data    : {}

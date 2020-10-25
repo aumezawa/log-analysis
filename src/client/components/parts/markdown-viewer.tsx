@@ -11,7 +11,11 @@ const MarkdownViewer = React.memo<MarkdownViewerProps>(({
   className = "",
   content   = ""
 }) => (
-  <div dangerouslySetInnerHTML={ {__html: Marked.parse(content)} }></div>
+  <div
+    className={ className }
+    dangerouslySetInnerHTML={ {__html: Marked.parse(content)} }
+  >
+  </div>
 ))
 
 export default MarkdownViewer
