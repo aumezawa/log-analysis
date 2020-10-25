@@ -12,17 +12,21 @@ import Escape from "../../lib/escape"
 import FunctionalTable from "../sets/functional-table"
 
 type FunctionalTableBoxProps = {
-  className?: string,
-  path?     : string,
-  line?     : number,
-  onChange  : (line: number) => void
+  className?      : string,
+  path?           : string,
+  line?           : number,
+  filter?         : string,
+  onChangeLine?   : (line: number) => void,
+  onChangeFilter? : (filter: string) => void
 }
 
 const FunctionalTableBox = React.memo<FunctionalTableBoxProps>(({
-  className = "",
-  path      = null,
-  line      = null,
-  onChange  = undefined
+  className       = "",
+  path            = null,
+  line            = null,
+  filter          = null,
+  onChangeLine    = undefined,
+  onChangeFilter  = undefined
 }) => {
   const [ignored, forceUpdate] = useReducer(x => x + 1, 0)
 
@@ -53,10 +57,16 @@ const FunctionalTableBox = React.memo<FunctionalTableBoxProps>(({
   }, [path])
 
   const handleChangeLine = useCallback((line: number) => {
-    if (onChange) {
-      onChange(line)
+    if (onChangeLine) {
+      onChangeLine(line)
     }
-  }, [onChange])
+  }, [onChangeLine])
+
+  const handleChangeFilter = useCallback((filter: string) => {
+    if (onChangeFilter) {
+      onChangeFilter(filter)
+    }
+  }, [onChangeFilter])
 
   return (
     <>
@@ -64,7 +74,9 @@ const FunctionalTableBox = React.memo<FunctionalTableBoxProps>(({
         className={ className }
         content={ data.current.content }
         line={ line }
-        onChange={ handleChangeLine }
+        filter={ filter }
+        onChangeLine={ handleChangeLine }
+        onChangeFilter={ handleChangeFilter }
       />
     </>
   )

@@ -25,14 +25,16 @@ import TokenUpdateModal from "../components/complexes/token-update-modal"
 import DomainSelectButton from "../components/complexes/domain-select-button"
 import ProjectCreateButton from "../components/complexes/project-create-button"
 import ProjectSelectButton from "../components/complexes/project-select-button"
-import ProjectDeleteModal from "../components/complexes/project-delete-modal"
+import ProjectManageModal from "../components/complexes/project-manage-modal"
 import BundleUploadButton from "../components/complexes/bundle-upload-button"
 import BundleSelectButton from "../components/complexes/bundle-select-button"
 import BundleDeleteModal from "../components/complexes/bundle-delete-modal"
 import InformationButton from "../components/parts/information-button"
 
 import FileExplorerBox from "../components/complexes/file-explorer-box"
+import FileSearchBox from "../components/complexes/file-search-box"
 
+import MarddownViewerBox from "../components/complexes/markdown-viewer-box"
 import FunctionalTableBox from "../components/complexes/functional-table-box"
 
 import TerminalBox from "../components/complexes/terminal-box"
@@ -62,12 +64,14 @@ const MainPage: React.FC<MainPageProps> = ({
   const [reloadBundleList,  updateBundleList]  = useReducer(x => x + 1, 0)
 
   const ref = useRef({
-    files : React.createRef<HTMLAnchorElement>(),
-    viewer: React.createRef<HTMLAnchorElement>()
+    files   : React.createRef<HTMLAnchorElement>(),
+    search  : React.createRef<HTMLAnchorElement>(),
+    whatsnew: React.createRef<HTMLAnchorElement>(),
+    viewer  : React.createRef<HTMLAnchorElement>()
   })
 
   const id = useRef({
-    projectDelete : "modal-" + UniqueId(),
+    projectManage : "modal-" + UniqueId(),
     bundleDelete  : "modal-" + UniqueId(),
     tokenStatus   : "modal-" + UniqueId(),
     tokenUpdate   : "modal-" + UniqueId()
@@ -80,7 +84,9 @@ const MainPage: React.FC<MainPageProps> = ({
     filepath: null,
     filename: null,
     line    : null,
-    terminal: false
+    filter  : null,
+    terminal: false,
+    action  : "delete"
   })
 
   const updateAddressBar = () => {
@@ -89,7 +95,8 @@ const MainPage: React.FC<MainPageProps> = ({
       data.current.project,
       data.current.bundle,
       data.current.filepath,
-      data.current.line
+      data.current.line,
+      data.current.filter
     ))
   }
 
@@ -100,6 +107,7 @@ const MainPage: React.FC<MainPageProps> = ({
     const bundle = params.get("bundle")
     const filepath = params.get("filepath")
     const line = params.get("line")
+    const filter = params.get("filter")
 
     if (domain && project) {
       const uri = `${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project, bundle, filepath) }`
@@ -115,6 +123,7 @@ const MainPage: React.FC<MainPageProps> = ({
         data.current.filepath = domain && project && bundle && filepath
         data.current.filename = domain && project && bundle && filepath && Path.basename(filepath)
         data.current.line     = domain && project && bundle && filepath && Number(line)
+        data.current.filter   = domain && project && bundle && filepath && filter
         if (filepath) {
           ref.current.files.current.click()
           ref.current.viewer.current.click()
@@ -144,6 +153,7 @@ const MainPage: React.FC<MainPageProps> = ({
     data.current.filepath = null
     data.current.filename = null
     data.current.line = null
+    data.current.filter = null
     forceUpdate()
     updateAddressBar()
   }, [true])
@@ -154,17 +164,19 @@ const MainPage: React.FC<MainPageProps> = ({
     data.current.filepath = null
     data.current.filename = null
     data.current.line = null
+    data.current.filter = null
     forceUpdate()
     updateAddressBar()
   }, [true])
 
-  const handleSubmitProjectDelete = useCallback((value: string) => {
+  const handleSubmitProjectManage = useCallback((value: string) => {
     if (data.current.project === value) {
       data.current.project = null
       data.current.bundle = null
       data.current.filepath = null
       data.current.filename = null
       data.current.line = null
+      data.current.filter = null
       forceUpdate()
       updateAddressBar()
     }
@@ -175,6 +187,7 @@ const MainPage: React.FC<MainPageProps> = ({
     data.current.filepath = null
     data.current.filename = null
     data.current.line = null
+    data.current.filter = null
     forceUpdate()
     updateAddressBar()
   }, [true])
@@ -185,22 +198,39 @@ const MainPage: React.FC<MainPageProps> = ({
       data.current.filepath = null
       data.current.filename = null
       data.current.line = null
+      data.current.filter = null
       forceUpdate()
       updateAddressBar()
     }
   }, [true])
 
-  const handleSelectFile = useCallback((action: string, value: string) => {
+  const handleSelectFile = useCallback((action: string, value: string, option: any) => {
     ref.current.viewer.current.click()
     data.current.filepath = value
     data.current.filename = Path.basename(value)
     data.current.line = null
+    if (option && option.search && option.search !== "") {
+      data.current.filter = option.search
+    } else {
+      data.current.filter = null
+    }
     data.current.terminal = (action === "terminal")
     setTimeout(() => forceUpdate(), 1000)
     updateAddressBar()
   }, [true])
 
+  const handleClickReopenProject = useCallback((targetValue: string, parentValue: string) => {
+    data.current.action = "open"
+    updateProjectList()
+  }, [true])
+
+  const handleClickCloseProject = useCallback((targetValue: string, parentValue: string) => {
+    data.current.action = "close"
+    updateProjectList()
+  }, [true])
+
   const handleClickDeleteProject = useCallback((targetValue: string, parentValue: string) => {
+    data.current.action = "delete"
     updateProjectList()
   }, [true])
 
@@ -213,16 +243,22 @@ const MainPage: React.FC<MainPageProps> = ({
     updateAddressBar()
   }, [true])
 
+  const handleChangeTableFilter = useCallback((filter: string) => {
+    data.current.filter = filter
+    updateAddressBar()
+  }, [true])
+
   return (
     <div className="container-fluid">
       <LayerFrame
         head={
           <>
-            <ProjectDeleteModal
-              id={ id.current.projectDelete }
+            <ProjectManageModal
+              id={ id.current.projectManage }
               domain={ data.current.domain }
+              action={ data.current.action }
               reload={ reloadProjectList }
-              onSubmit={ handleSubmitProjectDelete }
+              onSubmit={ handleSubmitProjectManage }
             />
             <BundleDeleteModal
               id={ id.current.bundleDelete }
@@ -254,13 +290,30 @@ const MainPage: React.FC<MainPageProps> = ({
                 />,
                 <DropdownDivider key="divider-2" />,
                 <DropdownItem
+                  key="reopen-project"
+                  label="Reopen Project"
+                  disabled={ !data.current.domain }
+                  toggle="modal"
+                  target={ id.current.projectManage }
+                  onClick={ handleClickReopenProject }
+                />,
+                <DropdownItem
+                  key="close-project"
+                  label="Close Project"
+                  disabled={ !data.current.domain }
+                  toggle="modal"
+                  target={ id.current.projectManage }
+                  onClick={ handleClickCloseProject }
+                />,
+                <DropdownItem
                   key="delete-project"
                   label="Delete Project"
                   disabled={ !data.current.domain || (data.current.domain === "public" && privilege !== "root") }
                   toggle="modal"
-                  target={ id.current.projectDelete }
+                  target={ id.current.projectManage }
                   onClick={ handleClickDeleteProject }
                 />,
+                <DropdownDivider key="divider-3" />,
                 <DropdownItem
                   key="delete-bundle"
                   label="Delete Bundle"
@@ -269,7 +322,7 @@ const MainPage: React.FC<MainPageProps> = ({
                   target={ id.current.bundleDelete }
                   onClick={ handleClickDeleteBundle }
                 />,
-                <DropdownDivider key="divider-3" />,
+                <DropdownDivider key="divider-4" />,
                 <DropdownItem
                   key="token-status"
                   label="Show Token Status"
@@ -325,26 +378,33 @@ const MainPage: React.FC<MainPageProps> = ({
             }
             left={
               <TabFrame
-                labels={ ["Files"] }
+                labels={ ["Files", "Search"] }
                 items={ [
                   <FileExplorerBox
                     path={ ProjectPath.strictEncodeFiles(data.current.domain, data.current.project, data.current.bundle) }
                     onSelect={ handleSelectFile }
+                  />,
+                  <FileSearchBox
+                    path={ ProjectPath.strictEncodeFiles(data.current.domain, data.current.project, data.current.bundle) }
+                    onSelect={ handleSelectFile }
                   />
                 ] }
-                refs={ [ref.current.files] }
+                refs={ [ref.current.files, ref.current.search] }
               />
             }
             right={
               <TabFrame
-                labels={ ["Viewer"] }
+                labels={ ["What's New", "Viewer"] }
                 items={ [
+                  <MarddownViewerBox />,
                   <>
                     { !data.current.terminal &&
                       <FunctionalTableBox
                         path={ ProjectPath.strictEncodeFilepath(data.current.domain, data.current.project, data.current.bundle, data.current.filepath) }
                         line={ data.current.line }
-                        onChange={ handleChangeTableLine }
+                        filter={ data.current.filter }
+                        onChangeLine={ handleChangeTableLine }
+                        onChangeFilter={ handleChangeTableFilter }
                       />
                     }
                     { data.current.terminal &&
@@ -356,7 +416,7 @@ const MainPage: React.FC<MainPageProps> = ({
                     }
                   </>
                 ] }
-                refs={ [ref.current.viewer] }
+                refs={ [ref.current.whatsnew, ref.current.viewer] }
               />
              }
           />

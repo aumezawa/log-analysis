@@ -177,6 +177,18 @@ router.route("/token")
 
 router.use("/log", logRouter)
 
+router.route("/whatsnew")
+.get((req: Request, res: Response, next: NextFunction) => {
+  // OK
+  return res.status(200).sendFile(path.join(rootPath, "WHATSNEW.md"))
+})
+.all((req: Request, res: Response, next: NextFunction) => {
+  // Method Not Allowed
+  return res.status(405).json({
+    msg: "GET method is only supported."
+  })
+})
+
 router.route("/hello")
 .get((req: Request, res: Response, next: NextFunction) => {
   // OK

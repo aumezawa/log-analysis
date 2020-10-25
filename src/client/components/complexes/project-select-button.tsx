@@ -19,6 +19,7 @@ type ProjectSelectButtonProps = {
   className?: string,
   domain?   : string,
   project?  : string,
+  status?   : string,
   onSubmit? : (value: string) => void
 }
 
@@ -26,6 +27,7 @@ const ProjectSelectButton = React.memo<ProjectSelectButtonProps>(({
   className = "",
   domain    = null,
   project   = null,
+  status    = "open",
   onSubmit  = undefined
 }) => {
   const [ignored, forceUpdate] = useReducer(x => x + 1, 0)
@@ -96,6 +98,8 @@ const ProjectSelectButton = React.memo<ProjectSelectButtonProps>(({
 
   const listLabel = () => (
     data.current.projects.filter((project: ProjectInfo) => (
+      project.status === status
+    )).filter((project: ProjectInfo) => (
       project.name.includes(data.current.filter) || project.description.includes(data.current.filter)
     )).map((project: ProjectInfo) => (
       project.name
@@ -104,6 +108,8 @@ const ProjectSelectButton = React.memo<ProjectSelectButtonProps>(({
 
   const listTitle = () => (
     data.current.projects.filter((project: ProjectInfo) => (
+      project.status === status
+    )).filter((project: ProjectInfo) => (
       project.name.includes(data.current.filter) || project.description.includes(data.current.filter)
     )).map((project: ProjectInfo) => (
       project.description

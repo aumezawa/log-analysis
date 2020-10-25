@@ -14,16 +14,18 @@ import TextForm from "../parts/text-form"
 import ListForm from "../parts/list-form"
 import ButtonSet from "../sets/button-set"
 
-type ProjectDeleteModalProps = {
+type ProjectManageModalProps = {
   id        : string,
   domain?   : string,
+  action?   : string,   // NOTE: "delete" | "open" | "close"
   reload?   : number,
   onSubmit? : (value: string) => void
 }
 
-const ProjectDeleteModal = React.memo<ProjectDeleteModalProps>(({
+const ProjectManageModal = React.memo<ProjectManageModalProps>(({
   id        = null,
   domain    = null,
+  action    = "delete",
   reload    = 0,
   onSubmit  = undefined
 }) => {
@@ -89,29 +91,56 @@ const ProjectDeleteModal = React.memo<ProjectDeleteModalProps>(({
 
     data.current.processing = true
     forceUpdate()
-    Axios.delete(uri, {
-      headers : { "X-Access-Token": Cookie.get("token") || "" },
-      data    : {}
-    })
-    .then((res: AxiosResponse) => {
-      if (onSubmit) {
-        onSubmit(data.current.project)
-      }
-      data.current.project = null
-      data.current.processing = false
-      reloadProject()
-      return
-    })
-    .catch((err: AxiosError) => {
-      data.current.processing = false
-      forceUpdate()
-      alert(err.response.data.msg)
-      return
-    })
-  }, [domain, onSubmit])
+
+    if (action === "delete") {
+      Axios.delete(uri, {
+        headers : { "X-Access-Token": Cookie.get("token") || "" },
+        data    : {}
+      })
+      .then((res: AxiosResponse) => {
+        if (onSubmit) {
+          onSubmit(data.current.project)
+        }
+        data.current.project = null
+        data.current.processing = false
+        reloadProject()
+        return
+      })
+      .catch((err: AxiosError) => {
+        data.current.processing = false
+        forceUpdate()
+        alert(err.response.data.msg)
+        return
+      })
+    } else {
+      Axios.put(uri, {
+        status  : action
+      }, {
+        headers : { "X-Access-Token": Cookie.get("token") || "" },
+        data    : {}
+      })
+      .then((res: AxiosResponse) => {
+        if (onSubmit) {
+          onSubmit(data.current.project)
+        }
+        data.current.project = null
+        data.current.processing = false
+        reloadProject()
+        return
+      })
+      .catch((err: AxiosError) => {
+        data.current.processing = false
+        forceUpdate()
+        alert(err.response.data.msg)
+        return
+      })
+    }
+  }, [domain, action, onSubmit])
 
   const listLabel = () => (
     data.current.projects.filter((project: ProjectInfo) => (
+      (action === "delete") || (action !== project.status)
+    )).filter((project: ProjectInfo) => (
       project.name.includes(data.current.filter) || project.description.includes(data.current.filter)
     )).map((project: ProjectInfo) => (
       project.name
@@ -120,6 +149,8 @@ const ProjectDeleteModal = React.memo<ProjectDeleteModalProps>(({
 
   const listTitle = () => (
     data.current.projects.filter((project: ProjectInfo) => (
+      (action === "delete") || (action !== project.status)
+    )).filter((project: ProjectInfo) => (
       project.name.includes(data.current.filter) || project.description.includes(data.current.filter)
     )).map((project: ProjectInfo) => (
       project.description
@@ -130,7 +161,7 @@ const ProjectDeleteModal = React.memo<ProjectDeleteModalProps>(({
     <ModalFrame
       id={ id }
       title="Project"
-      message="Select to delete a project."
+      message={ `Select to ${ action } a project.` }
       center={ false }
       body={
         <>
@@ -150,7 +181,7 @@ const ProjectDeleteModal = React.memo<ProjectDeleteModalProps>(({
       }
       foot={
         <ButtonSet
-          submit="Delete"
+          submit={ `${ action.charAt(0).toUpperCase() + action.slice(1) } Project` }
           cancel="Close"
           valid={ !!data.current.project && !data.current.processing }
           dismiss="modal"
@@ -162,4 +193,4 @@ const ProjectDeleteModal = React.memo<ProjectDeleteModalProps>(({
   )
 })
 
-export default ProjectDeleteModal
+export default ProjectManageModal
