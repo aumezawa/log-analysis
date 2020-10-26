@@ -418,7 +418,8 @@ const MainPage: React.FC<MainPageProps> = ({
                 ] }
                 refs={ [ref.current.whatsnew, ref.current.viewer] }
               />
-             }
+            }
+            border={ true }
           />
         }
         foot={ <div className="text-light text-right bg-dark text-box-margin">Coded by { author }, powered by React</div> }
