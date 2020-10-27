@@ -1,5 +1,7 @@
 import * as React from "react"
 
+import Environment from "../../lib/environment"
+
 import DropdownButton from "../parts/dropdown-button"
 
 type NavigatorBarProps = {
@@ -12,7 +14,7 @@ const NavigatorBar: React.FC<NavigatorBarProps> = ({
   items = []
 }) => (
   <nav className="navbar navbar-dark bg-dark">
-    <div className="navbar-brand">{ title }</div>
+    <a className="navbar-brand" href={ Environment.getBaseUrl() }>{ title }</a>
     <DropdownButton label="Menu" align="right" items={ items } />
   </nav>
 )

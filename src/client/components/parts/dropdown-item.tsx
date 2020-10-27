@@ -11,7 +11,7 @@ type DropdownItemProps = {
   onClick?  : (targetValue: string, parentValue: string) => void
 }
 
-const DropdownItem: React.FC<DropdownItemProps> = ({
+const DropdownItem = React.forwardRef<HTMLButtonElement, DropdownItemProps>(({
   className = "",
   label     = "action",
   title     = "",
@@ -19,7 +19,7 @@ const DropdownItem: React.FC<DropdownItemProps> = ({
   toggle    = "",
   target    = "",
   onClick   = undefined
-}) => {
+}, ref) => {
   const handleClick = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
     if (onClick) {
       onClick((e.currentTarget as HTMLElement).title, (e.currentTarget.parentNode as HTMLElement).title)
@@ -28,6 +28,7 @@ const DropdownItem: React.FC<DropdownItemProps> = ({
 
   return (
     <button
+      ref={ ref }
       className={ `dropdown-item text-monospace ${ className }` }
       type="button"
       title={ title }
@@ -39,6 +40,6 @@ const DropdownItem: React.FC<DropdownItemProps> = ({
       { label }
     </button>
   )
-}
+})
 
 export default DropdownItem
