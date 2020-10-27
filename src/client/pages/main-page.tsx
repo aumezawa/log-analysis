@@ -21,6 +21,7 @@ import DropdownDivider from "../components/parts/dropdown-divider"
 import DropdownItem from "../components/parts/dropdown-item"
 import TokenStatusModal from "../components/complexes/token-status-modal"
 import TokenUpdateModal from "../components/complexes/token-update-modal"
+import WhatsNewModal from "../components/complexes/whatsnew-modal"
 
 import DomainSelectButton from "../components/complexes/domain-select-button"
 import ProjectCreateButton from "../components/complexes/project-create-button"
@@ -34,7 +35,6 @@ import InformationButton from "../components/parts/information-button"
 import FileExplorerBox from "../components/complexes/file-explorer-box"
 import FileSearchBox from "../components/complexes/file-search-box"
 
-import MarddownViewerBox from "../components/complexes/markdown-viewer-box"
 import FunctionalTableBox from "../components/complexes/functional-table-box"
 
 import TerminalBox from "../components/complexes/terminal-box"
@@ -74,18 +74,19 @@ const MainPage: React.FC<MainPageProps> = ({
     search  : React.createRef<HTMLAnchorElement>(),
     vms     : React.createRef<HTMLAnchorElement>(),
     zdumps  : React.createRef<HTMLAnchorElement>(),
-    whatsnew: React.createRef<HTMLAnchorElement>(),
     host    : React.createRef<HTMLAnchorElement>(),
     vm      : React.createRef<HTMLAnchorElement>(),
     zdump   : React.createRef<HTMLAnchorElement>(),
-    viewer  : React.createRef<HTMLAnchorElement>()
+    viewer  : React.createRef<HTMLAnchorElement>(),
+    whatsnew: React.createRef<HTMLButtonElement>()
   })
 
   const id = useRef({
     projectManage : "modal-" + UniqueId(),
     bundleDelete  : "modal-" + UniqueId(),
     tokenStatus   : "modal-" + UniqueId(),
-    tokenUpdate   : "modal-" + UniqueId()
+    tokenUpdate   : "modal-" + UniqueId(),
+    whatsnew      : "modal-" + UniqueId()
   })
 
   const data = useRef({
@@ -152,6 +153,10 @@ const MainPage: React.FC<MainPageProps> = ({
       })
     } else {
       updateAddressBar()
+    }
+
+    if ((Cookie.get("whatsnew") || "") !== "false") {
+      ref.current.whatsnew.current.click()
     }
   }, [true])
 
@@ -313,6 +318,9 @@ const MainPage: React.FC<MainPageProps> = ({
               user={ user }
               onDone={ handleDoneTokenUpdate }
             />
+            <WhatsNewModal
+              id={ id.current.whatsnew }
+            />
             <NavigatorBar
               title={ project }
               items={ [
@@ -371,6 +379,14 @@ const MainPage: React.FC<MainPageProps> = ({
                   label="Update Token"
                   toggle="modal"
                   target={ id.current.tokenUpdate }
+                />,
+                <DropdownDivider key="divider-5" />,
+                <DropdownItem
+                  ref={ ref.current.whatsnew }
+                  key="whatsnew"
+                  label="Show what's new"
+                  toggle="modal"
+                  target={ id.current.whatsnew }
                 />
               ] }
             />
@@ -448,9 +464,8 @@ const MainPage: React.FC<MainPageProps> = ({
             }
             right={
               <TabFrame
-                labels={ ["What's New", "Host", "VM", "Dump", "Viewer"] }
+                labels={ ["Host", "VM", "Dump", "Viewer"] }
                 items={ [
-                  <MarddownViewerBox />,
                   <HostInfoBox
                     domain={ data.current.domain }
                     project={ data.current.project }
@@ -487,9 +502,10 @@ const MainPage: React.FC<MainPageProps> = ({
                     }
                   </>
                 ] }
-                refs={ [ref.current.whatsnew, ref.current.host, ref.current.vm, ref.current.zdump, ref.current.viewer] }
+                refs={ [ref.current.host, ref.current.vm, ref.current.zdump, ref.current.viewer] }
               />
-             }
+            }
+            border={ true }
           />
         }
         foot={ <div className="text-light text-right bg-dark text-box-margin">Coded by { author }, powered by React</div> }

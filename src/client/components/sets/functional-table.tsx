@@ -62,12 +62,14 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
   })
 
   useEffect(() => {
+    let scrollLine: number
     if (content) {
       env.current.line = (line > 0) ? line : 1
       env.current.maxRow = DEFAULT_ROW
-      env.current.page = Math.ceil(env.current.line / env.current.maxRow)
       env.current.label = null
       if (filter) {
+        scrollLine = 1
+        env.current.page = 1
         env.current.filters = {
           Content : {
             type      : "text",
@@ -77,6 +79,8 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
           }
         }
       } else {
+        scrollLine = env.current.line
+        env.current.page = Math.ceil(env.current.line / env.current.maxRow)
         env.current.filters = {} as FilterSettings
       }
 
@@ -84,7 +88,7 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
       ref.current.text.current.value = ""
       input.current.line = null
       forceUpdate()
-      scrollToLine(env.current.line)
+      scrollToLine(scrollLine)
     }
   }, [content, line, filter])
 
