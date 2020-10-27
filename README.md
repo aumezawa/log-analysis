@@ -100,6 +100,16 @@ Access with your browser or issue HTTP requests.
   - data: `{ msg: <string>, iss: <string>, sub: <string>, iat: <string>, exp: <string>, IssueAt: <string>, ExpirationTime: <string> }`
 
 
+### Get Change History
+
+- request
+  - method: `GET`
+  - header: `{ X-Access-Token: <string> }`
+  - path: `/api/v1/whatsnew`
+- response
+  - data: `<string>`
+
+
 ### Get Project List
 
 - request
@@ -122,23 +132,23 @@ Access with your browser or issue HTTP requests.
   - data: `{ msg: <string> }`
 
 
-### Get a Project Description
+### Get a Project Status / Description
 
 - request
   - method: `GET`
   - header: `{ X-Access-Token: <string> }`
   - path: `/api/v1/log/:domain(private|public)/projects/:projectName`
 - response
-  - data: `{ msg: <string>, description: <string> }`
+  - data: `{ msg: <string>, status:<string>, description: <string> }`
 
 
-### Update a Project Description
+### Update a Project Status / Description
 
 - request
   - method: `POST`
   - header: `{ X-Access-Token: <string>, Content-Type: application/x-www-form-urlencoded }`
   - path: `/api/v1/log/:domain(private|public)/projects/:projectName`
-  - body: `{ description: <string> }`
+  - body: `{ status?: "open" | "close", description?: <string> }`
 - response
   - data: `{ msg: <string> }`
 
@@ -229,6 +239,7 @@ Access with your browser or issue HTTP requests.
   - method: `GET`
   - header: `{ X-Access-Token: <string> }`
   - path: `/api/v1/log/:domain(private|public)/projects/:projectName/bundles/:bundleId/files/:filepath`
+  - query: `{ line: [1-9]{1}[0-9]+, filter: <string> }`
 - response
   - data: `{ msg: <string>, content: <string>, size: <number>, modifiedAt: <string> }`
 
