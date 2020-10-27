@@ -10,6 +10,7 @@ import Environment from "../../lib/environment"
 import Escape from "../../lib/escape"
 
 import FunctionalTable from "../sets/functional-table"
+import Spinner from "../parts/spinner"
 
 type FunctionalTableBoxProps = {
   className?      : string,
@@ -34,19 +35,29 @@ const FunctionalTableBox = React.memo<FunctionalTableBoxProps>(({
     content: null
   })
 
+  const status = useRef({
+    progress: false
+  })
+
   useEffect(() => {
     if (path) {
       const uri = `${ Environment.getBaseUrl() }/api/v1/${ Escape.root(path) }?mode=json`
+      status.current.progress = true
+      forceUpdate()
       Axios.get(uri, {
         headers : { "X-Access-Token": Cookie.get("token") || "" },
         data    : {}
       })
       .then((res: AxiosResponse) => {
         data.current.content = res.data.content
+        status.current.progress = false
         forceUpdate()
         return
       })
       .catch((err: AxiosError) => {
+        data.current.content = null
+        status.current.progress = false
+        forceUpdate()
         alert(err.response.data.msg)
         return
       })
@@ -70,14 +81,17 @@ const FunctionalTableBox = React.memo<FunctionalTableBoxProps>(({
 
   return (
     <>
-      <FunctionalTable
-        className={ className }
-        content={ data.current.content }
-        line={ line }
-        filter={ filter }
-        onChangeLine={ handleChangeLine }
-        onChangeFilter={ handleChangeFilter }
-      />
+      {  status.current.progress && <Spinner /> }
+      { !status.current.progress &&
+        <FunctionalTable
+          className={ className }
+          content={ data.current.content }
+          line={ line }
+          filter={ filter }
+          onChangeLine={ handleChangeLine }
+          onChangeFilter={ handleChangeFilter }
+        />
+      }
     </>
   )
 })
