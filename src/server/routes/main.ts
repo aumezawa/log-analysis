@@ -17,6 +17,12 @@ router.route("/log/:domain(private|public)/projects/:projectName([0-9a-zA-Z_.#]+
   if (req.query.filter) {
     query = `${ query }&filter=${ req.query.filter }`
   }
+  if (req.query.date_from) {
+    query = `${ query }&date_from=${ req.query.date_from }`
+  }
+  if (req.query.date_to) {
+    query = `${ query }&date_to=${ req.query.date_to }`
+  }
   return res.status(200).send(
     ReactDomServer.renderToString(React.createElement(IndexPage, { user: req.token.usr, alias: req.token.als, privilege: req.token.prv, page: "main", query: query }))
   )

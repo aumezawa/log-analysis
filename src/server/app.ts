@@ -25,6 +25,7 @@ app.set("public-key-path", process.env.npm_package_config_public_key_path)
 app.set("private-key-path", process.env.npm_package_config_private_key_path)
 app.set("certificate-path", process.env.npm_package_config_certificate_path)
 app.set("storage-path", process.env.npm_package_config_storage_path)
+app.set("date-format", process.env.npm_package_config_date_format)
 
 app.use(log4js.connectLogger(logger, {
   level: "auto",

@@ -211,16 +211,48 @@ router.route("/:domain(private|public)/projects/:projectName([0-9a-zA-Z_.#]+)/bu
             msg: "This file's size is too large. Please use legacy view."
           })
         }
-        const content = {
-          format: {
-            title     : path.basename(nodePath),
-            label     : { Content: "text" },
-            hasHeader : true,
-            hasIndex  : true,
-            contentKey: "Content"
-          },
-          data: fs.readFileSync(nodePath, "utf8").split(/\r\n|\n|\r/).map((line: string) => ({ Content: line }))
+
+        let content: any = null
+        if (req.app.get("date-format") !== "") {
+          const regex = new RegExp(`^(${ req.app.get("date-format") }) (.*)$`)
+          const fd = fs.openSync(nodePath, "r")
+          const buffer = Buffer.alloc(80)
+          fs.readSync(fd, buffer, 0, 80, 0)
+          fs.closeSync(fd)
+
+          if (!!buffer.toString("utf8").match(regex)) {
+            content = {
+              format: {
+                title     : path.basename(nodePath),
+                label     : { Date: "date", Content: "text" },
+                hasHeader : true,
+                hasIndex  : true,
+                contentKey: "Content"
+              },
+              data: fs.readFileSync(nodePath, "utf8").split(/\r\n|\n|\r/).map((line: string) => {
+                const match = line.match(regex)
+                if (!!match) {
+                  return { Date: match[1], Content: match[2] }
+                }
+                return { Date: "", Content: line }
+              })
+            }
+          }
         }
+
+        if (!content) {
+          content = {
+            format: {
+              title     : path.basename(nodePath),
+              label     : { Content: "text" },
+              hasHeader : true,
+              hasIndex  : true,
+              contentKey: "Content"
+            },
+            data: fs.readFileSync(nodePath, "utf8").split(/\r\n|\n|\r/).map((line: string) => ({ Content: line }))
+          }
+        }
+
         // OK
         return res.status(200).json({
           msg: `You get a file content of path /${ req.params[0] } of project ${ req.params.projectName } bundle ID=${ req.params.bundleId }.`,
