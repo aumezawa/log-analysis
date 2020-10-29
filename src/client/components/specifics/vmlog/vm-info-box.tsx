@@ -77,8 +77,30 @@ const VmInfoBox = React.memo<VmInfoBoxProps>(({
           ["version",     `${ vmInfo.current.version }`],
           ["cpus",        `${ vmInfo.current.cpus }`],
           ["memory",      `${ vmInfo.current.memory } GB`],
+          ["firmware",    `${ vmInfo.current.firmware }`],
           ["guest os",    `${ vmInfo.current.guest }`],
           ["power state", `${ vmInfo.current.state }`]
+        ] }
+      />
+    )
+
+    tables.push(
+      <Table
+        key="options"
+        className="my-2"
+        title="VM Options"
+        content={ [
+          ["uefi.secureBoot.enabled",                   `${ vmInfo.current.options.uefi_secureBoot_enabled }`],
+          ["cpuid.coresPerSocket",                      `${ vmInfo.current.options.cpuid_coresPerSocket }`],
+          ["numa.nodeAffinity",                         `${ vmInfo.current.options.numa_nodeAffinity }`],
+          ["numa.vcpu.maxPerMachineNode",               `${ vmInfo.current.options.numa_vcpu_maxPerMachineNode }`],
+          ["numa.vcpu.maxPerVirtualNode",               `${ vmInfo.current.options.numa_vcpu_maxPerVirtualNode }`],
+          ["numa.autosize",                             `${ vmInfo.current.options.numa_autosize }`],
+          ["sched.cpu.affinity",                        `${ vmInfo.current.options.sched_cpu_affinity }`],
+          ["sched.cpu.latencySensitivity",              `${ vmInfo.current.options.sched_cpu_latencySensitivity }`],
+          ["sched.cpu.min",                             `${ vmInfo.current.options.sched_cpu_min }`],
+          ["latency.enforceCpuMin",                     `${ vmInfo.current.options.latency_enforceCpuMin }`],
+          ["timeTracker.apparentTimeIgnoresInterrupts", `${ vmInfo.current.options.timeTracker_apparentTimeIgnoresInterrupts }`]
         ] }
       />
     )
@@ -100,6 +122,21 @@ const VmInfoBox = React.memo<VmInfoBoxProps>(({
       )
     ))
 
+    vmInfo.current.scsis.map((scsi: VirtualScsiInfo) => (
+      tables.push(
+        <Table
+          key={ `${ scsi.name }` }
+          className="my-2"
+          title={ `vSCSI Information - ${ scsi.name }` }
+          content={ [
+            ["device",    `${ scsi.device }`],
+            ["present",   `${ scsi.present }`],
+            ["slot",      `${ scsi.slot }`]
+          ] }
+        />
+      )
+    ))
+
     vmInfo.current.disks.map((disk: VirtualDiskInfo) => (
       tables.push(
         <Table
@@ -107,9 +144,11 @@ const VmInfoBox = React.memo<VmInfoBoxProps>(({
           className="my-2"
           title={ `vDisk Information - ${ disk.name }` }
           content={ [
-            ["device",    `${ disk.device }`],
-            ["present",   `${ disk.present }`],
-            ["mode",      `${ disk.mode }`]
+            ["device",                  `${ disk.device }`],
+            ["size",                    `${ disk.size } GB`],
+            ["present",                 `${ disk.present }`],
+            ["mode",                    `${ disk.mode }`],
+            ["physical disk (if rdm)",  `${ disk.pdisk }`]
           ] }
         />
       )

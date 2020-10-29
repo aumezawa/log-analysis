@@ -1,3 +1,13 @@
+Version: **0.7.x** [2020/10/29]
+
+Enhanced Features:
+  - Updated [Host] and [VM] tab
+
+Bug Fixes:
+  - *None*
+
+***
+
 Version: **0.7.0** [2020/10/27]
 
 New Features:

@@ -76,8 +76,10 @@ def GetHostInfo(dirPath, esxName):
             'hostname'      : GetHostName(dirPath),
             'version'       : GetEsxiVersion(dirPath),
             'build'         : GetEsxiBuildNumber(dirPath),
+            'system'        : GetEsxiSystem(dirPath),
             'hardware'  : {
                 'machine'   : GetMachineModel(dirPath),
+                'serial'    : GetMachineSerialNumber(dirPath),
                 'cpu'       : GetCpuInfo(dirPath),
                 'memory'    : GetMemory(dirPath),
                 'cards'     : GetPciCards(dirPath)
@@ -122,10 +124,13 @@ def GetVmInfo(dirPath, vmName):
             'version'   : int(vmxDict['virtualHW.version']),
             'cpus'      : int(vmxDict['numvcpus']),
             'memory'    : int(vmxDict['memSize']) // 1024,
+            'firmware'  : GetVmxValue(vmxDict, 'firmware', default='bios'),
             'guest'     : vmxDict['guestOS'],
+            'options'   : GetVmOptions(vmxDict),
             'state'     : GetVmStatus(dirPath, vmName),
             'nics'      : GetVmNics(vmxDict),
-            'disks'     : GetVmDisks(vmxDict),
+            'scsis'     : GetVmScsis(vmxDict),
+            'disks'     : GetVmDisks(vmxPath, vmxDict),
             'dpios'     : GetDpios(vmxDict),
             'vfs'       : GetVmSriovVfs(vmxDict)
         }
@@ -251,6 +256,9 @@ def ExtractFiles(filePath, override=True, rmRetry=5):
     #
     try:
         tarFile = tarfile.open(filePath, 'r')
+        for tarInfo in tarFile.getmembers():
+            if ':' in tarInfo.name:
+                tarInfo.name = tarInfo.name.replace(':', '_')
         tarFile.extractall(path=dirPath)
         tarFile.close()
     except Exception as e:
@@ -471,17 +479,41 @@ def GetHostName(dirPath):
     return SearchInText(filePath, keyword)
 
 
+def GetEsxiSystem(dirPath):
+    filePath1 = os.path.join(dirPath, 'commands', 'esxcfg-info_-a--F-xml.txt')
+    #
+    filePath2 = os.path.join(dirPath, 'commands', 'localcli_system-settings-kernel-list--d.txt')
+    keyword1  = r"^pcipDisablePciErrReporting\s+Bool\s+[A-Z]+\s+(TRUE|FALSE)\s+.*$"
+    keyword2  = r"^enableACPIPCIeHotplug\s+Bool\s+[A-Z]+\s+(TRUE|FALSE)\s+.*$"
+    return {
+        'powerPolicy'               : SearchInXml(filePath1, './hardware-info/cpu-power-management-info/value[@name="current-policy"]'),
+        'pcipDisablePciErrReporting': SearchInText(filePath2, keyword1, default="TRUE"),
+        'enableACPIPCIeHotplug'     : SearchInText(filePath2, keyword2, default="FALSE")
+    }
+
 def GetMachineModel(dirPath):
     filePath = os.path.join(dirPath, 'commands', 'esxcfg-info_-a--F-xml.txt')
     xpath    = './hardware-info/value[@name="product-name"]'
     return SearchInXml(filePath, xpath)
 
 
+def GetMachineSerialNumber(dirPath):
+    filePath = os.path.join(dirPath, 'commands', 'esxcfg-info_-a--F-xml.txt')
+    xpath    = './hardware-info/value[@name="serial-number"]'
+    return SearchInXml(filePath, xpath)
+
+
 def GetCpuInfo(dirPath):
+    filePath = os.path.join(dirPath, 'commands', 'smbiosDump.txt')
+    keyword  = r"^.*\"(Intel\(R\) Xeon\(R\).*)\"$"
+    model    = SearchInText(filePath, keyword, default="Unknown")
+    #
     filePath = os.path.join(dirPath, 'commands', 'esxcfg-info_-a--F-xml.txt')
     return {
+        'model'     : model,
         'sockets'   : _int(SearchInXml(filePath, './hardware-info/cpu-info/value[@name="num-packages"]')),
-        'cores'     : _int(SearchInXml(filePath, './hardware-info/cpu-info/value[@name="num-cores"]'))
+        'cores'     : _int(SearchInXml(filePath, './hardware-info/cpu-info/value[@name="num-cores"]')),
+        'threads'   : _int(SearchInXml(filePath, './hardware-info/cpu-info/value[@name="num-threads"]'))
     }
 
 
@@ -501,12 +533,16 @@ def GetPciCards(dirPath):
     #
     cards = []
     for node in nodes:
+        seg  = _int(node.findtext('./value[@name="segment"]'), base=16)
+        bus  = _int(node.findtext('./value[@name="bus"]'), base=16)
+        dev  = _int(node.findtext('./value[@name="slot"]'), base=16)
         func = _int(node.findtext('./value[@name="function"]'), base=16)
         slot = _int(node.findtext('./value[@name="physical-slot"]'))
-        if (func == 0) and (slot <= 16):
+        if (func == 0) and (slot <= 32):
             cards.append({
                 'slot'  : slot,
-                'device': node.findtext('./value[@name="device-name"]')
+                'device': node.findtext('./value[@name="device-name"]'),
+                'sbdf'  : '%04x:%02x:%02x:%01x' % (seg, bus, dev, func)
             })
     cards.sort(key=lambda x: x['slot'])
     return cards
@@ -522,14 +558,19 @@ def GetNics(dirPath):
     nics = []
     for node in nodes:
         slot = node.findtext('./pci-device/value[@name="slot-description"]', default='Unknown')
-        port = node.findtext('./pci-device/value[@name="function"]')
+        seg  = _int(node.findtext('./pci-device/value[@name="segment"]'), base=16)
+        bus  = _int(node.findtext('./pci-device/value[@name="bus"]'), base=16)
+        dev  = _int(node.findtext('./pci-device/value[@name="slot"]'), base=16)
+        func = _int(node.findtext('./pci-device/value[@name="function"]'), base=16)
         nics.append({
             'name'      : node.findtext('./value[@name="name"]'),
             'speed'     : _int(node.findtext('./value[@name="actual-speed"]')),
             'linkup'    : node.findtext('./value[@name="link-up"]') == 'true',
             'mtu'       : _int(node.findtext('./value[@name="mtu"]')),
+            'sbdf'      : '%04x:%02x:%02x:%01x' % (seg, bus, dev, func),
             'device'    : node.findtext('./pci-device/value[@name="device-name"]'),
-            'port'      : 'Device %s, Port %s' % (slot, str(_int(port, base=16, default='Unknown'))),
+            'port'      : 'Device %s, Port %s' % (slot, func),
+            'mac'       : node.findtext('./value[@name="mac-address"]'),
             'driver'    : node.findtext('./value[@name="driver"]')
         })
     nics.sort(key=lambda x: x['name'])
@@ -572,11 +613,16 @@ def GetHbas(dirPath):
     hbas = []
     for node in nodes:
         slot = node.findtext('./pci-device/value[@name="slot-description"]', default='Unknown')
-        port = node.findtext('./pci-device/value[@name="function"]')
+        seg  = _int(node.findtext('./pci-device/value[@name="segment"]'), base=16)
+        bus  = _int(node.findtext('./pci-device/value[@name="bus"]'), base=16)
+        dev  = _int(node.findtext('./pci-device/value[@name="slot"]'), base=16)
+        func = _int(node.findtext('./pci-device/value[@name="function"]'), base=16)
         hbas.append({
             'name'      : node.findtext('./value[@name="name"]'),
+            'sbdf'      : '%04x:%02x:%02x:%01x' % (seg, bus, dev, func),
             'device'    : node.findtext('./pci-device/value[@name="device-name"]'),
-            'port'      : 'Device %s, Port %s' % (slot, str(_int(port, base=16, default='Unknown'))),
+            'port'      : 'Device %s, Port %s' % (slot, func),
+            'wwn'       : node.findtext('./value[@name="uid"]')[-16:],
             'driver'    : node.findtext('./value[@name="driver"]')
         })
     hbas.sort(key=lambda x: x['name'])
@@ -593,6 +639,15 @@ def GetDisks(dirPath):
     disks = []
     for node in nodes:
         name    = node.findtext('./value[@name="device-identifier"]')
+        vml     = 'Unknown'
+        for uid in node.findall('./disk-lun/lun/device-uids/device-uid'):
+            if uid.findtext('./value[@name="uid"]').startswith('vml.'):
+                vml = uid.findtext('./value[@name="uid"]')
+        storage = ' '.join([ \
+            node.findtext('./disk-lun/lun/value[@name="vendor"]').replace(' ', ''), \
+            node.findtext('./disk-lun/lun/value[@name="model"]').replace(' ', ''), \
+            node.findtext('./disk-lun/lun/value[@name="revision"]').replace(' ', '') \
+        ])
         adapter = node.findtext('./value[@name="adapter-name"]')
         for disk in disks:
             if name == disk['name']:
@@ -602,8 +657,12 @@ def GetDisks(dirPath):
         else:
             disks.append({
                 'name'      : name,
+                'vml'       : vml,
+                'storage'   : storage,
                 'size'      : _int(node.findtext('./disk-lun/value[@name="size"]'), calc=lambda x: x // 1024 // 1024 // 1024),
-                'adapters'  : [adapter]
+                'adapters'  : [adapter],
+                'nmp_psp'   : node.findtext('./disk-lun/lun/nmp-device-configuration/value[@name="path-selection-policy"]'),
+                'nmp_satp'  : node.findtext('./disk-lun/lun/nmp-device-configuration/value[@name="storage-array-type"]')
             })
     disks.sort(key=lambda x: x['name'])
     return disks
@@ -636,6 +695,14 @@ def GetPackages(dirPath):
 ################################################################################
 ### Internal Functions - Get VM Information
 ################################################################################
+def convertSBDF(sbdf_dec):
+    try:
+        return '%04x:%02x:%02x.%01x' % (_int(sbdf_dec[0:5]), _int(sbdf_dec[6:9]), _int(sbdf_dec[10:12]), _int(sbdf_dec[13:14]))
+    except Exception as e:
+        logger.error(e)
+        return sbdf_dec
+
+
 def GetVmxPath(dirPath, vmName):
     filePath = os.path.join(dirPath, 'etc', 'vmware', 'hostd', 'vmInventory.xml')
     xpath    = './ConfigEntry/vmxCfgPath'
@@ -666,6 +733,31 @@ def GetVmxDict(vmxPath):
     return vmxDict
 
 
+def GetVmxValue(vmxDict, param, default=None):
+    return vmxDict[param] if param in vmxDict else default
+
+
+def GetVmOptions(vmxDict):
+    options = [
+        ('uefi_secureBoot_enabled',                     'uefi.secureBoot.enabled',                      None),
+        ('cpuid_coresPerSocket',                        'cpuid.coresPerSocket',                         None),
+        ('numa_nodeAffinity',                           'numa.nodeAffinity',                            None),
+        ('numa_vcpu_maxPerMachineNode',                 'numa.vcpu.maxPerMachineNode',                  None),
+        ('numa_vcpu_maxPerVirtualNode',                 'numa.vcpu.maxPerVirtualNode',                  None),
+        ('numa_autosize',                               'numa.autosize',                                None),
+        ('sched_cpu_affinity',                          'sched.cpu.affinity',                           None),
+        ('sched_cpu_latencySensitivity',                'sched.cpu.latencySensitivity',                 None),
+        ('sched_cpu_min',                               'sched.cpu.min',                                None),
+        ('latency_enforceCpuMin',                       'latency.enforceCpuMin',                        None),
+        ('timeTracker_apparentTimeIgnoresInterrupts',   'timeTracker.apparentTimeIgnoresInterrupts',    None)
+    ]
+    #
+    vmOptions = {}
+    for option in options:
+        vmOptions[option[0]] = GetVmxValue(vmxDict, option[1], default=option[2])
+    return vmOptions
+
+
 def GetVmStatus(dirPath, vmName):
     filePath = os.path.join(dirPath, 'commands', 'localcli_vm-process-list.txt')
     repattern = re.compile(r"^%s:$" % vmName)
@@ -693,24 +785,79 @@ def GetVmNics(vmxDict):
                 'device'    : vmxDict[ethernet + '.virtualDev'],
                 'portgroup' : vmxDict[ethernet + '.networkName'],
                 'present'   : vmxDict[ethernet + '.present'] == 'TRUE',
-                'slot'      : int(vmxDict[ethernet + '.pciSlotNumber']),
+                'slot'      : _int(vmxDict[ethernet + '.pciSlotNumber']),
                 'mac'       : vmxDict[ethernet + '.generatedAddress']
             })
     vmNics.sort(key=lambda x: x['name'])
     return vmNics
 
 
-def GetVmDisks(vmxDict):
+def GetVmScsis(vmxDict):
+    repattern = re.compile(r"^(scsi[0-9]+)[.]present$")
+    vmScsis = []
+    for key in vmxDict.keys():
+        match = repattern.match(key)
+        if match:
+            scsi = match.groups()[0]
+            vmScsis.append({
+                'name'      : scsi,
+                'device'    : vmxDict[scsi + '.virtualDev'],
+                'present'   : vmxDict[scsi + '.present'] == 'TRUE',
+                'slot'      : _int(vmxDict[scsi + '.pciSlotNumber'])
+            })
+    vmScsis.sort(key=lambda x: x['name'])
+    return vmScsis
+
+
+def GetVmDiskSizeGB(vmxPath, vmdkName):
+    repattern = re.compile(r"^RW ([0-9]+) .*$")
+    #
+    try:
+        with open(os.path.join(os.path.dirname(vmxPath), vmdkName), 'r') as fp:
+            for line in fp:
+                match = repattern.match(line)
+                if match:
+                    return _int(match.groups()[0]) // 1024 // 1024
+    except Exception as e:
+        logger.error(e)
+        return 'Unknown'
+    return 'Unknown'
+
+
+def GetVmRdmInfo(vmxPath, vmdkName):
+    pattern = "Disk %s is a Passthrough Raw Device Mapping" % vmdkName
+    #
+    try:
+        dirPath = os.path.dirname(vmxPath)
+        for filePath in os.listdir(dirPath):
+            if os.path.basename(filePath).startswith('dump-vmdk-rdm-info'):
+                with open(os.path.join(dirPath, filePath), 'r') as fp:
+                    contents = fp.read().split('\n')
+                for index, content in enumerate(contents):
+                    if content == pattern:
+                        return contents[index + 1][-58:]
+    except Exception as e:
+        logger.error(e)
+        return 'Unknown'
+    return 'Unknown'
+
+
+def GetVmDisks(vmxPath, vmxDict):
     repattern = re.compile(r"^(scsi[0-9]+:[0-9]+)[.]present$")
     vmDisks = []
     for key in vmxDict.keys():
         match = repattern.match(key)
         if match:
             scsi = match.groups()[0]
+            mode = vmxDict[scsi + '.mode'] if (scsi + '.mode' in vmxDict) else None
+            vmdk = vmxDict[scsi + '.fileName']
+            pdisk = GetVmRdmInfo(vmxPath, vmdk) if (mode == 'independent-persistent') else None
             vmDisks.append({
                 'name'      : scsi,
                 'device'    : vmxDict[scsi + '.deviceType'],
-                'mode'      : vmxDict[scsi + '.mode'] if (scsi + '.mode' in vmxDict) else None,
+                'size'      : GetVmDiskSizeGB(vmxPath, vmdk),
+                'mode'      : mode,
+                'pdisk'     : pdisk,
                 'present'   : vmxDict[scsi + '.present'] == 'TRUE'
             })
     vmDisks.sort(key=lambda x: x['name'])
@@ -726,7 +873,7 @@ def GetDpios(vmxDict):
             pciPassthru = match.groups()[0]
             Dpios.append({
                 'name'      : pciPassthru,
-                'id'        : vmxDict[pciPassthru + '.id'],
+                'id'        : convertSBDF(vmxDict[pciPassthru + '.id']),
                 'present'   : vmxDict[pciPassthru + '.present'] == 'TRUE',
                 'slot'      : int(vmxDict[pciPassthru + '.pciSlotNumber'])
             })
@@ -743,8 +890,8 @@ def GetVmSriovVfs(vmxDict):
             pciPassthru = match.groups()[0]
             vmSriovVfs.append({
                 'name'      : pciPassthru,
-                'id'        : vmxDict[pciPassthru + '.id'],
-                'pfid'      : vmxDict[pciPassthru + '.pfId'],
+                'id'        : convertSBDF(vmxDict[pciPassthru + '.id']),
+                'pfid'      : convertSBDF(vmxDict[pciPassthru + '.pfId']),
                 'portgroup' : vmxDict[pciPassthru + '.networkName'],
                 'present'   : vmxDict[pciPassthru + '.present'] == 'TRUE',
                 'slot'      : int(vmxDict[pciPassthru + '.pciSlotNumber']),

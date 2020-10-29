@@ -88,14 +88,30 @@ const HostInfoBox = React.memo<HostInfoBoxProps>(({
 
     tables.push(
       <Table
+        key="system"
+        className="my-2"
+        title="ESXi System Information"
+        content={ [
+          ["power policy",                              `${ hostInfo.current.system.powerPolicy }`],
+          ["kernel param - pcipDisablePciErrReporting", `${ hostInfo.current.system.pcipDisablePciErrReporting }`],
+          ["kernel param - enableACPIPCIeHotplug",      `${ hostInfo.current.system.enableACPIPCIeHotplug }`]
+        ] }
+      />
+    )
+
+    tables.push(
+      <Table
         key="hardware"
         className="my-2"
         title="Hardware Information"
         content={ [
-          ["machine",       `${ hostInfo.current.hardware.machine }`],
-          ["cpu - sockets", `${ hostInfo.current.hardware.cpu.sockets }`],
-          ["cpu - cores",   `${ hostInfo.current.hardware.cpu.cores }`],
-          ["memory",        `${ hostInfo.current.hardware.memory } GB`]
+          ["machine",             `${ hostInfo.current.hardware.machine }`],
+          ["serial number",       `${ hostInfo.current.hardware.serial }`],
+          ["cpu - model",         `${ hostInfo.current.hardware.cpu.model }`],
+          ["cpu - sockets",       `${ hostInfo.current.hardware.cpu.sockets }`],
+          ["cpu - total cores",   `${ hostInfo.current.hardware.cpu.cores }`],
+          ["cpu - total threads", `${ hostInfo.current.hardware.cpu.threads }`],
+          ["memory - total",      `${ hostInfo.current.hardware.memory } GB`]
         ] }
       />
     )
@@ -106,7 +122,7 @@ const HostInfoBox = React.memo<HostInfoBoxProps>(({
         title="PCI Card Information"
         content={
           hostInfo.current.hardware.cards.map((card: HostPciCardInfo) => (
-            [`slot ${ card.slot }`, `${ card.device }`]
+            [`slot ${ card.slot }`, `[${ card.sbdf }] ${ card.device }`]
           ))
         }
       />
@@ -122,8 +138,10 @@ const HostInfoBox = React.memo<HostInfoBoxProps>(({
             ["speed",   `${ nic.speed } Mbps`],
             ["mtu",     `${ nic.mtu }`],
             ["linkup",  `${ nic.linkup }`],
+            ["sbdf",    `${ nic.sbdf }`],
             ["device",  `${ nic.device }`],
             ["port",    `${ nic.port }`],
+            ["mac",     `${ nic.mac }`],
             ["driver",  `${ nic.driver }`]
           ] }
         />
@@ -140,7 +158,7 @@ const HostInfoBox = React.memo<HostInfoBoxProps>(({
             ["mtu",       `${ vswitch.mtu }`]
           ].concat(
             vswitch.portgroups.map((portgroup: PortgroupInfo) => (
-              [`portgroup - ${ portgroup.name }`, `${ portgroup.vlan }`]
+              [`vlan - portgroup - ${ portgroup.name }`, `${ portgroup.vlan }`]
             ))
           ) }
         />
@@ -154,8 +172,10 @@ const HostInfoBox = React.memo<HostInfoBoxProps>(({
           className="my-2"
           title={ `HBA Information - ${ hba.name }` }
           content={ [
+            ["sbdf",    `${ hba.sbdf }`],
             ["device",  `${ hba.device }`],
             ["port",    `${ hba.port }`],
+            ["wwn",     `${ hba.wwn }`],
             ["driver",  `${ hba.driver }`]
           ] }
         />
@@ -168,8 +188,12 @@ const HostInfoBox = React.memo<HostInfoBoxProps>(({
           className="my-2"
           title={ `Disk Information - ${ disk.name }` }
           content={ [
-            ["size",  `${ disk.size } GB`],
-            ["hbas",  `${ disk.adapters.join(", ") }`]
+            ["alternate",   `${ disk.vml }`],
+            ["storage",     `${ disk.storage }`],
+            ["size",        `${ disk.size } GB`],
+            ["hbas",        `${ disk.adapters.join(", ") }`],
+            ["nmp - psp",   `${ disk.nmp_psp }`],
+            ["nmp - satp",  `${ disk.nmp_satp }`]
           ] }
         />
       )
