@@ -12,14 +12,14 @@ type DateFormProps = {
   onChange?     : (value: Date) => void
 }
 
-const DateForm = React.memo<DateFormProps>(({
+const DateForm = React.memo(React.forwardRef<HTMLInputElement, DateFormProps>(({
   className     = "",
   label         = "Date",
   valid         = undefined,
   disabled      = false,
   defaultValue  = LocalDate.toISOString(LocalDate.now()),
   onChange      = undefined
-}) => {
+}, ref) => {
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     if (onChange) {
       onChange(LocalDate.newDate(e.currentTarget.value))
@@ -33,6 +33,7 @@ const DateForm = React.memo<DateFormProps>(({
           <span className="input-group-text">{ label }</span>
         </div>
         <input
+          ref={ ref }
           className={ `form-control ${ !valid && "is-invalid" }` }
           type="datetime-local"
           step="1"
@@ -43,6 +44,6 @@ const DateForm = React.memo<DateFormProps>(({
       </div>
     </div>
   )
-})
+}))
 
 export default DateForm

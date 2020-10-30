@@ -97,8 +97,8 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
       if (dateFrom || dateTo) {
         let from: Date, to: Date
         if (Object.keys(content.format.label).includes("Date")) {
-          from = ((from = new Date(dateFrom)).toString() !== "Invalid Date") ? from : null
-          to   = ((to   = new Date(dateTo)).toString()   !== "Invalid Date") ? to   : null
+          from = ((from = new Date(dateFrom)).toString() !== "Invalid Date") ? (dateFrom && from) : null
+          to   = ((to   = new Date(dateTo)).toString()   !== "Invalid Date") ? (dateTo   && to)   : null
         } else {
           from = null
           to   = null
@@ -418,6 +418,8 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
           message="Input a condition, or press [Clear] to reset."
           body={
             <TextFilterForm
+              condition={ env.current.filters["Content"] && env.current.filters["Content"].condition }
+              dismiss="modal"
               onSubmit={ handleSubmitTextFilter }
               onCancel={ handleCancelTextFilter }
             />
@@ -429,6 +431,9 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
           message="Input a condition, or press [Clear] to reset."
           body={
             <DateFilterForm
+              from={ env.current.filters["Date"] ? env.current.filters["Date"].from : (content && !!content.data.length && Object.keys(content.data[0]).includes("Date") && new Date(content.data[0]["Date"])) }
+              to={ env.current.filters["Date"] ? env.current.filters["Date"].to : (content && !!content.data.length && Object.keys(content.data.slice(-2)[0]).includes("Date") && new Date(content.data.slice(-2)[0]["Date"])) }
+              dismiss="modal"
               onSubmit={ handleSubmitDateFilter }
               onCancel={ handleCancelDateFilter }
             />

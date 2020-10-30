@@ -1,5 +1,5 @@
 import * as React from "react"
-import { useRef, useCallback, useReducer } from "react"
+import { useEffect, useRef, useCallback, useReducer } from "react"
 
 import CheckForm from "../parts/check-form"
 import DateForm from "../parts/date-form"
@@ -9,18 +9,63 @@ import LocalDate from "../../lib/local-date"
 
 type TextFilterFormProps = {
   className?: string,
+  from?     : Date,
+  to?       : Date,
   disabled? : boolean,
+  dismiss?  : string,
   onSubmit? : (from: Date, to: Date) => void,
   onCancel? : () => void
 }
 
 const TextFilterForm = React.memo<TextFilterFormProps>(({
   className = "",
+  from      = null,
+  to        = null,
   disabled  = false,
+  dismiss   = "",
   onSubmit  = undefined,
   onCancel  = undefined
 }) => {
   const [ignored, forceUpdate]  = useReducer(x => x + 1, 0)
+
+  useEffect(() => {
+    if (!from && !to) {
+      return
+    }
+
+    if (from) {
+      data.current.from.enable = true
+      data.current.from.date = from
+      ref.current.from.enable.current.checked = true
+      ref.current.from.date.current.value = from.toISOString().slice(0, 19)
+    } else {
+      data.current.from.enable = false
+      ref.current.from.enable.current.checked = false
+    }
+
+    if (to) {
+      data.current.to.enable = true
+      data.current.to.date = to
+      ref.current.to.enable.current.checked = true
+      ref.current.to.date.current.value = to.toISOString().slice(0, 19)
+    } else {
+      data.current.to.enable = false
+      ref.current.to.enable.current.checked = false
+    }
+
+    forceUpdate()
+  }, [from, to])
+
+  const ref = useRef({
+    from: {
+      enable: React.createRef<HTMLInputElement>(),
+      date  : React.createRef<HTMLInputElement>()
+    },
+    to: {
+      enable: React.createRef<HTMLInputElement>(),
+      date  : React.createRef<HTMLInputElement>()
+    }
+  })
 
   const data = useRef({
     from: {
@@ -78,6 +123,7 @@ const TextFilterForm = React.memo<TextFilterFormProps>(({
     <div className={ className }>
       <div className="form-row align-items-center mb-3">
         <CheckForm
+          ref={ ref.current.from.enable }
           className="col-4"
           label="Enable"
           defaultChecked={ data.current.from.enable }
@@ -85,6 +131,7 @@ const TextFilterForm = React.memo<TextFilterFormProps>(({
           onChange={ handleChangeCheckFrom }
         />
         <DateForm
+          ref={ ref.current.from.date }
           className="col-8"
           label="From"
           valid={ isValid(data.current.from) }
@@ -95,6 +142,7 @@ const TextFilterForm = React.memo<TextFilterFormProps>(({
       </div>
       <div className="form-row align-items-center mb-3">
         <CheckForm
+          ref={ ref.current.to.enable }
           className="col-4"
           label="Enable"
           defaultChecked={ data.current.to.enable }
@@ -102,6 +150,7 @@ const TextFilterForm = React.memo<TextFilterFormProps>(({
           onChange={ handleChangeCheckTo }
         />
         <DateForm
+          ref={ ref.current.to.date }
           className="col-8"
           label="To"
           valid={ isValid(data.current.to) }
@@ -114,7 +163,8 @@ const TextFilterForm = React.memo<TextFilterFormProps>(({
         submit="Filter"
         cancel="Clear"
         valid={ isValid(data.current.from) && isValid(data.current.to) }
-        disabled={ disabled }
+        disabled={ disabled || (!data.current.to.enable && !data.current.from.enable) }
+        dismiss={ dismiss }
         onSubmit={ handleSubmit }
         onCancel={ handleCancel }
       />
