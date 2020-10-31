@@ -124,15 +124,7 @@ const BundleSelectButton = React.memo<BundleSelectButtonProps>(({
     data.current.bundles.filter((bundle: BundleInfo) => (
       bundle.available && (bundle.name.includes(data.current.filter) || bundle.description.includes(data.current.filter))
     )).map((bundle: BundleInfo) => (
-      bundle.name
-    ))
-  )
-
-  const listTitle = () => (
-    data.current.bundles.filter((bundle: BundleInfo) => (
-      bundle.available && (bundle.name.includes(data.current.filter) || bundle.description.includes(data.current.filter))
-    )).map((bundle: BundleInfo) => (
-      bundle.description
+      bundle.name + ((!!bundle.description) ? ` [ ${ bundle.description } ]` : "")
     ))
   )
 
@@ -142,6 +134,7 @@ const BundleSelectButton = React.memo<BundleSelectButtonProps>(({
         id={ id.current.modal }
         title="Log Bundle"
         message="Select a log bundle."
+        size="modal-lg"
         center={ false }
         body={
           <>
@@ -154,7 +147,6 @@ const BundleSelectButton = React.memo<BundleSelectButtonProps>(({
             />
             <ListForm
               labels={ listLabel() }
-              titles={ listTitle() }
               onChange={ handleSelectBundle }
             />
           </>

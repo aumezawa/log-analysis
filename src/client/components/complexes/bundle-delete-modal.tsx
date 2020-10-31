@@ -120,15 +120,7 @@ const BundleDeleteModal = React.memo<BundleDeleteModalProps>(({
     data.current.bundles.filter((bundle: BundleInfo) => (
       bundle.available && (bundle.name.includes(data.current.filter) || bundle.description.includes(data.current.filter))
     )).map((bundle: BundleInfo) => (
-      bundle.name
-    ))
-  )
-
-  const listTitle = () => (
-    data.current.bundles.filter((bundle: BundleInfo) => (
-      bundle.available && (bundle.name.includes(data.current.filter) || bundle.description.includes(data.current.filter))
-    )).map((bundle: BundleInfo) => (
-      bundle.description
+      bundle.name + ((!!bundle.description) ? ` [ ${ bundle.description } ]` : "")
     ))
   )
 
@@ -137,6 +129,7 @@ const BundleDeleteModal = React.memo<BundleDeleteModalProps>(({
       id={ id }
       title="Log Bundle"
       message="Select to delete a log bundle."
+      size="modal-lg"
       center={ false }
       body={
         <>
@@ -149,7 +142,6 @@ const BundleDeleteModal = React.memo<BundleDeleteModalProps>(({
           />
           <ListForm
             labels={ listLabel() }
-            titles={ listTitle() }
             onChange={ handleSelectBundle }
           />
         </>

@@ -102,17 +102,7 @@ const ProjectSelectButton = React.memo<ProjectSelectButtonProps>(({
     )).filter((project: ProjectInfo) => (
       project.name.includes(data.current.filter) || project.description.includes(data.current.filter)
     )).map((project: ProjectInfo) => (
-      project.name
-    ))
-  )
-
-  const listTitle = () => (
-    data.current.projects.filter((project: ProjectInfo) => (
-      project.status === status
-    )).filter((project: ProjectInfo) => (
-      project.name.includes(data.current.filter) || project.description.includes(data.current.filter)
-    )).map((project: ProjectInfo) => (
-      project.description
+      project.name + ((!!project.description) ? ` [ ${ project.description } ]` : "")
     ))
   )
 
@@ -134,7 +124,6 @@ const ProjectSelectButton = React.memo<ProjectSelectButtonProps>(({
             />
             <ListForm
               labels={ listLabel() }
-              titles={ listTitle() }
               onChange={ handleSelectProject }
             />
           </>

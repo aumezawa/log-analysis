@@ -143,17 +143,7 @@ const ProjectManageModal = React.memo<ProjectManageModalProps>(({
     )).filter((project: ProjectInfo) => (
       project.name.includes(data.current.filter) || project.description.includes(data.current.filter)
     )).map((project: ProjectInfo) => (
-      project.name
-    ))
-  )
-
-  const listTitle = () => (
-    data.current.projects.filter((project: ProjectInfo) => (
-      (action === "delete") || (action !== project.status)
-    )).filter((project: ProjectInfo) => (
-      project.name.includes(data.current.filter) || project.description.includes(data.current.filter)
-    )).map((project: ProjectInfo) => (
-      project.description
+      project.name + ((!!project.description) ? ` [ ${ project.description } ]` : "")
     ))
   )
 
@@ -174,7 +164,6 @@ const ProjectManageModal = React.memo<ProjectManageModalProps>(({
           />
           <ListForm
             labels={ listLabel() }
-            titles={ listTitle() }
             onChange={ handleSelectProject }
           />
         </>
