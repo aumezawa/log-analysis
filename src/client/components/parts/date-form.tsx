@@ -29,9 +29,11 @@ const DateForm = React.memo(React.forwardRef<HTMLInputElement, DateFormProps>(({
   return (
     <div className={ className }>
       <div className="input-group">
-        <div className="input-group-prepend">
-          <span className="input-group-text">{ label }</span>
-        </div>
+        { !!label &&
+          <div className="input-group-prepend">
+            <span className="input-group-text">{ label }</span>
+          </div>
+        }
         <input
           ref={ ref }
           className={ `form-control ${ !valid && "is-invalid" }` }

@@ -1,7 +1,7 @@
 import * as React from "react"
 import { useEffect, useRef, useCallback, useReducer } from "react"
 
-import CheckForm from "../parts/check-form"
+import SwitchForm from "../parts/switch-form"
 import DateForm from "../parts/date-form"
 import ButtonSet from "../sets/button-set"
 
@@ -122,18 +122,18 @@ const TextFilterForm = React.memo<TextFilterFormProps>(({
   return (
     <div className={ className }>
       <div className="form-row align-items-center mb-3">
-        <CheckForm
+        <SwitchForm
           ref={ ref.current.from.enable }
-          className="col-4"
-          label="Enable"
+          className="col-2"
+          label="From"
           defaultChecked={ data.current.from.enable }
           disabled={ disabled }
           onChange={ handleChangeCheckFrom }
         />
         <DateForm
           ref={ ref.current.from.date }
-          className="col-8"
-          label="From"
+          className="col-10"
+          label=""
           valid={ isValid(data.current.from) }
           disabled={ disabled || !data.current.from.enable }
           defaultValue={ LocalDate.toISOString(data.current.from.date) }
@@ -141,18 +141,18 @@ const TextFilterForm = React.memo<TextFilterFormProps>(({
         />
       </div>
       <div className="form-row align-items-center mb-3">
-        <CheckForm
+        <SwitchForm
           ref={ ref.current.to.enable }
-          className="col-4"
-          label="Enable"
+          className="col-2"
+          label="To"
           defaultChecked={ data.current.to.enable }
           disabled={ disabled }
           onChange={ handleChangeCheckTo }
         />
         <DateForm
           ref={ ref.current.to.date }
-          className="col-8"
-          label="To"
+          className="col-10"
+          label=""
           valid={ isValid(data.current.to) }
           disabled={ disabled || !data.current.to.enable }
           defaultValue={ LocalDate.toISOString(data.current.to.date) }
