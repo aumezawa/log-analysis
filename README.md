@@ -83,7 +83,7 @@ Access with your browser or issue HTTP requests.
   - method: `POST`
   - header: `{ Content-Type: application/x-www-form-urlencoded }`
   - path: `/api/v1/login`
-  - body: `{ username: <string>, password: <string> }`
+  - body: `{ username: <string>, password: <string>, encrypted?: <boolean> }`
 - response
   - data: `{ msg: <string>, token: <string> }`
 
@@ -110,12 +110,22 @@ Access with your browser or issue HTTP requests.
   - data: `<string>`
 
 
+### Get Domain Validated
+
+- request
+  - method: `GET`
+  - header: `{ X-Access-Token: <string> }`
+  - path: `/api/v1/log/:domain`
+- response
+  - data: `{ msg: <string> }`
+
+
 ### Get Project List
 
 - request
   - method: `GET`
   - header: `{ X-Access-Token: <string> }`
-  - path: `/api/v1/log/:domain(private|public)/projects`
+  - path: `/api/v1/log/:domain/projects`
 - response
   - data: `{ msg: <string>, projects: [{ name: <string>, description: <string> }] }`
 
@@ -125,7 +135,7 @@ Access with your browser or issue HTTP requests.
 - request
   - method: `POST`
   - header: `{ X-Access-Token: <string>, Content-Type: application/x-www-form-urlencoded }`
-  - path: `/api/v1/log/:domain(private|public)/projects`
+  - path: `/api/v1/log/:domain/projects`
   - body: `{ name: <string>, description?: <string> }`
 - response
   - header: `{ Location: <URL> }`
@@ -137,7 +147,7 @@ Access with your browser or issue HTTP requests.
 - request
   - method: `GET`
   - header: `{ X-Access-Token: <string> }`
-  - path: `/api/v1/log/:domain(private|public)/projects/:projectName`
+  - path: `/api/v1/log/:domain/projects/:projectName`
 - response
   - data: `{ msg: <string>, status:<string>, description: <string> }`
 
@@ -147,7 +157,7 @@ Access with your browser or issue HTTP requests.
 - request
   - method: `POST`
   - header: `{ X-Access-Token: <string>, Content-Type: application/x-www-form-urlencoded }`
-  - path: `/api/v1/log/:domain(private|public)/projects/:projectName`
+  - path: `/api/v1/log/:domain/projects/:projectName`
   - body: `{ status?: "open" | "close", description?: <string> }`
 - response
   - data: `{ msg: <string> }`
@@ -157,7 +167,7 @@ Access with your browser or issue HTTP requests.
 - request
   - method: `DELETE`
   - header: `{ X-Access-Token: <string> }`
-  - path: `/api/v1/log/:domain(private|public)/projects/:projectName`
+  - path: `/api/v1/log/:domain/projects/:projectName`
 - response
   - data: `{ msg: <string> }`
 
@@ -167,7 +177,7 @@ Access with your browser or issue HTTP requests.
 - request
   - method: `GET`
   - header: `{ X-Access-Token: <string> }`
-  - path: `/api/v1/log/:domain(private|public)/projects/:projectName/bundles`
+  - path: `/api/v1/log/:domain/projects/:projectName/bundles`
 - response
   - data: `{ msg: <string>, projects: [{ id: <number>, name: <string>, description: <string>, available: <boolean> }] }`
 
@@ -177,7 +187,7 @@ Access with your browser or issue HTTP requests.
 - request
   - method: `POST`
   - header: `{ X-Access-Token: <string>, Content-Type: multipart/form-data }`
-  - path: `/api/v1/log/:domain(private|public)/projects/:projectName/bundles`
+  - path: `/api/v1/log/:domain/projects/:projectName/bundles`
   - body: `{ bundle: <object>. name: <string>, description?: <string> }`
 - response
   - header: `{ Location: <URL> }`
@@ -189,7 +199,7 @@ Access with your browser or issue HTTP requests.
 - request
   - method: `GET`
   - header: `{ X-Access-Token: <string> }`
-  - path: `/api/v1/log/:domain(private|public)/projects/:projectName/bundles/:bundleId`
+  - path: `/api/v1/log/:domain/projects/:projectName/bundles/:bundleId`
 - response
   - data: `{ msg: <string>, description: <string> }`
 
@@ -199,7 +209,7 @@ Access with your browser or issue HTTP requests.
 - request
   - method: `POST`
   - header: `{ X-Access-Token: <string>, Content-Type: application/x-www-form-urlencoded }`
-  - path: `/api/v1/log/:domain(private|public)/projects/:projectName/bundles/:bundleId`
+  - path: `/api/v1/log/:domain/projects/:projectName/bundles/:bundleId`
   - body: `{ description: <string> }`
 - response
   - data: `{ msg: <string> }`
@@ -210,7 +220,7 @@ Access with your browser or issue HTTP requests.
 - request
   - method: `DELETE`
   - header: `{ X-Access-Token: <string> }`
-  - path: `/api/v1/log/:domain(private|public)/projects/:projectName/bundles/:bundleId`
+  - path: `/api/v1/log/:domain/projects/:projectName/bundles/:bundleId`
 - response
   - data: `{ msg: <string> }`
 
@@ -220,7 +230,7 @@ Access with your browser or issue HTTP requests.
 - request
   - method: `GET`
   - header: `{ X-Access-Token: <string> }`
-  - path: `/api/v1/log/:domain(private|public)/projects/:projectName/bundles/:bundleId/files`
+  - path: `/api/v1/log/:domain/projects/:projectName/bundles/:bundleId/files`
 - response
   - data: `{ msg: <string>, files: <Node> }`
 
@@ -238,7 +248,7 @@ Access with your browser or issue HTTP requests.
 - request
   - method: `GET`
   - header: `{ X-Access-Token: <string> }`
-  - path: `/api/v1/log/:domain(private|public)/projects/:projectName/bundles/:bundleId/files/:filepath`
+  - path: `/api/v1/log/:domain/projects/:projectName/bundles/:bundleId/files/:filepath`
   - query: `{ line: [1-9]{1}[0-9]+, filter: <string> }`
 - response
   - data: `{ msg: <string>, content: <string>, size: <number>, modifiedAt: <string> }`
@@ -249,7 +259,7 @@ Access with your browser or issue HTTP requests.
 - request
   - method: `GET`
   - header: `{ X-Access-Token: <string> }`
-  - path: `/api/v1/log/:domain(private|public)/projects/:projectName/bundles/:bundleId/files/:filepath`
+  - path: `/api/v1/log/:domain/projects/:projectName/bundles/:bundleId/files/:filepath`
   - query: `{ mode: plain }`
 - response
   - data: `{ msg: <string>, content: <string>, size: <number>, modifiedAt: <string> }`
@@ -260,7 +270,7 @@ Access with your browser or issue HTTP requests.
 - request
   - method: `GET`
   - header: `{ X-Access-Token: <string> }`
-  - path: `/api/v1/log/:domain(private|public)/projects/:projectName/bundles/:bundleId/files/:filepath`
+  - path: `/api/v1/log/:domain/projects/:projectName/bundles/:bundleId/files/:filepath`
   - query: `{ mode: json }`
 - response
   - data: `{ msg: <string>, content: <JSON Table>, size: <number>, modifiedAt: <string> }`
@@ -279,7 +289,7 @@ Access with your browser or issue HTTP requests.
 - request
   - method: `GET`
   - header: `{ X-Access-Token: <string> }`
-  - path: `/api/v1/log/:domain(private|public)/projects/:projectName/bundles/:bundleId/files/:filepath`
+  - path: `/api/v1/log/:domain/projects/:projectName/bundles/:bundleId/files/:filepath`
   - query: `{ mode: download }`
 - response
   - data: `<object>`
