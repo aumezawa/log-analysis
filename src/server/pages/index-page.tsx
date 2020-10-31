@@ -11,6 +11,7 @@ type IndexPageProps = {
   user?     : string,
   alias?    : string,
   privilege?: string,
+  domains?  : string,
   query?    : string
 }
 
@@ -25,6 +26,7 @@ const IndexPage = React.memo<IndexPageProps>(({
   user      = "anonymous",
   alias     = "anonymous",
   privilege = "none",
+  domains   = "public,private",
   query     = ""
 }) => (
   <html lang={ lang }>
@@ -36,7 +38,7 @@ const IndexPage = React.memo<IndexPageProps>(({
     </head>
 
     <body>
-      <div id="render-main" data-project={ project } data-author={ author } data-version={ version } data-page={ page } data-user={ user } data-alias={ alias } data-privilege={ privilege } data-query={ query }>
+      <div id="render-main" data-project={ project } data-author={ author } data-version={ version } data-page={ page } data-user={ user } data-alias={ alias } data-privilege={ privilege } data-domains={ domains } data-query={ query }>
         <div id="unsupported-message" className="text-center" style={ { "color": "white" } }>
           <p>This page works with React library.</p>
           <p>If this message has been displayed, you may be using an unsupported browser.</p>

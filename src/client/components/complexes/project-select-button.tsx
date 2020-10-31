@@ -152,7 +152,7 @@ const ProjectSelectButton = React.memo<ProjectSelectButtonProps>(({
       <button
         className={ `btn ${ className } ${ data.current.project ? "btn-success" : "btn-secondary" }` }
         type="button"
-        disabled={ !["public", "private"].includes(domain) }
+        disabled={ !domain }
         data-toggle="modal"
         data-target={ "#" + id.current.modal }
         onClick={ handleClick }

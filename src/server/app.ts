@@ -14,6 +14,7 @@ import apiV1Router from "./routes/api-v1"
 const app: express.Express = express()
 const rootPath: string = process.cwd()
 
+app.set("domains", process.env.npm_package_config_domains)
 app.set("http-port", Number(process.env.npm_package_config_http_port))
 app.set("https-port", Number(process.env.npm_package_config_https_port))
 app.set("num-workers", Number(process.env.npm_package_config_num_workers))

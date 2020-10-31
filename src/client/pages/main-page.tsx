@@ -46,6 +46,7 @@ type MainPageProps = {
   user?     : string,
   alias?    : string,
   privilege?: string,
+  domains?  : string,
   query?    : string,
 }
 
@@ -56,6 +57,7 @@ const MainPage: React.FC<MainPageProps> = ({
   user      = "anonymous",
   alias     = "anonymous",
   privilege = "none",
+  domains   = "public,private",
   query     = ""
 }) => {
   const [ignored,           forceUpdate]       = useReducer(x => x + 1, 0)
@@ -79,7 +81,7 @@ const MainPage: React.FC<MainPageProps> = ({
   })
 
   const data = useRef({
-    domain    : "public",
+    domain    : domains.split(",")[0],
     project   : null,
     bundle    : null,
     filepath  : null,
@@ -116,7 +118,7 @@ const MainPage: React.FC<MainPageProps> = ({
     const date_from = params.get("date_from")
     const date_to = params.get("date_to")
 
-    if (domain && project) {
+    if (domain) {
       const uri = `${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project, bundle, filepath) }`
 
       Axios.get(uri, {
@@ -384,6 +386,7 @@ const MainPage: React.FC<MainPageProps> = ({
             head={
               <>
                 <DomainSelectButton
+                  domains={ domains }
                   domain={ data.current.domain }
                   onSubmit={ handleSubmitDomainSelect }
                 />

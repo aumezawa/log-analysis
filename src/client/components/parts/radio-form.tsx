@@ -1,5 +1,5 @@
 import * as React from "react"
-import { useRef, useCallback } from "react"
+import { useRef, useCallback, useImperativeHandle } from "react"
 
 import UniqueId from "../../lib/unique-id"
 
@@ -7,20 +7,32 @@ type RadioFormProps = {
   className?      : string,
   labels?         : Array<string>,
   disabled?       : boolean,
-  defaultChecked? : number,
+  checked?        : number,
   onChange?       : (value: string) => void
 }
 
-const RadioForm = React.memo<RadioFormProps>(({
+const RadioForm = React.memo(React.forwardRef<RedioFromReference, RadioFormProps>(({
   className       = "",
   labels          = [],
   disabled        = false,
-  defaultChecked  = 0,
+  checked         = 0,
   onChange        = undefined
-}) => {
+}, ref) => {
+  const refs = useRef(labels.map(() => React.createRef<HTMLInputElement>()))
+
   const id = useRef({
     radio: "radio-" + UniqueId()
   })
+
+  useImperativeHandle(ref, () => ({
+    checked(target: number) {
+      labels.forEach((label: string, index: number) => {
+        if (!!refs.current[index].current) {
+          refs.current[index].current.checked = (index === target)
+        }
+      })
+    }
+  }))
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     if (onChange) {
@@ -34,12 +46,13 @@ const RadioForm = React.memo<RadioFormProps>(({
         labels.map((label: string, index: number) => (
           <div key={ label } className="form-check">
             <input
+              ref={ refs.current[index] }
               id={ id.current.radio + index }
               className="form-check-input"
               type="radio"
               name={ id.current.radio }
               value={ label }
-              defaultChecked={ index === defaultChecked }
+              defaultChecked={ index === 0 }
               disabled={ disabled }
               onChange={ handleChange }
             />
@@ -54,6 +67,6 @@ const RadioForm = React.memo<RadioFormProps>(({
       }
     </div>
   )
-})
+}))
 
 export default RadioForm

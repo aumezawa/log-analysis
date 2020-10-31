@@ -3,6 +3,7 @@
   "version": "0.7.0",
   "description": "log analysis tools",
   "config": {
+    "domains": "public,private",
     "http-port": "3000",
     "https-port": "3443",
     "num-workers": "4",

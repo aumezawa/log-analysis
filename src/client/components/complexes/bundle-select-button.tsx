@@ -172,7 +172,7 @@ const BundleSelectButton = React.memo<BundleSelectButtonProps>(({
       <button
         className={ `btn ${ className } ${ data.current.bundleName ? "btn-success" : "btn-secondary" }` }
         type="button"
-        disabled={ !["public", "private"].includes(domain) || !project }
+        disabled={ !domain || !project }
         data-toggle="modal"
         data-target={ "#" + id.current.modal }
         onClick={ handleClick }
