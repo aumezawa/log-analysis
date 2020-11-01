@@ -17,15 +17,18 @@ process.argv.forEach(function(arg) {
 
 // Note: if the file already exists, do nothing
 if (!override) {
-  var userlist = {};
+  var userlist = [];
   try {
     userlist = JSON.parse(fs.readFileSync(filePath, 'utf8'));
   } catch {
     ;
   }
-  if (userlist.root) {
+  var root = userlist.find(function(user) {
+    return (user.username === "root")
+  });
+  if (root) {
     console.log('Info : Local user database file already exists.');
-    console.log('Info : If you want re-create, use "-o" or "--override" option.');
+    console.log('Info : If you want to re-create, use "-o" or "--override" option.');
     process.exit(0);
   }
 }
@@ -69,11 +72,11 @@ rl.question('', function(password) {
   }
   rl.close();
   process.exit(0);
-})
+});
 
 rl._writeToOutput = function(char) {
   if (char.match(/\n/)) {
     return;
   }
   rl.output.write('*');
-}
+};
