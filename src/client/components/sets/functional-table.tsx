@@ -13,26 +13,32 @@ import Escape from "../../lib/escape"
 import UniqueId from "../../lib/unique-id"
 
 type FunctionalTableProps = {
-  className?      : string,
-  content?        : TableContent,
-  line?           : number,
-  filter?         : string,
-  copy?           : boolean,
-  onChangeLine?   : (line: number) => void,
-  onChangeFilter? : (filter: string) => void
+  className?          : string,
+  content?            : TableContent,
+  line?               : number,
+  textFilter?         : string,
+  dateFrom?           : string,
+  dateTo?             : string,
+  copy?               : boolean,
+  onChangeLine?       : (line: number) => void,
+  onChangeTextFilter? : (textFilter: string) => void,
+  onChangeDateFilter? : (dateFrom: string, dateTo: string) => void
 }
 
 const DEFAULT_ROW = 100
 const ROWS = [String(DEFAULT_ROW), "500", "1000", "5000"]
 
 const FunctionalTable = React.memo<FunctionalTableProps>(({
-  className       = "",
-  content         = null,
-  line            = null,
-  filter          = null,
-  copy            = false,
-  onChangeLine    = undefined,
-  onChangeFilter  = undefined
+  className           = "",
+  content             = null,
+  line                = null,
+  textFilter          = null,
+  dateFrom            = null,
+  dateTo              = null,
+  copy                = false,
+  onChangeLine        = undefined,
+  onChangeTextFilter  = undefined,
+  onChangeDateFilter  = undefined
 }) => {
   const [ignored, forceUpdate]  = useReducer(x => x + 1, 0)
 
@@ -67,21 +73,50 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
       env.current.line = (line > 0) ? line : 1
       env.current.maxRow = DEFAULT_ROW
       env.current.label = null
-      if (filter) {
-        scrollLine = 1
-        env.current.page = 1
-        env.current.filters = {
-          Content : {
+      env.current.page = Math.ceil(env.current.line / env.current.maxRow)
+      env.current.filters = {} as FilterSettings
+      scrollLine = env.current.line
+
+      if (textFilter) {
+        if (Object.keys(content.format.label).includes("Content")) {
+          env.current.page = 1
+          env.current.filters["Content"] = {
             type      : "text",
             mode      : "Be included",
             sensitive : true,
-            condition : decodeURI(filter)
+            condition : textFilter
+          }
+          scrollLine = 1
+        } else {
+          if (onChangeTextFilter) {
+            onChangeTextFilter(null)
           }
         }
-      } else {
-        scrollLine = env.current.line
-        env.current.page = Math.ceil(env.current.line / env.current.maxRow)
-        env.current.filters = {} as FilterSettings
+      }
+
+      if (dateFrom || dateTo) {
+        let from: Date, to: Date
+        if (Object.keys(content.format.label).includes("Date")) {
+          from = ((from = new Date(dateFrom)).toString() !== "Invalid Date") ? (dateFrom && from) : null
+          to   = ((to   = new Date(dateTo)).toString()   !== "Invalid Date") ? (dateTo   && to)   : null
+        } else {
+          from = null
+          to   = null
+        }
+
+        if (from || to) {
+          env.current.page = 1
+          env.current.filters["Date"] = {
+            type      : "date",
+            from      : from,
+            to        : to
+          }
+          scrollLine = 1
+        }
+
+        if (onChangeDateFilter) {
+          onChangeDateFilter(from && from.toISOString(), to && to.toISOString())
+        }
       }
 
       ref.current.select.current.value = String(DEFAULT_ROW)
@@ -90,7 +125,7 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
       forceUpdate()
       scrollToLine(scrollLine)
     }
-  }, [content, line, filter])
+  }, [content, line, textFilter, dateFrom, dateTo, onChangeTextFilter, onChangeDateFilter])
 
   const scrollToLine = (line: number) => {
     setImmediate(() => {
@@ -114,11 +149,11 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
         sensitive : sensitive,
         condition : condition
       }
-      if (onChangeFilter) {
+      if (onChangeTextFilter) {
         if ((env.current.label === "Content") && (mode === "Be included") && (sensitive === true)) {
-          onChangeFilter(encodeURI(condition))
+          onChangeTextFilter(condition)
         } else {
-          onChangeFilter(null)
+          onChangeTextFilter(null)
         }
       }
       forceUpdate()
@@ -129,12 +164,12 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
   const handleCancelTextFilter = useCallback(() => {
     if (env.current.label) {
       delete env.current.filters[env.current.label]
-      env.current.page = Math.ceil(env.current.line / env.current.maxRow)
-      if (onChangeFilter) {
-        onChangeFilter(null)
+      env.current.page = Object.keys(env.current.filters).length ? 1 : Math.ceil(env.current.line / env.current.maxRow)
+      if (onChangeTextFilter) {
+        onChangeTextFilter(null)
       }
       forceUpdate()
-      scrollToLine(env.current.line)
+      scrollToLine(Object.keys(env.current.filters).length ? 1 : env.current.line)
     }
   }, [true])
 
@@ -146,8 +181,8 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
         from      : from,
         to        : to
       }
-      if (onChangeFilter) {
-        onChangeFilter(null)
+      if (onChangeDateFilter) {
+        onChangeDateFilter(from && from.toISOString(), to && to.toISOString())
       }
       forceUpdate()
       scrollToLine(1)
@@ -157,12 +192,12 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
   const handleCancelDateFilter = useCallback(() => {
     if (env.current.label) {
       delete env.current.filters[env.current.label]
-      env.current.page = Math.ceil(env.current.line / env.current.maxRow)
-      if (onChangeFilter) {
-        onChangeFilter(null)
+      env.current.page = Object.keys(env.current.filters).length ? 1 : Math.ceil(env.current.line / env.current.maxRow)
+      if (onChangeDateFilter) {
+        onChangeDateFilter(null, null)
       }
       forceUpdate()
-      scrollToLine(env.current.line)
+      scrollToLine(Object.keys(env.current.filters).length ? 1 : env.current.line)
     }
   }, [true])
 
@@ -185,9 +220,9 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
 
   const handleChangeMaxRow = useCallback((value: string) => {
     env.current.maxRow = Number(value)
-    env.current.page = Math.ceil(env.current.line / env.current.maxRow)
+    env.current.page = Object.keys(env.current.filters).length ? 1 : Math.ceil(env.current.line / env.current.maxRow)
     forceUpdate()
-    scrollToLine(env.current.line)
+    scrollToLine(Object.keys(env.current.filters).length ? 1 : env.current.line)
   }, [true])
 
   const handleChangePage = useCallback((value: string) => {
@@ -383,6 +418,8 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
           message="Input a condition, or press [Clear] to reset."
           body={
             <TextFilterForm
+              condition={ env.current.filters["Content"] && env.current.filters["Content"].condition }
+              dismiss="modal"
               onSubmit={ handleSubmitTextFilter }
               onCancel={ handleCancelTextFilter }
             />
@@ -394,6 +431,9 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
           message="Input a condition, or press [Clear] to reset."
           body={
             <DateFilterForm
+              from={ env.current.filters["Date"] ? env.current.filters["Date"].from : (content && !!content.data.length && Object.keys(content.data[0]).includes("Date") && new Date(content.data[0]["Date"])) }
+              to={ env.current.filters["Date"] ? env.current.filters["Date"].to : (content && !!content.data.length && Object.keys(content.data.slice(-2)[0]).includes("Date") && new Date(content.data.slice(-2)[0]["Date"])) }
+              dismiss="modal"
               onSubmit={ handleSubmitDateFilter }
               onCancel={ handleCancelDateFilter }
             />

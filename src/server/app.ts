@@ -14,6 +14,7 @@ import apiV1Router from "./routes/api-v1"
 const app: express.Express = express()
 const rootPath: string = process.cwd()
 
+app.set("domains", process.env.npm_package_config_domains)
 app.set("http-port", Number(process.env.npm_package_config_http_port))
 app.set("https-port", Number(process.env.npm_package_config_https_port))
 app.set("num-workers", Number(process.env.npm_package_config_num_workers))
@@ -25,6 +26,7 @@ app.set("public-key-path", process.env.npm_package_config_public_key_path)
 app.set("private-key-path", process.env.npm_package_config_private_key_path)
 app.set("certificate-path", process.env.npm_package_config_certificate_path)
 app.set("storage-path", process.env.npm_package_config_storage_path)
+app.set("date-format", process.env.npm_package_config_date_format)
 
 app.use(log4js.connectLogger(logger, {
   level: "auto",

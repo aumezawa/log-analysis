@@ -9,30 +9,32 @@ import ButtonSet from "../sets/button-set"
 
 type DomainSelectButtonProps = {
   className?: string,
+  domains?  : string,
   domain?   : string,
   onSubmit? : (value: string) => void
 }
 
-const DOMAIN = ["public", "private"]
-const defaultValue = "public"
-
 const DomainSelectButton = React.memo<DomainSelectButtonProps>(({
   className = "",
-  domain    = defaultValue,
+  domains   = "public,private",
+  domain    = null,
   onSubmit  = undefined
 }) => {
   const [ignored, forceUpdate] = useReducer(x => x + 1, 0)
+
+  const ref = useRef({} as RedioFromReference)
 
   const id = useRef({
     modal: "modal-" + UniqueId()
   })
 
   const data = useRef({
-    domain: defaultValue
+    domain: domains.split(",")[0]
   })
 
   useEffect(() => {
-    data.current.domain = DOMAIN.includes(domain) ? domain : defaultValue
+    data.current.domain = domains.split(",").includes(domain) ? domain : domains.split(",")[0]
+    ref.current.checked(domains.split(",").indexOf(domain))
     forceUpdate()
   }, [domain])
 
@@ -55,8 +57,8 @@ const DomainSelectButton = React.memo<DomainSelectButtonProps>(({
         message="Select access domain."
         body={
           <RadioForm
-            labels={ DOMAIN }
-            defaultChecked={ DOMAIN.indexOf(defaultValue) }
+            ref={ ref }
+            labels={ domains.split(",") }
             onChange={ handleChange }
           />
         }
@@ -71,7 +73,7 @@ const DomainSelectButton = React.memo<DomainSelectButtonProps>(({
         }
       />
       <button
-        className={ `btn ${ data.current.domain === "public" ? "btn-success" : "btn-warning" }` }
+        className={ `btn ${ data.current.domain !== "private" ? "btn-success" : "btn-warning" }` }
         type="button"
         data-toggle="modal"
         data-target={ "#" + id.current.modal }

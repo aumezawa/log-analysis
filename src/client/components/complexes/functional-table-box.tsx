@@ -13,21 +13,27 @@ import FunctionalTable from "../sets/functional-table"
 import Spinner from "../parts/spinner"
 
 type FunctionalTableBoxProps = {
-  className?      : string,
-  path?           : string,
-  line?           : number,
-  filter?         : string,
-  onChangeLine?   : (line: number) => void,
-  onChangeFilter? : (filter: string) => void
+  className?          : string,
+  path?               : string,
+  line?               : number,
+  textFilter?         : string,
+  dateFrom?           : string,
+  dateTo?             : string,
+  onChangeLine?       : (line: number) => void,
+  onChangeTextFilter? : (textFilter: string) => void,
+  onChangeDateFilter? : (dateFrom: string, dateTo: string) => void
 }
 
 const FunctionalTableBox = React.memo<FunctionalTableBoxProps>(({
-  className       = "",
-  path            = null,
-  line            = null,
-  filter          = null,
-  onChangeLine    = undefined,
-  onChangeFilter  = undefined
+  className           = "",
+  path                = null,
+  line                = null,
+  textFilter          = null,
+  dateFrom            = null,
+  dateTo              = null,
+  onChangeLine        = undefined,
+  onChangeTextFilter  = undefined,
+  onChangeDateFilter  = undefined
 }) => {
   const [ignored, forceUpdate] = useReducer(x => x + 1, 0)
 
@@ -73,11 +79,17 @@ const FunctionalTableBox = React.memo<FunctionalTableBoxProps>(({
     }
   }, [onChangeLine])
 
-  const handleChangeFilter = useCallback((filter: string) => {
-    if (onChangeFilter) {
-      onChangeFilter(filter)
+  const handleChangeTextFilter = useCallback((textFilter: string) => {
+    if (onChangeTextFilter) {
+      onChangeTextFilter(textFilter)
     }
-  }, [onChangeFilter])
+  }, [onChangeTextFilter])
+
+  const handleChangeDateFilter = useCallback((dateFrom: string, dateTo: string) => {
+    if (onChangeDateFilter) {
+      onChangeDateFilter(dateFrom, dateTo)
+    }
+  }, [onChangeDateFilter])
 
   return (
     <>
@@ -87,9 +99,12 @@ const FunctionalTableBox = React.memo<FunctionalTableBoxProps>(({
           className={ className }
           content={ data.current.content }
           line={ line }
-          filter={ filter }
+          textFilter={ textFilter }
+          dateFrom={ dateFrom }
+          dateTo={ dateTo }
           onChangeLine={ handleChangeLine }
-          onChangeFilter={ handleChangeFilter }
+          onChangeTextFilter={ handleChangeTextFilter }
+          onChangeDateFilter={ handleChangeDateFilter }
         />
       }
     </>

@@ -6,7 +6,8 @@ type HelloPageProps = {
   version?  : string,
   user?     : string,
   alias?    : string,
-  privilege?: string
+  privilege?: string,
+  domains?  : string
 }
 
 const HelloPage = React.memo<HelloPageProps>(({
@@ -15,7 +16,8 @@ const HelloPage = React.memo<HelloPageProps>(({
   version   = "none",
   user      = "anonymous",
   alias     = "anonymous",
-  privilege = "none"
+  privilege = "none",
+  domains   = "public,private"
 }) => (
   <div className="container-fluid">
     <div className="text-center">
@@ -26,6 +28,7 @@ const HelloPage = React.memo<HelloPageProps>(({
       <p>user = { user }</p>
       <p>alias = { decodeURI(alias) }</p>
       <p>privilege = { privilege }</p>
+      <p>domains = { domains }</p>
     </div>
   </div>
 ))

@@ -8,7 +8,7 @@ import IndexPage from "../pages/index-page"
 
 const router: Router = express.Router()
 
-router.route("/log/:domain(private|public)/projects/:projectName([0-9a-zA-Z_.#]+)/bundles/:bundleId([0-9]+)/files/*")
+router.route("/log/:domain([0-9a-z]+)/projects/:projectName([0-9a-zA-Z_.#]+)/bundles/:bundleId([0-9]+)/files/*")
 .get((req: Request, res: Response, next: NextFunction) => {
   let query = `?domain=${ req.params.domain }&project=${ req.params.projectName }&bundle=${ req.params.bundleId }&filepath=${ req.params[0] }`
   if (req.query.line) {
@@ -17,8 +17,14 @@ router.route("/log/:domain(private|public)/projects/:projectName([0-9a-zA-Z_.#]+
   if (req.query.filter) {
     query = `${ query }&filter=${ req.query.filter }`
   }
+  if (req.query.date_from) {
+    query = `${ query }&date_from=${ req.query.date_from }`
+  }
+  if (req.query.date_to) {
+    query = `${ query }&date_to=${ req.query.date_to }`
+  }
   return res.status(200).send(
-    ReactDomServer.renderToString(React.createElement(IndexPage, { user: req.token.usr, alias: req.token.als, privilege: req.token.prv, page: "main", query: query }))
+    ReactDomServer.renderToString(React.createElement(IndexPage, { user: req.token.usr, alias: req.token.als, privilege: req.token.prv, domains: req.app.get("domains"), page: "main", query: query }))
   )
 })
 .all((req: Request, res: Response, next: NextFunction) => {
@@ -28,11 +34,11 @@ router.route("/log/:domain(private|public)/projects/:projectName([0-9a-zA-Z_.#]+
   })
 })
 
-router.route("/log/:domain(private|public)/projects/:projectName([0-9a-zA-Z_.#]+)/bundles/:bundleId([0-9]+)")
+router.route("/log/:domain([0-9a-z]+)/projects/:projectName([0-9a-zA-Z_.#]+)/bundles/:bundleId([0-9]+)")
 .get((req: Request, res: Response, next: NextFunction) => {
   const query = `?domain=${ req.params.domain }&project=${ req.params.projectName }&bundle=${ req.params.bundleId }`
   return res.status(200).send(
-    ReactDomServer.renderToString(React.createElement(IndexPage, { user: req.token.usr, alias: req.token.als, privilege: req.token.prv, page: "main", query: query }))
+    ReactDomServer.renderToString(React.createElement(IndexPage, { user: req.token.usr, alias: req.token.als, privilege: req.token.prv, domains: req.app.get("domains"), page: "main", query: query }))
   )
 })
 .all((req: Request, res: Response, next: NextFunction) => {
@@ -42,11 +48,11 @@ router.route("/log/:domain(private|public)/projects/:projectName([0-9a-zA-Z_.#]+
   })
 })
 
-router.route("/log/:domain(private|public)/projects/:projectName([0-9a-zA-Z_.#]+)")
+router.route("/log/:domain([0-9a-z]+)/projects/:projectName([0-9a-zA-Z_.#]+)")
 .get((req: Request, res: Response, next: NextFunction) => {
   const query = `?domain=${ req.params.domain }&project=${ req.params.projectName }`
   return res.status(200).send(
-    ReactDomServer.renderToString(React.createElement(IndexPage, { user: req.token.usr, alias: req.token.als, privilege: req.token.prv, page: "main", query: query }))
+    ReactDomServer.renderToString(React.createElement(IndexPage, { user: req.token.usr, alias: req.token.als, privilege: req.token.prv, domains: req.app.get("domains"), page: "main", query: query }))
   )
 })
 .all((req: Request, res: Response, next: NextFunction) => {
@@ -56,11 +62,11 @@ router.route("/log/:domain(private|public)/projects/:projectName([0-9a-zA-Z_.#]+
   })
 })
 
-router.route("/log/:domain(private|public)")
+router.route("/log/:domain([0-9a-z]+)")
 .get((req: Request, res: Response, next: NextFunction) => {
   const query = `?domain=${ req.params.domain }`
   return res.status(200).send(
-    ReactDomServer.renderToString(React.createElement(IndexPage, { user: req.token.usr, alias: req.token.als, privilege: req.token.prv, page: "main", query: query }))
+    ReactDomServer.renderToString(React.createElement(IndexPage, { user: req.token.usr, alias: req.token.als, privilege: req.token.prv, domains: req.app.get("domains"), page: "main", query: query }))
   )
 })
 .all((req: Request, res: Response, next: NextFunction) => {

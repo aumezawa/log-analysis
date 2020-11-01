@@ -1,5 +1,5 @@
 import * as React from "react"
-import { useState, useRef, useCallback } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 
 import TextForm from "../parts/text-form"
 import SelectForm from "../parts/select-form"
@@ -8,7 +8,9 @@ import ButtonSet from "../sets/button-set"
 
 type TextFilterFormProps = {
   className?: string,
+  condition?: string,
   disabled? : boolean,
+  dismiss?  : string,
   onSubmit? : (mode: string, sensitive: boolean, condition: string) => void,
   onCancel? : () => void
 }
@@ -17,11 +19,22 @@ export const options: Array<string> = ["Be included", "Not be included", "Regex 
 
 const TextFilterForm = React.memo<TextFilterFormProps>(({
   className = "",
+  condition = null,
   disabled  = false,
+  dismiss   = "",
   onSubmit  = undefined,
   onCancel  = undefined
 }) => {
   const [valid, setValid] = useState<boolean>(false)
+
+  useEffect(() => {
+    if (!!condition) {
+      data.current.mode       = ref.current.mode.current.value         = options[0]
+      data.current.sensitive  = ref.current.sensitive.current.checked  = true
+      data.current.condition  = ref.current.condition.current.value    = condition
+      setValid(data.current.condition !== "")
+    }
+  }, [condition])
 
   const ref = useRef({
     mode      : React.createRef<HTMLSelectElement>(),
@@ -94,6 +107,7 @@ const TextFilterForm = React.memo<TextFilterFormProps>(({
         cancel="Clear"
         valid={ valid }
         disabled={ disabled }
+        dismiss={ dismiss }
         onSubmit={ handleSubmit }
         onCancel={ handleCancel }
       />
