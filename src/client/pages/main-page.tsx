@@ -279,6 +279,12 @@ const MainPage: React.FC<MainPageProps> = ({
     updateAddressBar()
   }, [true])
 
+  const handleClichLogout = useCallback((targetValue: string, parentValue: string) => {
+    Cookie.remove("token")
+    Cookie.remove("whatsnew")
+    location.href = Environment.getBaseUrl()
+  }, [true])
+
   return (
     <div className="container-fluid">
       <LayerFrame
@@ -376,6 +382,12 @@ const MainPage: React.FC<MainPageProps> = ({
                   label="Show what's new"
                   toggle="modal"
                   target={ id.current.whatsnew }
+                />,
+                <DropdownDivider key="divider-6" />,
+                <DropdownItem
+                  key="logout"
+                  label="Logout"
+                  onClick={ handleClichLogout }
                 />
               ] }
             />
