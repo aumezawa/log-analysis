@@ -12,12 +12,19 @@ const MessageCard = React.memo<MessageCardProps>(({
   message   = "No message",
   success   = false,
   failure   = false
-}) => (
-  <div className={ `card ${ className }` }>
-    <div className={ `card-body ${ success && "bg-success" } ${ failure && "bg-danger" } ${ success || failure || "bg-light" }` }>
-      { message }
+}) => {
+  let color: string = "bg-light"
+
+  color = (success) ? "bg-success" : color
+  color = (failure) ? "bg-danger"  : color
+
+  return (
+    <div className={ `card ${ className }` }>
+      <div className={ `card-body ${ color }` }>
+        { message }
+      </div>
     </div>
-  </div>
-))
+  )
+})
 
 export default MessageCard

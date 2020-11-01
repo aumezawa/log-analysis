@@ -9,7 +9,7 @@ import * as Crypto from "crypto"
 
 import Environment from "../../lib/environment"
 
-import MessageCard from "../parts/message-card"
+import Message from "../parts/message"
 import LoginForm from "../sets/login-form"
 
 type LoginBoxProps = {
@@ -93,7 +93,7 @@ const LoginBox = React.memo<LoginBoxProps>(({
 
   return (
     <div className={ className }>
-      <MessageCard
+      <Message
         message={ data.current.message }
         success={ data.current.done && data.current.success }
         failure={ data.current.done && !data.current.success }

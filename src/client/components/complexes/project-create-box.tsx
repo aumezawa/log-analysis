@@ -9,7 +9,7 @@ import * as Cookie from "js-cookie"
 import Environment from "../../lib/environment"
 import ProjectPath from "../../lib/project-path"
 
-import MessageCard from "../parts/message-card"
+import Message from "../parts/message"
 import ProjectCreateForm from "../sets/project-create-form"
 
 type ProjectCreateBoxProps = {
@@ -65,7 +65,7 @@ const ProjectCreateBox = React.memo<ProjectCreateBoxProps>(({
 
   return (
     <div className={ className }>
-      <MessageCard
+      <Message
         message={ data.current.message }
         success={ data.current.done && data.current.success }
         failure={ data.current.done && !data.current.success }

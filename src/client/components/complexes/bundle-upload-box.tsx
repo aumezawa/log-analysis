@@ -9,7 +9,7 @@ import * as Cookie from "js-cookie"
 import Environment from "../../lib/environment"
 import ProjectPath from "../../lib/project-path"
 
-import MessageCard from "../parts/message-card"
+import Message from "../parts/message"
 import ProgressBar from "../parts/progress-bar"
 import BundleUploadForm from "../sets/bundle-upload-form"
 
@@ -81,7 +81,7 @@ const BundleUploadBox = React.memo<BundleUploadBoxProps>(({
 
   return (
     <div className={ className }>
-      <MessageCard
+      <Message
         className=""
         message={ data.current.message }
         success={ data.current.done && data.current.success }
