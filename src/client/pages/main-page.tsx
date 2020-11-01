@@ -23,15 +23,10 @@ import TokenStatusModal from "../components/complexes/token-status-modal"
 import TokenUpdateModal from "../components/complexes/token-update-modal"
 import WhatsNewModal from "../components/complexes/whatsnew-modal"
 
-import DomainSelectButton from "../components/complexes/domain-select-button"
-import ProjectCreateButton from "../components/complexes/project-create-button"
-import ProjectSelectButton from "../components/complexes/project-select-button"
 import ProjectManageModal from "../components/complexes/project-manage-modal"
-import BundleUploadButton from "../components/complexes/bundle-upload-button"
-import BundleSelectButton from "../components/complexes/bundle-select-button"
 import BundleDeleteModal from "../components/complexes/bundle-delete-modal"
-import InformationButton from "../components/parts/information-button"
 
+import ProjectNavigator from "../components/complexes/project-navigator"
 import FileExplorerBox from "../components/complexes/file-explorer-box"
 import FileSearchBox from "../components/complexes/file-search-box"
 
@@ -396,40 +391,16 @@ const MainPage: React.FC<MainPageProps> = ({
         body={
           <TFrame
             head={
-              <>
-                <DomainSelectButton
-                  domains={ domains }
-                  domain={ data.current.domain }
-                  onSubmit={ handleSubmitDomainSelect }
-                />
-                { " >> " }
-                <ProjectCreateButton
-                  domain={ data.current.domain }
-                />
-                { " | " }
-                <ProjectSelectButton
-                  domain={ data.current.domain }
-                  project={ data.current.project }
-                  onSubmit={ handleSubmitProjectSelect }
-                />
-                { " >> " }
-                <BundleUploadButton
-                  domain={ data.current.domain }
-                  project={ data.current.project }
-                />
-                { " | " }
-                <BundleSelectButton
-                  domain={ data.current.domain }
-                  project={ data.current.project }
-                  bundle={ data.current.bundle }
-                  onSubmit={ handleSubmitBundleSelect }
-                />
-                { (!!data.current.filename) ? " >> " : "" }
-                <InformationButton
-                  label={ data.current.filename }
-                  hide={ true }
-                />
-              </>
+              <ProjectNavigator
+                domains={ domains }
+                domain={ data.current.domain }
+                project={ data.current.project }
+                bundle={ data.current.bundle }
+                filename={ data.current.filename }
+                onChangeDomain={ handleSubmitDomainSelect }
+                onChangeProject={ handleSubmitProjectSelect }
+                onChangeBundle={ handleSubmitBundleSelect }
+              />
             }
             left={
               <TabFrame
