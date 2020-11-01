@@ -293,3 +293,63 @@ Access with your browser or issue HTTP requests.
   - query: `{ mode: download }`
 - response
   - data: `<object>`
+
+
+### Get Host Name
+
+- request
+  - method: `GET`
+  - header: `{ X-Access-Token: <string> }`
+  - path: `/api/v1/log/:domain/projects/:projectName/bundles/:bundleId/hosts`
+- response
+  - data: `{ msg: <string>, hosts: [<string>] }`
+
+
+### Get Host Information
+
+- request
+  - method: `GET`
+  - header: `{ X-Access-Token: <string> }`
+  - path: `/api/v1/log/:domain/projects/:projectName/bundles/:bundleId/hosts/:hostName`
+- response
+  - data: `{ msg: <string>, host: <HostInfo> }`
+
+
+### Get VM List
+
+- request
+  - method: `GET`
+  - header: `{ X-Access-Token: <string> }`
+  - path: `/api/v1/log/:domain/projects/:projectName/bundles/:bundleId/vms`
+- response
+  - data: `{ msg: <string>, vms: [<string>] }`
+
+
+### Get VM Information
+
+- request
+  - method: `GET`
+  - header: `{ X-Access-Token: <string> }`
+  - path: `/api/v1/log/:domain/projects/:projectName/bundles/:bundleId/vms/:vmName`
+- response
+  - data: `{ msg: <string>, vm: <VmInfo> }`
+
+
+### Get ZDUMP List
+
+- request
+  - method: `GET`
+  - header: `{ X-Access-Token: <string> }`
+  - path: `/api/v1/log/:domain/projects/:projectName/bundles/:bundleId/zdumps`
+- response
+  - data: `{ msg: <string>, zdumps: [<string>] }`
+
+
+### Get ZDUMP Information
+
+- request
+  - method: `GET`
+  - header: `{ X-Access-Token: <string> }`
+  - path: `/api/v1/log/:domain/projects/:projectName/bundles/:bundleId/zdumps/:dumpName`
+- response
+  - data: `{ msg: <string>, zdump: <ZdumpInfo> }`
