@@ -342,7 +342,7 @@ const MainPage: React.FC<MainPageProps> = ({
                 <DropdownItem
                   key="delete-project"
                   label="Delete Project"
-                  disabled={ !data.current.domain || (data.current.domain === "public" && privilege !== "root") }
+                  disabled={ !data.current.domain || (!["public", "private"].includes(data.current.domain) && privilege !== "root") }
                   toggle="modal"
                   target={ id.current.projectManage }
                   onClick={ handleClickDeleteProject }
@@ -351,7 +351,7 @@ const MainPage: React.FC<MainPageProps> = ({
                 <DropdownItem
                   key="delete-bundle"
                   label="Delete Bundle"
-                  disabled={ !data.current.domain || !data.current.project || (data.current.domain === "public" && privilege != "root") }
+                  disabled={ !data.current.domain || !data.current.project || (!["public", "private"].includes(data.current.domain) && privilege != "root") }
                   toggle="modal"
                   target={ id.current.bundleDelete }
                   onClick={ handleClickDeleteBundle }
