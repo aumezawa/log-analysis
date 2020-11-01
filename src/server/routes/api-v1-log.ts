@@ -498,10 +498,10 @@ router.route("/:domain([0-9a-z]+)/projects/:projectName([0-9a-zA-Z_.#]+)/bundles
 
         let content: any = null
         if (req.app.get("date-format") !== "") {
-          const regex = new RegExp(`^(${ req.app.get("date-format") }) (.*)$`)
+          const regex = new RegExp(`^(${ req.app.get("date-format") }):? (.*)$`)
           const fd = fs.openSync(nodePath, "r")
-          const buffer = Buffer.alloc(80)
-          fs.readSync(fd, buffer, 0, 80, 0)
+          const buffer = Buffer.alloc(40)
+          fs.readSync(fd, buffer, 0, 40, 0)
           fs.closeSync(fd)
 
           if (!!buffer.toString("utf8").match(regex)) {
