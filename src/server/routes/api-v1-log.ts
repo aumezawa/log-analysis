@@ -17,13 +17,20 @@ const rootPath: string = process.cwd()
 const router: Router = express.Router()
 
 router.param("domain", (req: Request, res: Response, next: NextFunction, domain: string) => {
+  if (!req.app.get("domains").split(",").includes(domain)) {
+    // Bad Request
+    return res.status(400).json({
+      msg: `domain: ${ domain } does not exist.`
+    })
+  }
+
   let domainPath: string
   if (req.app.get("storage-path").slice(0, 1) === "/" || req.app.get("storage-path").slice(1, 3) === ":\\") {
     domainPath = req.app.get("storage-path")
   } else {
     domainPath = path.join(rootPath, req.app.get("storage-path"))
   }
-  domainPath = path.join(domainPath, (domain === "private") ? req.token.usr : "public")
+  domainPath = path.join(domainPath, (domain === "private") ? req.token.usr : domain)
 
   try {
     fs.mkdirSync(domainPath)
@@ -165,7 +172,7 @@ router.param("bundleId", (req: Request, res: Response, next: NextFunction, bundl
 
 /* -------------------------------------------------------------------------- */
 
-router.route("/:domain(private|public)/projects/:projectName([0-9a-zA-Z_.#]+)/bundles/:bundleId([0-9]+)/files/*")
+router.route("/:domain([0-9a-z]+)/projects/:projectName([0-9a-zA-Z_.#]+)/bundles/:bundleId([0-9]+)/files/*")
 .get((req: Request, res: Response, next: NextFunction) => {
   const nodePath: string = path.join(req.resPath, req.params[0])
 
@@ -211,16 +218,48 @@ router.route("/:domain(private|public)/projects/:projectName([0-9a-zA-Z_.#]+)/bu
             msg: "This file's size is too large. Please use legacy view."
           })
         }
-        const content = {
-          format: {
-            title     : path.basename(nodePath),
-            label     : { Content: "text" },
-            hasHeader : true,
-            hasIndex  : true,
-            contentKey: "Content"
-          },
-          data: fs.readFileSync(nodePath, "utf8").split(/\r\n|\n|\r/).map((line: string) => ({ Content: line }))
+
+        let content: any = null
+        if (req.app.get("date-format") !== "") {
+          const regex = new RegExp(`^(${ req.app.get("date-format") }) (.*)$`)
+          const fd = fs.openSync(nodePath, "r")
+          const buffer = Buffer.alloc(80)
+          fs.readSync(fd, buffer, 0, 80, 0)
+          fs.closeSync(fd)
+
+          if (!!buffer.toString("utf8").match(regex)) {
+            content = {
+              format: {
+                title     : path.basename(nodePath),
+                label     : { Date: "date", Content: "text" },
+                hasHeader : true,
+                hasIndex  : true,
+                contentKey: "Content"
+              },
+              data: fs.readFileSync(nodePath, "utf8").split(/\r\n|\n|\r/).map((line: string) => {
+                const match = line.match(regex)
+                if (!!match) {
+                  return { Date: match[1], Content: match[2] }
+                }
+                return { Date: "", Content: line }
+              })
+            }
+          }
         }
+
+        if (!content) {
+          content = {
+            format: {
+              title     : path.basename(nodePath),
+              label     : { Content: "text" },
+              hasHeader : true,
+              hasIndex  : true,
+              contentKey: "Content"
+            },
+            data: fs.readFileSync(nodePath, "utf8").split(/\r\n|\n|\r/).map((line: string) => ({ Content: line }))
+          }
+        }
+
         // OK
         return res.status(200).json({
           msg: `You get a file content of path /${ req.params[0] } of project ${ req.params.projectName } bundle ID=${ req.params.bundleId }.`,
@@ -261,7 +300,7 @@ router.route("/:domain(private|public)/projects/:projectName([0-9a-zA-Z_.#]+)/bu
   })
 })
 
-router.route("/:domain(private|public)/projects/:projectName([0-9a-zA-Z_.#]+)/bundles/:bundleId([0-9]+)/files")
+router.route("/:domain([0-9a-z]+)/projects/:projectName([0-9a-zA-Z_.#]+)/bundles/:bundleId([0-9]+)/files")
 .get((req: Request, res: Response, next: NextFunction) => {
   let allFiles: NodeType
   try {
@@ -307,7 +346,7 @@ router.route("/:domain(private|public)/projects/:projectName([0-9a-zA-Z_.#]+)/bu
 })
 
 
-router.route("/:domain(private|public)/projects/:projectName([0-9a-zA-Z_.#]+)/bundles/:bundleId([0-9]+)")
+router.route("/:domain([0-9a-z]+)/projects/:projectName([0-9a-zA-Z_.#]+)/bundles/:bundleId([0-9]+)")
 .get((req: Request, res: Response, next: NextFunction) => {
   let bundleInfo: BundleInfo
   try {
@@ -365,7 +404,7 @@ router.route("/:domain(private|public)/projects/:projectName([0-9a-zA-Z_.#]+)/bu
   })
 })
 .delete((req: Request, res: Response, next: NextFunction) => {
-  if (req.params.domain === "public" && req.token.prv !== "root") {
+  if (!["public", "private"].includes(req.params.domain) && req.token.prv !== "root") {
     // Bad Request
     return res.status(400).json({
       msg: `bundle: ${ path.basename(req.resPath) } is only deleted by an administrator.`
@@ -413,7 +452,7 @@ router.route("/:domain(private|public)/projects/:projectName([0-9a-zA-Z_.#]+)/bu
   })
 })
 
-router.route("/:domain(private|public)/projects/:projectName([0-9a-zA-Z_.#]+)/bundles")
+router.route("/:domain([0-9a-z]+)/projects/:projectName([0-9a-zA-Z_.#]+)/bundles")
 .get((req: Request, res: Response, next: NextFunction) => {
   let projectInfo: ProjectInfo
   try {
@@ -568,7 +607,7 @@ router.route("/:domain(private|public)/projects/:projectName([0-9a-zA-Z_.#]+)/bu
   })
 })
 
-router.route("/:domain(private|public)/projects/:projectName([0-9a-zA-Z_.#]+)")
+router.route("/:domain([0-9a-z]+)/projects/:projectName([0-9a-zA-Z_.#]+)")
 .get((req: Request, res: Response, next: NextFunction) => {
   let projectInfo: ProjectInfo
   try {
@@ -694,7 +733,7 @@ router.route("/:domain(private|public)/projects/:projectName([0-9a-zA-Z_.#]+)")
   })
 })
 .delete((req: Request, res: Response, next: NextFunction) => {
-  if (req.params.domain === "public" && req.token.prv !== "root") {
+  if (!["public", "private"].includes(req.params.domain) && req.token.prv !== "root") {
     // Bad Request
     return res.status(400).json({
       msg: `project: ${ req.params.projectName } is only deleted by an administrator.`
@@ -725,7 +764,7 @@ router.route("/:domain(private|public)/projects/:projectName([0-9a-zA-Z_.#]+)")
   })
 })
 
-router.route("/:domain(private|public)/projects")
+router.route("/:domain([0-9a-z]+)/projects")
 .get((req: Request, res: Response, next: NextFunction) => {
   let dirList: Array<string> = []
   try {
@@ -828,5 +867,21 @@ router.route("/:domain(private|public)/projects")
     msg: "GET/POST method are only supported."
   })
 })
+
+
+router.route("/:domain([0-9a-z]+)")
+.get((req: Request, res: Response, next: NextFunction) => {
+  // OK
+  return res.status(200).json({
+    msg: `domain: ${ req.params.domain } is available.`
+  })
+})
+.all((req: Request, res: Response, next: NextFunction) => {
+  // Method Not Allowed
+  return res.status(405).json({
+    msg: "GET method are only supported."
+  })
+})
+
 
 export default router

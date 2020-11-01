@@ -57,7 +57,7 @@ router.use((req: Request, res: Response, next: NextFunction) => {
 router.route("/")
 .get((req: Request, res: Response, next: NextFunction) => {
   return res.status(200).send(
-    ReactDomServer.renderToString(React.createElement(IndexPage, { user: req.token.usr, alias: req.token.als, privilege: req.token.prv, page: "main" }))
+    ReactDomServer.renderToString(React.createElement(IndexPage, { user: req.token.usr, alias: req.token.als, privilege: req.token.prv, domains: req.app.get("domains"), page: "main" }))
   )
 })
 
@@ -66,7 +66,7 @@ router.use("/main", mainRouter)
 router.route("/hello")
 .get((req: Request, res: Response, next: NextFunction) => {
   return res.status(200).send(
-    ReactDomServer.renderToString(React.createElement(IndexPage, { user: req.token.usr, alias: req.token.als, privilege: req.token.prv, page: "hello" }))
+    ReactDomServer.renderToString(React.createElement(IndexPage, { user: req.token.usr, alias: req.token.als, privilege: req.token.prv, domains: req.app.get("domains"), page: "hello" }))
   )
 })
 

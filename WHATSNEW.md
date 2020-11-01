@@ -1,3 +1,20 @@
+Version: **0.8.0** [2020/11/01]
+
+New Features:
+  - Supported date filter on viewer
+  - Supported any additional domain
+
+Enhanced Features:
+  - Improved project/bundle select view
+  - Changed being able to delete project/bundle on public domain
+  - Supported adding a new user on command line
+  - Added logout button on main page
+
+Bug Fixes:
+  - *None*
+
+***
+
 Version: **0.7.0** [2020/10/27]
 
 New Features:

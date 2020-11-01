@@ -46,6 +46,7 @@ type MainPageProps = {
   user?     : string,
   alias?    : string,
   privilege?: string,
+  domains?  : string,
   query?    : string,
 }
 
@@ -56,6 +57,7 @@ const MainPage: React.FC<MainPageProps> = ({
   user      = "anonymous",
   alias     = "anonymous",
   privilege = "none",
+  domains   = "public,private",
   query     = ""
 }) => {
   const [ignored,           forceUpdate]       = useReducer(x => x + 1, 0)
@@ -79,15 +81,17 @@ const MainPage: React.FC<MainPageProps> = ({
   })
 
   const data = useRef({
-    domain  : "public",
-    project : null,
-    bundle  : null,
-    filepath: null,
-    filename: null,
-    line    : null,
-    filter  : null,
-    terminal: false,
-    action  : "delete"
+    domain    : domains.split(",")[0],
+    project   : null,
+    bundle    : null,
+    filepath  : null,
+    filename  : null,
+    line      : null,
+    filter    : null,
+    date_from : null,
+    date_to   : null,
+    terminal  : false,
+    action    : "delete"
   })
 
   const updateAddressBar = () => {
@@ -97,7 +101,9 @@ const MainPage: React.FC<MainPageProps> = ({
       data.current.bundle,
       data.current.filepath,
       data.current.line,
-      data.current.filter
+      data.current.filter,
+      data.current.date_from,
+      data.current.date_to
     ))
   }
 
@@ -109,8 +115,10 @@ const MainPage: React.FC<MainPageProps> = ({
     const filepath = params.get("filepath")
     const line = params.get("line")
     const filter = params.get("filter")
+    const date_from = params.get("date_from")
+    const date_to = params.get("date_to")
 
-    if (domain && project) {
+    if (domain) {
       const uri = `${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project, bundle, filepath) }`
 
       Axios.get(uri, {
@@ -118,13 +126,15 @@ const MainPage: React.FC<MainPageProps> = ({
         data    : {}
       })
       .then((res: AxiosResponse) => {
-        data.current.domain   = domain
-        data.current.project  = domain && project
-        data.current.bundle   = domain && project && bundle
-        data.current.filepath = domain && project && bundle && filepath
-        data.current.filename = domain && project && bundle && filepath && Path.basename(filepath)
-        data.current.line     = domain && project && bundle && filepath && Number(line)
-        data.current.filter   = domain && project && bundle && filepath && filter
+        data.current.domain     = domain
+        data.current.project    = domain && project
+        data.current.bundle     = domain && project && bundle
+        data.current.filepath   = domain && project && bundle && filepath
+        data.current.filename   = domain && project && bundle && filepath && Path.basename(filepath)
+        data.current.line       = domain && project && bundle && filepath && line      && Number(line)
+        data.current.filter     = domain && project && bundle && filepath && filter    && decodeURI(filter)
+        data.current.date_from  = domain && project && bundle && filepath && date_from && decodeURI(date_from)
+        data.current.date_to    = domain && project && bundle && filepath && date_to   && decodeURI(date_to)
         if (filepath) {
           ref.current.files.current.click()
           ref.current.viewer.current.click()
@@ -159,6 +169,8 @@ const MainPage: React.FC<MainPageProps> = ({
     data.current.filename = null
     data.current.line = null
     data.current.filter = null
+    data.current.date_from = null
+    data.current.date_to = null
     forceUpdate()
     updateAddressBar()
   }, [true])
@@ -170,6 +182,8 @@ const MainPage: React.FC<MainPageProps> = ({
     data.current.filename = null
     data.current.line = null
     data.current.filter = null
+    data.current.date_from = null
+    data.current.date_to = null
     forceUpdate()
     updateAddressBar()
   }, [true])
@@ -182,6 +196,8 @@ const MainPage: React.FC<MainPageProps> = ({
       data.current.filename = null
       data.current.line = null
       data.current.filter = null
+      data.current.date_from = null
+      data.current.date_to = null
       forceUpdate()
       updateAddressBar()
     }
@@ -193,6 +209,8 @@ const MainPage: React.FC<MainPageProps> = ({
     data.current.filename = null
     data.current.line = null
     data.current.filter = null
+    data.current.date_from = null
+    data.current.date_to = null
     forceUpdate()
     updateAddressBar()
   }, [true])
@@ -204,6 +222,8 @@ const MainPage: React.FC<MainPageProps> = ({
       data.current.filename = null
       data.current.line = null
       data.current.filter = null
+      data.current.date_from = null
+      data.current.date_to = null
       forceUpdate()
       updateAddressBar()
     }
@@ -248,9 +268,21 @@ const MainPage: React.FC<MainPageProps> = ({
     updateAddressBar()
   }, [true])
 
-  const handleChangeTableFilter = useCallback((filter: string) => {
-    data.current.filter = filter
+  const handleChangeTableTextFilter = useCallback((text_filter: string) => {
+    data.current.filter = text_filter
     updateAddressBar()
+  }, [true])
+
+  const handleChangeTableDateFilter = useCallback((date_from: string, date_to: string) => {
+    data.current.date_from = date_from
+    data.current.date_to = date_to
+    updateAddressBar()
+  }, [true])
+
+  const handleClichLogout = useCallback((targetValue: string, parentValue: string) => {
+    Cookie.remove("token")
+    Cookie.remove("whatsnew")
+    location.href = Environment.getBaseUrl()
   }, [true])
 
   return (
@@ -316,7 +348,7 @@ const MainPage: React.FC<MainPageProps> = ({
                 <DropdownItem
                   key="delete-project"
                   label="Delete Project"
-                  disabled={ !data.current.domain || (data.current.domain === "public" && privilege !== "root") }
+                  disabled={ !data.current.domain || (!["public", "private"].includes(data.current.domain) && privilege !== "root") }
                   toggle="modal"
                   target={ id.current.projectManage }
                   onClick={ handleClickDeleteProject }
@@ -325,7 +357,7 @@ const MainPage: React.FC<MainPageProps> = ({
                 <DropdownItem
                   key="delete-bundle"
                   label="Delete Bundle"
-                  disabled={ !data.current.domain || !data.current.project || (data.current.domain === "public" && privilege != "root") }
+                  disabled={ !data.current.domain || !data.current.project || (!["public", "private"].includes(data.current.domain) && privilege != "root") }
                   toggle="modal"
                   target={ id.current.bundleDelete }
                   onClick={ handleClickDeleteBundle }
@@ -350,6 +382,12 @@ const MainPage: React.FC<MainPageProps> = ({
                   label="Show what's new"
                   toggle="modal"
                   target={ id.current.whatsnew }
+                />,
+                <DropdownDivider key="divider-6" />,
+                <DropdownItem
+                  key="logout"
+                  label="Logout"
+                  onClick={ handleClichLogout }
                 />
               ] }
             />
@@ -360,6 +398,7 @@ const MainPage: React.FC<MainPageProps> = ({
             head={
               <>
                 <DomainSelectButton
+                  domains={ domains }
                   domain={ data.current.domain }
                   onSubmit={ handleSubmitDomainSelect }
                 />
@@ -417,9 +456,12 @@ const MainPage: React.FC<MainPageProps> = ({
                       <FunctionalTableBox
                         path={ ProjectPath.strictEncodeFilepath(data.current.domain, data.current.project, data.current.bundle, data.current.filepath) }
                         line={ data.current.line }
-                        filter={ data.current.filter }
+                        textFilter={ data.current.filter }
+                        dateFrom={ data.current.date_from }
+                        dateTo={ data.current.date_to }
                         onChangeLine={ handleChangeTableLine }
-                        onChangeFilter={ handleChangeTableFilter }
+                        onChangeTextFilter={ handleChangeTableTextFilter }
+                        onChangeDateFilter={ handleChangeTableDateFilter }
                       />
                     }
                     { data.current.terminal &&

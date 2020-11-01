@@ -106,8 +106,8 @@ const BundleSelectButton = React.memo<BundleSelectButtonProps>(({
   }, [true])
 
   const handleSelectBundle = useCallback((value: string) => {
-    input.current.bundleId = data.current.bundles.find((bundle: BundleInfo) => (bundle.name === value)).id.toString()
-    input.current.bundleName = value
+    input.current.bundleId = data.current.bundles.find((bundle: BundleInfo) => (bundle.name === value.split(" ")[0])).id.toString()
+    input.current.bundleName = value.split(" ")[0]
     forceUpdate()
   }, [true])
 
@@ -124,15 +124,7 @@ const BundleSelectButton = React.memo<BundleSelectButtonProps>(({
     data.current.bundles.filter((bundle: BundleInfo) => (
       bundle.available && (bundle.name.includes(data.current.filter) || bundle.description.includes(data.current.filter))
     )).map((bundle: BundleInfo) => (
-      bundle.name
-    ))
-  )
-
-  const listTitle = () => (
-    data.current.bundles.filter((bundle: BundleInfo) => (
-      bundle.available && (bundle.name.includes(data.current.filter) || bundle.description.includes(data.current.filter))
-    )).map((bundle: BundleInfo) => (
-      bundle.description
+      bundle.name + ((!!bundle.description) ? ` [ ${ bundle.description } ]` : "")
     ))
   )
 
@@ -142,6 +134,7 @@ const BundleSelectButton = React.memo<BundleSelectButtonProps>(({
         id={ id.current.modal }
         title="Log Bundle"
         message="Select a log bundle."
+        size="modal-lg"
         center={ false }
         body={
           <>
@@ -154,7 +147,6 @@ const BundleSelectButton = React.memo<BundleSelectButtonProps>(({
             />
             <ListForm
               labels={ listLabel() }
-              titles={ listTitle() }
               onChange={ handleSelectBundle }
             />
           </>
@@ -172,7 +164,7 @@ const BundleSelectButton = React.memo<BundleSelectButtonProps>(({
       <button
         className={ `btn ${ className } ${ data.current.bundleName ? "btn-success" : "btn-secondary" }` }
         type="button"
-        disabled={ !["public", "private"].includes(domain) || !project }
+        disabled={ !domain || !project }
         data-toggle="modal"
         data-target={ "#" + id.current.modal }
         onClick={ handleClick }

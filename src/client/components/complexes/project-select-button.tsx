@@ -84,7 +84,7 @@ const ProjectSelectButton = React.memo<ProjectSelectButtonProps>(({
   }, [domain])
 
   const handleSelectProject = useCallback((value: string) => {
-    input.current.project = value
+    input.current.project = value.split(" ")[0]
     forceUpdate()
   }, [true])
 
@@ -102,17 +102,7 @@ const ProjectSelectButton = React.memo<ProjectSelectButtonProps>(({
     )).filter((project: ProjectInfo) => (
       project.name.includes(data.current.filter) || project.description.includes(data.current.filter)
     )).map((project: ProjectInfo) => (
-      project.name
-    ))
-  )
-
-  const listTitle = () => (
-    data.current.projects.filter((project: ProjectInfo) => (
-      project.status === status
-    )).filter((project: ProjectInfo) => (
-      project.name.includes(data.current.filter) || project.description.includes(data.current.filter)
-    )).map((project: ProjectInfo) => (
-      project.description
+      project.name + ((!!project.description) ? ` [ ${ project.description } ]` : "")
     ))
   )
 
@@ -134,7 +124,6 @@ const ProjectSelectButton = React.memo<ProjectSelectButtonProps>(({
             />
             <ListForm
               labels={ listLabel() }
-              titles={ listTitle() }
               onChange={ handleSelectProject }
             />
           </>
@@ -152,7 +141,7 @@ const ProjectSelectButton = React.memo<ProjectSelectButtonProps>(({
       <button
         className={ `btn ${ className } ${ data.current.project ? "btn-success" : "btn-secondary" }` }
         type="button"
-        disabled={ !["public", "private"].includes(domain) }
+        disabled={ !domain }
         data-toggle="modal"
         data-target={ "#" + id.current.modal }
         onClick={ handleClick }
