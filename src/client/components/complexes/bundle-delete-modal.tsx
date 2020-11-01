@@ -84,8 +84,8 @@ const BundleDeleteModal = React.memo<BundleDeleteModalProps>(({
   }, [true])
 
   const handleSelectBundle = useCallback((value: string) => {
-    data.current.bundleId = data.current.bundles.find((bundle: BundleInfo) => (bundle.name === value)).id.toString()
-    data.current.bundleName = value
+    data.current.bundleId = data.current.bundles.find((bundle: BundleInfo) => (bundle.name === value.split(" ")[0])).id.toString()
+    data.current.bundleName = value.split(" ")[0]
     forceUpdate()
   }, [true])
 

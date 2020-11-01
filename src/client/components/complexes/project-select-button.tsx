@@ -84,7 +84,7 @@ const ProjectSelectButton = React.memo<ProjectSelectButtonProps>(({
   }, [domain])
 
   const handleSelectProject = useCallback((value: string) => {
-    input.current.project = value
+    input.current.project = value.split(" ")[0]
     forceUpdate()
   }, [true])
 

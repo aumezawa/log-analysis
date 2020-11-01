@@ -82,7 +82,7 @@ const ProjectManageModal = React.memo<ProjectManageModalProps>(({
   }, [true])
 
   const handleSelectProject = useCallback((value: string) => {
-    data.current.project = value
+    data.current.project = value.split(" ")[0]
     forceUpdate()
   }, [true])
 

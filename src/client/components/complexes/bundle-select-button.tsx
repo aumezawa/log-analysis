@@ -106,8 +106,8 @@ const BundleSelectButton = React.memo<BundleSelectButtonProps>(({
   }, [true])
 
   const handleSelectBundle = useCallback((value: string) => {
-    input.current.bundleId = data.current.bundles.find((bundle: BundleInfo) => (bundle.name === value)).id.toString()
-    input.current.bundleName = value
+    input.current.bundleId = data.current.bundles.find((bundle: BundleInfo) => (bundle.name === value.split(" ")[0])).id.toString()
+    input.current.bundleName = value.split(" ")[0]
     forceUpdate()
   }, [true])
 
