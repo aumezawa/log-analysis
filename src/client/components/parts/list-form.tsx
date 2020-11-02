@@ -4,20 +4,21 @@ import { useState, useEffect, useCallback } from "react"
 type ListFormProps = {
   className?: string,
   labels?   : Array<string>,
+  reload?   : number,
   onChange? : (value: string) => void
 }
 
 const ListForm = React.memo<ListFormProps>(({
   className = "",
   labels    = [],
+  reload    = 0,
   onChange  = undefined
 }) => {
   const [active, setActive] = useState<string>(null)
 
   useEffect(() => {
-    console.log
     setActive(null)
-  }, [labels.toString()])
+  }, [labels.toString(), reload])
 
   const handleClick = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
     if (onChange) {
@@ -46,6 +47,7 @@ const ListForm = React.memo<ListFormProps>(({
 }, (prevProps: ListFormProps, nextProps: ListFormProps) => (
   (prevProps.className === nextProps.className)
   && (prevProps.labels.toString() === nextProps.labels.toString())
+  && (prevProps.reload === nextProps.reload)
   && (prevProps.onChange === nextProps.onChange)
 ))
 

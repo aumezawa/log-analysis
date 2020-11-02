@@ -1,5 +1,5 @@
 import * as React from "react"
-import { useRef, useCallback, useReducer } from "react"
+import { useEffect, useRef, useCallback, useReducer } from "react"
 
 import Axios from "axios"
 import { AxiosResponse, AxiosError } from "axios"
@@ -9,28 +9,39 @@ import * as Cookie from "js-cookie"
 import Environment from "../../lib/environment"
 import ProjectPath from "../../lib/project-path"
 
+import ModalFrame from "../frames/modal-frame"
 import Message from "../parts/message"
 import ProjectCreateForm from "../sets/project-create-form"
 
-type ProjectCreateBoxProps = {
-  className?: string,
-  domain?   : string
+type ProjectCreateModalProps = {
+  id      : string,
+  domain? : string
 }
 
 const defaultMessage = `Please input a new project "name" and "description". (characters with [0-9a-zA-Z#@_+-])`
 
-const ProjectCreateBox = React.memo<ProjectCreateBoxProps>(({
-  className = "",
-  domain    = null
+const ProjectCreateModal = React.memo<ProjectCreateModalProps>(({
+  id      = null,
+  domain  = null
 }) => {
   const [ignored, forceUpdate] = useReducer(x => x + 1, 0)
   const [formKey, clearFrom]   = useReducer(x => x + 1, 0)
 
   const data = useRef({
-    message : defaultMessage,
+    message : defaultMessage
+  })
+
+  const status = useRef({
     done    : false,
     success : false
   })
+
+  useEffect(() => {
+    data.current.message = defaultMessage
+    status.current.done = false
+    status.current.success = false
+    clearFrom()
+  }, [domain])
 
   const handleSubmit = useCallback((name: string, description: string) => {
     const uri = `${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain) }/projects`
@@ -39,45 +50,53 @@ const ProjectCreateBox = React.memo<ProjectCreateBoxProps>(({
     params.append("description", description)
     params.append("token", Cookie.get("token") || "")
 
-    data.current.done = false
+    status.current.done = false
     forceUpdate()
     Axios.post(uri, params)
     .then((res: AxiosResponse) => {
       data.current.message = res.data.msg
-      data.current.done = true
-      data.current.success = true
+      status.current.done = true
+      status.current.success = true
       clearFrom()
     })
     .catch((err: AxiosError) => {
       data.current.message = err.response.data.msg
-      data.current.done = true
-      data.current.success = false
+      status.current.done = true
+      status.current.success = false
       forceUpdate()
     })
   }, [domain])
 
   const handleCancel = useCallback(() => {
     data.current.message = defaultMessage
-    data.current.done = false
-    data.current.success = false
+    status.current.done = false
+    status.current.success = false
     forceUpdate()
   }, [true])
 
   return (
-    <div className={ className }>
-      <Message
-        message={ data.current.message }
-        success={ data.current.done && data.current.success }
-        failure={ data.current.done && !data.current.success }
-      />
-      <ProjectCreateForm
-        key={ formKey }
-        disabled={ !domain }
-        onSubmit={ handleSubmit }
-        onCancel={ handleCancel }
-      />
-    </div>
+    <ModalFrame
+      id={ id }
+      title="Project"
+      message="Create a new project."
+      center={ false }
+      body={
+        <>
+          <Message
+            message={ data.current.message }
+            success={ status.current.done &&  status.current.success }
+            failure={ status.current.done && !status.current.success }
+          />
+          <ProjectCreateForm
+            key={ formKey }
+            disabled={ !domain }
+            onSubmit={ handleSubmit }
+            onCancel={ handleCancel }
+          />
+        </>
+      }
+    />
   )
 })
 
-export default ProjectCreateBox
+export default ProjectCreateModal

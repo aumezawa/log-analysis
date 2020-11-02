@@ -6,16 +6,18 @@ import DropdownButton from "../parts/dropdown-button"
 
 type NavigatorBarProps = {
   title?: string,
+  label?: string,
   items?: Array<JSX.Element>
 }
 
 const NavigatorBar: React.FC<NavigatorBarProps> = ({
   title = "Navigation Bar",
+  label = "Menu",
   items = []
 }) => (
   <nav className="navbar navbar-dark bg-dark">
     <a className="navbar-brand" href={ Environment.getBaseUrl() }>{ title }</a>
-    <DropdownButton label="Menu" align="right" items={ items } />
+    <DropdownButton label={ label } align="right" items={ items } />
   </nav>
 )
 

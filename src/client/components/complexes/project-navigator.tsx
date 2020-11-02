@@ -1,27 +1,36 @@
 import * as React from "react"
-import { useEffect, useRef, useCallback, useReducer } from "react"
+import { useRef, useCallback, useReducer } from "react"
 
 import { CaretRight, CaretRightFill, Dot } from "react-bootstrap-icons"
 
-import DomainSelectButton from "../complexes/domain-select-button"
-import ProjectCreateButton from "../complexes/project-create-button"
-import ProjectSelectButton from "../complexes/project-select-button"
-import BundleUploadButton from "../complexes/bundle-upload-button"
-import BundleSelectButton from "../complexes/bundle-select-button"
-import InformationButton from "../parts/information-button"
+import UniqueId from "../../lib/unique-id"
+
+import DomainSelectModal from "../complexes/domain-select-modal"
+import ProjectCreateModal from "../complexes/project-create-modal"
+import ProjectSelectModal from "../complexes/project-select-modal"
+import BundleUploadModal from "../complexes/bundle-upload-modal"
+import BundleSelectModal from "../complexes/bundle-select-modal"
+
+import Button from "../parts/button"
+import DropdownButton from "../parts/dropdown-button"
+import DropdownDivider from "../parts/dropdown-divider"
+import DropdownHeader from "../parts/dropdown-header"
+import DropdownItem from "../parts/dropdown-item"
 
 type ProjectNavigatorProps = {
+  privilege?      : string,
   domains         : string,
   domain          : string,
   project         : string,
   bundle          : string,
   filename        : string,
-  onChangeDomain  : (value: string) => void,
-  onChangeProject : (value: string) => void,
-  onChangeBundle  : (value: string) => void
+  onChangeDomain  : (domainName: string) => void,
+  onChangeProject : (projectName: string) => void,
+  onChangeBundle  : (bundleId: string) => void
 }
 
 const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
+  privilege       = "none",
   domains         = "public,private",
   domain          = null,
   project         = null,
@@ -31,76 +40,251 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
   onChangeProject = undefined,
   onChangeBundle  = undefined
 }) => {
-  const [ignored, forceUpdate] = useReducer(x => x + 1, 0)
+  const [ignored,       forceUpdate]       = useReducer(x => x + 1, 0)
+  const [reloadProject, updateProjectList] = useReducer(x => x + 1, 0)
+  const [reloadBundle,  updateBundleList]  = useReducer(x => x + 1, 0)
 
-  const doneProject   = (domain &&  project)
-  const borderProject = (domain && !project)            ? "border border-info" : ""
-  const borderBundle  = (domain &&  project && !bundle) ? "border border-info" : ""
+  const id = useRef({
+    domainSelect  : "modal-" + UniqueId(),
+    projectCreate : "modal-" + UniqueId(),
+    projectSelect : "modal-" + UniqueId(),
+    bundleUpload  : "modal-" + UniqueId(),
+    bundleSelect  : "modal-" + UniqueId()
+  })
 
-  const handleChangeDomain = useCallback((value: string) => {
+  const data = useRef({
+    action    : "open",
+    bundleName: null
+  })
+
+  const handleChangeDomain = useCallback((domainName: string) => {
     if (onChangeDomain) {
-      onChangeDomain(value)
+      onChangeDomain(domainName)
     }
   }, [onChangeDomain])
 
-  const handleChangeProject = useCallback((value: string) => {
-    if (onChangeProject) {
-      onChangeProject(value)
+  const handleChangeProject = useCallback((projectName: string) => {
+    if (data.current.action === "open") {
+      if (onChangeProject) {
+        onChangeProject(projectName)
+      }
     }
-  }, [onChangeProject])
+    if ((data.current.action === "delete" || data.current.action === "close") && (projectName === project)) {
+      if (onChangeProject) {
+        onChangeProject(null)
+      }
+    }
+  }, [project, onChangeProject])
 
-  const handleChangeBundle = useCallback((value: string) => {
-    if (onChangeBundle) {
-      onChangeBundle(value)
+  const handleChangeBundle = useCallback((bundleId: string, bundleName: string) => {
+    if (data.current.action === "open") {
+      data.current.bundleName = bundleName
+      if (onChangeBundle) {
+        onChangeBundle(bundleId)
+      }
     }
-  }, [onChangeBundle])
+    if ((data.current.action === "delete") && (bundleId === bundle)) {
+      data.current.bundleName = null
+      if (onChangeBundle) {
+        onChangeBundle(null)
+      }
+    }
+  }, [bundle, onChangeBundle])
+
+  const handleClickOpenProject = useCallback(() => {
+    data.current.action = "open"
+    updateProjectList()
+  }, [true])
+
+  const handleClickDeleteProject = useCallback(() => {
+    data.current.action = "delete"
+    updateProjectList()
+  }, [true])
+
+  const handleClickReopenProject = useCallback(() => {
+    data.current.action = "reopen"
+    updateProjectList()
+  }, [true])
+
+  const handleClickCloseProject = useCallback(() => {
+    data.current.action = "close"
+    updateProjectList()
+  }, [true])
+
+  const handleClickOpenBundle = useCallback(() => {
+    data.current.action = "open"
+    updateBundleList()
+  }, [true])
+
+  const handleClickDeleteBundle = useCallback(() => {
+    data.current.action = "delete"
+    updateBundleList()
+  }, [true])
 
   return (
-    <div className="flex-container-row align-items-center">
-      <div className="borderable">
-        <DomainSelectButton
-          domains={ domains }
-          domain={ domain }
-          onSubmit={ handleChangeDomain }
-        />
+    <>
+      <DomainSelectModal
+        id={ id.current.domainSelect }
+        domains={ domains }
+        domain={ domain }
+        onSubmit={ handleChangeDomain }
+      />
+      <ProjectCreateModal
+        id={ id.current.projectCreate }
+        domain={ domain }
+      />
+      <ProjectSelectModal
+        id={ id.current.projectSelect }
+        domain={ domain }
+        action={ data.current.action }
+        reload={ reloadProject }
+        onSubmit={ handleChangeProject }
+      />
+      <BundleUploadModal
+        id={ id.current.bundleUpload }
+        domain={ domain }
+        project={ project }
+      />
+      <BundleSelectModal
+        id={ id.current.bundleSelect }
+        domain={ domain }
+        project={ project }
+        action={ data.current.action }
+        reload={ reloadBundle }
+        onSubmit={ handleChangeBundle }
+      />
+      <div className="flex-container-row align-items-center">
+        <div className="borderable">
+          <Button
+            label={ domain || "Select Domain" }
+            color={ domain ? (domain !== "private" ? "success" : "warning") : "secondary" }
+            toggle="modal"
+            target={ id.current.domainSelect }
+          />
+        </div>
+        <CaretRightFill />
+        <div className={ `${ domain && !project && "border border-info" } borderable` }>
+          { !project &&
+            <>
+              <Button
+                label="New Project"
+                color="info"
+                disabled={ !domain }
+                toggle="modal"
+                target={ id.current.projectCreate }
+              />
+              <Dot />
+            </>
+          }
+          <Button
+            label={ project || "Select Project" }
+            color={ project ? "success" : "secondary" }
+            disabled={ !domain }
+            toggle="modal"
+            target={ id.current.projectSelect }
+            onClick={ handleClickOpenProject }
+          />
+        </div>
+        { project ? <CaretRightFill /> : <CaretRight /> }
+        <div className={ `${ project && !bundle && "border border-info" } borderable` }>
+          { !bundle &&
+            <>
+              <Button
+                label="Upload Bundle"
+                color="info"
+                disabled={ !domain || !project }
+                toggle="modal"
+                target={ id.current.bundleUpload }
+              />
+            <Dot />
+          </>
+          }
+          <Button
+            label={ (bundle && data.current.bundleName) || "Select Bundle" }
+            color={ (bundle && data.current.bundleName) ? "success" : "secondary" }
+            disabled={ !domain || !project }
+            toggle="modal"
+            target={ id.current.bundleSelect }
+            onClick={ handleClickOpenBundle }
+          />
+        </div>
+        { filename &&
+          <>
+            <CaretRightFill />
+            <div className="borderable">
+              <Button
+                label={ filename }
+                color="success"
+                noAction={ true }
+              />
+            </div>
+          </>
+        }
+        <div className="ml-auto mr-3">
+          <DropdownButton
+            label="Operations"
+            align="right"
+            items={ [
+              <DropdownHeader
+                key="project-header"
+                label="Project Operations"
+              />,
+              <DropdownItem
+                key="create-project"
+                label="Create New"
+                disabled={ !domain }
+                toggle="modal"
+                target={ id.current.projectCreate }
+              />,
+              <DropdownItem
+                key="close-project"
+                label="Close"
+                disabled={ !domain }
+                toggle="modal"
+                target={ id.current.projectSelect }
+                onClick={ handleClickCloseProject }
+              />,
+              <DropdownItem
+                key="reopen-project"
+                label="Reopen"
+                disabled={ !domain }
+                toggle="modal"
+                target={ id.current.projectSelect }
+                onClick={ handleClickReopenProject }
+              />,
+              <DropdownItem
+                key="delete-project"
+                label="Delete"
+                disabled={ !domain || (!["public", "private"].includes(domain) && privilege !== "root") }
+                toggle="modal"
+                target={ id.current.projectSelect }
+                onClick={ handleClickDeleteProject }
+              />,
+              <DropdownDivider key="divider-1" />,
+              <DropdownHeader
+                key="bundle-header"
+                label="Bundle Operations"
+              />,
+              <DropdownItem
+                key="upload-bundle"
+                label="Upload"
+                disabled={ !domain || !project }
+                toggle="modal"
+                target={ id.current.bundleUpload }
+              />,
+              <DropdownItem
+                key="delete-bundle"
+                label="Delete"
+                disabled={ !domain || !project || (!["public", "private"].includes(domain) && privilege != "root") }
+                toggle="modal"
+                target={ id.current.bundleSelect }
+                onClick={ handleClickDeleteBundle }
+              />
+            ] }
+          />
+        </div>
       </div>
-      <CaretRightFill />
-      <div className={ `${ borderProject } borderable` }>
-        <ProjectCreateButton
-          domain={ domain }
-        />
-        <Dot />
-        <ProjectSelectButton
-          domain={ domain }
-          project={ project }
-          onSubmit={ handleChangeProject }
-        />
-      </div>
-      { !doneProject ? <CaretRight /> : <CaretRightFill /> }
-      <div className={ `${ borderBundle } borderable` }>
-        <BundleUploadButton
-          domain={ domain }
-          project={ project }
-        />
-        <Dot />
-        <BundleSelectButton
-          domain={ domain }
-          project={ project }
-          bundle={ bundle }
-          onSubmit={ handleChangeBundle }
-        />
-      </div>
-      { filename &&
-        <>
-          <CaretRightFill />
-          <div className="borderable">
-            <InformationButton
-              label={ filename }
-            />
-          </div>
-        </>
-      }
-    </div>
+    </>
   )
 })
 
