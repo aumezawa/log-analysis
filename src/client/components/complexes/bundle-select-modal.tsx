@@ -18,23 +18,28 @@ type BundleSelectModalProps = {
   id        : string,
   domain?   : string,
   project?  : string,
+  bundle?   : string,
   action?   : string,   // NOTE: "open" | "delete"
   reload?   : number,
-  onSubmit? : (bundleId: string, bundleName: string) => void
+  onSubmit? : (bundleId: string, bundleName: string) => void,
+  onUpdate? : (bundleName: string) => void
 }
 
 const BundleSelectModal = React.memo<BundleSelectModalProps>(({
   id        = null,
   domain    = null,
   project   = null,
+  bundle    = null,
   action    = "open",
   reload    = 0,
-  onSubmit  = undefined
+  onSubmit  = undefined,
+  onUpdate  = undefined
 }) => {
   const [ignored, forceUpdate] = useReducer(x => x + 1, 0)
 
-  const ref = useRef({
-    text  : React.createRef<HTMLInputElement>()
+  const refs = useRef({
+    text  : React.createRef<HTMLInputElement>(),
+    list  : useRef({} as ListFormReference)
   })
 
   const data = useRef({
@@ -49,11 +54,30 @@ const BundleSelectModal = React.memo<BundleSelectModalProps>(({
   })
 
   useEffect(() => {
-    data.current.filter = ref.current.text.current.value = ""
+    data.current.filter = refs.current.text.current.value = ""
     data.current.bundleId = null
     data.current.bundleName = null
+    refs.current.list.current.clear()
     reloadBundle()
   }, [domain, project, reload])
+
+  useEffect(() => {
+    if (domain && project && bundle) {
+      const uri = `${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project, bundle) }`
+      Axios.get(uri, {
+        headers : { "X-Access-Token": Cookie.get("token") || "" },
+        data    : {}
+      })
+      .then((res: AxiosResponse) => {
+        onUpdate(res.data.name)
+        return
+      })
+      .catch((err: AxiosError) => {
+        onSubmit(null, null)
+        return
+      })
+    }
+  }, [domain, project, bundle, onSubmit, onUpdate])
 
   const reloadBundle = useCallback(() => {
     if (domain && project) {
@@ -148,15 +172,15 @@ const BundleSelectModal = React.memo<BundleSelectModalProps>(({
       body={
         <>
           <TextForm
-            ref={ ref.current.text }
+            ref={ refs.current.text }
             className="mb-3"
             valid={ true }
             label="Filter"
             onChange={ handleChangeFilter }
           />
           <ListForm
+            ref={ refs.current.list }
             labels={ listLabel() }
-            reload={ reload }
             onChange={ handleSelectBundle }
           />
         </>

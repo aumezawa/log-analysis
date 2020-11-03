@@ -26,7 +26,7 @@ const FileSearchBox = React.memo<FileSearchBoxProps>(({
 }) => {
   const [ignored, forceUpdate] = useReducer(x => x + 1, 0)
 
-  const ref = useRef({
+  const refs = useRef({
     text  : React.createRef<HTMLInputElement>()
   })
 
@@ -43,7 +43,7 @@ const FileSearchBox = React.memo<FileSearchBoxProps>(({
 
   useEffect(() => {
     data.current.searchable = false
-    data.current.searchtext = ref.current.text.current.value = ""
+    data.current.searchtext = refs.current.text.current.value = ""
     data.current.done = true
     data.current.files = {
       name    : "",
@@ -136,7 +136,7 @@ const FileSearchBox = React.memo<FileSearchBoxProps>(({
   return (
     <div className={ `${ className } text-left text-monospace` }>
       <TextForm
-        ref={ ref.current.text }
+        ref={ refs.current.text }
         className="mb-3"
         label="Search"
         button="Go"

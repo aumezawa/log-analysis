@@ -47,7 +47,7 @@ const TextForm = React.memo(React.forwardRef<HTMLInputElement, TextFormProps>(({
           <span className="input-group-text">{ label }</span>
         </div>
         {
-          !!auxiliary &&
+          auxiliary &&
           <div className="input-group-prepend">
             <span className="input-group-text">{ auxiliary }</span>
           </div>
@@ -61,7 +61,7 @@ const TextForm = React.memo(React.forwardRef<HTMLInputElement, TextFormProps>(({
           onChange={ handleChange }
         />
         {
-          !!button &&
+          button &&
           <div className="input-group-append">
             <button
               className="btn btn-outline-secondary"

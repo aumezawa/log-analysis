@@ -28,7 +28,7 @@ const TextFilterForm = React.memo<TextFilterFormProps>(({
   const [valid, setValid] = useState<boolean>(false)
 
   useEffect(() => {
-    if (!!condition) {
+    if (condition) {
       data.current.mode       = ref.current.mode.current.value         = options[0]
       data.current.sensitive  = ref.current.sensitive.current.checked  = true
       data.current.condition  = ref.current.condition.current.value    = condition

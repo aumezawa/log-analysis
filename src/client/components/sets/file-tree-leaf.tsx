@@ -31,7 +31,7 @@ const TreeLeaf: React.FC<FileTreeLeafProps> = ({
       </>
     }
     {
-      !!filter &&
+      filter &&
       <>
         <div className="list-group-item-inner-single flex-main-area text-break">
           { leaf.name }

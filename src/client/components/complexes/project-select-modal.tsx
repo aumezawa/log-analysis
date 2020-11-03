@@ -31,8 +31,9 @@ const ProjectSelectModal = React.memo<ProjectSelectModalProps>(({
 }) => {
   const [ignored, forceUpdate] = useReducer(x => x + 1, 0)
 
-  const ref = useRef({
-    text  : React.createRef<HTMLInputElement>()
+  const refs = useRef({
+    text  : React.createRef<HTMLInputElement>(),
+    list  : useRef({} as ListFormReference)
   })
 
   const data = useRef({
@@ -46,8 +47,9 @@ const ProjectSelectModal = React.memo<ProjectSelectModalProps>(({
   })
 
   useEffect(() => {
-    data.current.filter = ref.current.text.current.value = ""
+    data.current.filter = refs.current.text.current.value = ""
     data.current.project = null
+    refs.current.list.current.clear()
     reloadProject()
   }, [domain, action, reload])
 
@@ -167,15 +169,15 @@ const ProjectSelectModal = React.memo<ProjectSelectModalProps>(({
       body={
         <>
           <TextForm
-            ref={ ref.current.text }
+            ref={ refs.current.text }
             className="mb-3"
             valid={ true }
             label="Filter"
             onChange={ handleChangeFilter }
           />
           <ListForm
+            ref={ refs.current.list }
             labels={ listLabel() }
-            reload={ reload }
             onChange={ handleSelectProject }
           />
         </>

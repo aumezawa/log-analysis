@@ -26,7 +26,7 @@ const FileExplorerBox = React.memo<FileExplorerBoxProps>(({
 }) => {
   const [ignored, forceUpdate] = useReducer(x => x + 1, 0)
 
-  const ref = useRef({
+  const refs = useRef({
     text  : React.createRef<HTMLInputElement>()
   })
 
@@ -40,7 +40,7 @@ const FileExplorerBox = React.memo<FileExplorerBoxProps>(({
   })
 
   useEffect(() => {
-    data.current.filter = ref.current.text.current.value = ""
+    data.current.filter = refs.current.text.current.value = ""
     data.current.files = {
       name    : "",
       file    : false,
@@ -124,7 +124,7 @@ const FileExplorerBox = React.memo<FileExplorerBoxProps>(({
   return (
     <div className={ `${ className } text-left text-monospace` }>
       <TextForm
-        ref={ ref.current.text }
+        ref={ refs.current.text }
         className="mb-3"
         valid={ true }
         label="Filter"

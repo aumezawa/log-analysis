@@ -91,6 +91,11 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
     }
   }, [bundle, onChangeBundle])
 
+  const handleUpdateBundleName = useCallback((bundleName: string) => {
+    data.current.bundleName = bundleName
+    forceUpdate()
+  } , [true])
+
   const handleClickOpenProject = useCallback(() => {
     data.current.action = "open"
     updateProjectList()
@@ -149,9 +154,11 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
         id={ id.current.bundleSelect }
         domain={ domain }
         project={ project }
+        bundle={ bundle }
         action={ data.current.action }
         reload={ reloadBundle }
         onSubmit={ handleChangeBundle }
+        onUpdate={ handleUpdateBundleName }
       />
       <div className="flex-container-row align-items-center">
         <div className="borderable">

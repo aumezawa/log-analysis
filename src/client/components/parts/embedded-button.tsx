@@ -3,8 +3,8 @@ import { useCallback } from "react"
 
 type EmbeddedButtonProps= {
   label?  : string,
+  color?  : "primary" | "secondary" | "success" | "warning" | "danger" | "info" | "light" | "dark",
   title?  : string,
-  on?     : boolean,
   toggle? : string,
   target? : string,
   onClick?: (targetValue: string, parentValue: string) => void
@@ -12,8 +12,8 @@ type EmbeddedButtonProps= {
 
 const EmbeddedButton = React.memo<EmbeddedButtonProps>(({
   label   = "button",
+  color   = "primary",
   title   = "",
-  on      = false,
   toggle  = "",
   target  = "",
   onClick = undefined
@@ -26,7 +26,7 @@ const EmbeddedButton = React.memo<EmbeddedButtonProps>(({
 
   return (
     <span
-      className={ `badge badge-btn ${ on ? "badge-success" : "badge-light" }` }
+      className={ `badge badge-btn badge-${ color }` }
       title={ title }
       data-toggle={ toggle }
       data-target={ "#" + target }

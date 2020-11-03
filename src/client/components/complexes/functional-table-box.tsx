@@ -42,13 +42,13 @@ const FunctionalTableBox = React.memo<FunctionalTableBoxProps>(({
   })
 
   const status = useRef({
-    progress: false
+    processing: false
   })
 
   useEffect(() => {
     if (path) {
       const uri = `${ Environment.getBaseUrl() }/api/v1/${ Escape.root(path) }?mode=json`
-      status.current.progress = true
+      status.current.processing = true
       forceUpdate()
       Axios.get(uri, {
         headers : { "X-Access-Token": Cookie.get("token") || "" },
@@ -56,13 +56,13 @@ const FunctionalTableBox = React.memo<FunctionalTableBoxProps>(({
       })
       .then((res: AxiosResponse) => {
         data.current.content = res.data.content
-        status.current.progress = false
+        status.current.processing = false
         forceUpdate()
         return
       })
       .catch((err: AxiosError) => {
         data.current.content = null
-        status.current.progress = false
+        status.current.processing = false
         forceUpdate()
         alert(err.response.data.msg)
         return
@@ -93,8 +93,8 @@ const FunctionalTableBox = React.memo<FunctionalTableBoxProps>(({
 
   return (
     <>
-      {  status.current.progress && <Spinner /> }
-      { !status.current.progress &&
+      {  status.current.processing && <Spinner /> }
+      { !status.current.processing &&
         <FunctionalTable
           className={ className }
           content={ data.current.content }

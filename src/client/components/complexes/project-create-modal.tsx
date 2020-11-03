@@ -11,7 +11,7 @@ import ProjectPath from "../../lib/project-path"
 
 import ModalFrame from "../frames/modal-frame"
 import Message from "../parts/message"
-import ProjectCreateForm from "../sets/project-create-form"
+import MultiTextForm from "../sets/multi-text-form"
 
 type ProjectCreateModalProps = {
   id      : string,
@@ -87,8 +87,12 @@ const ProjectCreateModal = React.memo<ProjectCreateModalProps>(({
             success={ status.current.done &&  status.current.success }
             failure={ status.current.done && !status.current.success }
           />
-          <ProjectCreateForm
+          <MultiTextForm
             key={ formKey }
+            label="project name"
+            auxiliary="description"
+            button="Create"
+            accept={ /^[0-9a-zA-Z#@_+-]{1,}$/ }
             disabled={ !domain }
             onSubmit={ handleSubmit }
             onCancel={ handleCancel }

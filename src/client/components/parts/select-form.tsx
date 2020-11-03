@@ -35,7 +35,7 @@ const SelectForm = React.memo(React.forwardRef<HTMLSelectElement, SelectFormProp
           defaultValue={ options[0] }
           onChange={ handleChange }
         >
-          { options.map((value: string) => <option key={ value } value={ value }>{ value }</option>) }
+          { options.map((option: string) => <option key={ option } value={ option }>{ option }</option>) }
         </select>
       </div>
     </div>

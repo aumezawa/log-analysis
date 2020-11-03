@@ -1,39 +1,64 @@
 import * as React from "react"
-import { useState, useEffect, useCallback } from "react"
+import { useRef, useEffect, useCallback, useReducer, useImperativeHandle } from "react"
 
 type ListFormProps = {
   className?: string,
   labels?   : Array<string>,
-  reload?   : number,
   onChange? : (value: string) => void
 }
 
-const ListForm = React.memo<ListFormProps>(({
+const ListForm = React.memo(React.forwardRef<ListFormReference, ListFormProps>(({
   className = "",
   labels    = [],
-  reload    = 0,
   onChange  = undefined
-}) => {
-  const [active, setActive] = useState<string>(null)
+}, ref) => {
+  const [ignored, forceUpdate] = useReducer(x => x + 1, 0)
+
+  const refs = useRef(labels.map(() => React.createRef<HTMLButtonElement>()))
 
   useEffect(() => {
-    setActive(null)
-  }, [labels.toString(), reload])
+    refs.current = labels.map(() => React.createRef<HTMLButtonElement>())
+    forceUpdate()
+  }, [labels.toString()])
+
+  useImperativeHandle(ref, () => ({
+    active: (target: number) => {
+      refs.current.forEach((ref: React.RefObject<HTMLButtonElement>, index: number) => {
+        if (index === target) {
+          ref.current.className = ref.current.className + " active"
+        } else {
+          ref.current.className = ref.current.className.replace(" active", "")
+        }
+      })
+    },
+    clear: () => {
+      refs.current.forEach((ref: React.RefObject<HTMLButtonElement>) => {
+        ref.current.className = ref.current.className.replace(" active", "")
+      })
+    }
+  }), [labels.toString()])
 
   const handleClick = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
+    refs.current.forEach((ref: React.RefObject<HTMLButtonElement>, index: number) => {
+      if (index === labels.indexOf(e.currentTarget.value)) {
+        ref.current.className = ref.current.className + " active"
+      } else {
+        ref.current.className = ref.current.className.replace(" active", "")
+      }
+    })
     if (onChange) {
       onChange(e.currentTarget.value)
     }
-    setActive(e.currentTarget.value)
-  }, [onChange])
+  }, [labels.toString(), onChange])
 
   return (
     <ul className={ `list-group ${ className }` }>
       {
-        labels.map((label: string) => (
+        labels.map((label: string, index: number) => (
           <button
+            ref={ refs.current[index] }
             key={ label }
-            className={ `list-group-item list-group-item-action ${ (label === active) && "active" }` }
+            className="list-group-item list-group-item-action"
             type="button"
             value={ label }
             onClick={ handleClick }
@@ -44,10 +69,9 @@ const ListForm = React.memo<ListFormProps>(({
       }
     </ul>
   )
-}, (prevProps: ListFormProps, nextProps: ListFormProps) => (
+}), (prevProps: ListFormProps, nextProps: ListFormProps) => (
   (prevProps.className === nextProps.className)
   && (prevProps.labels.toString() === nextProps.labels.toString())
-  && (prevProps.reload === nextProps.reload)
   && (prevProps.onChange === nextProps.onChange)
 ))
 

@@ -4,7 +4,7 @@ import { useCallback } from "react"
 type ButtonProps = {
   className?: string,
   label?    : string,
-  color?    : string,
+  color?    : "primary" | "secondary" | "success" | "warning" | "danger" | "info" | "light" | "dark",
   noAction? : boolean,
   disabled? : boolean,
   toggle?   : string,

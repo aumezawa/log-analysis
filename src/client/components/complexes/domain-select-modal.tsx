@@ -18,7 +18,9 @@ const DomainSelectModal = React.memo<DomainSelectModalProps>(({
   domain    = "public",
   onSubmit  = undefined
 }) => {
-  const ref = useRef({} as RedioFromReference)
+  const refs = useRef({
+    radio : useRef({} as RedioFormReference)
+  })
 
   const data = useRef({
     domain: domains.split(",")[0]
@@ -26,7 +28,7 @@ const DomainSelectModal = React.memo<DomainSelectModalProps>(({
 
   useEffect(() => {
     data.current.domain = domains.split(",").includes(domain) ? domain : domains.split(",")[0]
-    ref.current.checked(domains.split(",").indexOf(domain))
+    refs.current.radio.current.checked(domains.split(",").indexOf(domain))
   }, [domain])
 
   const handleChange = useCallback((value: string) => {
@@ -47,7 +49,7 @@ const DomainSelectModal = React.memo<DomainSelectModalProps>(({
       center={ false }
       body={
         <RadioForm
-          ref={ ref }
+          ref={ refs.current.radio }
           labels={ domains.split(",") }
           onChange={ handleChange }
         />

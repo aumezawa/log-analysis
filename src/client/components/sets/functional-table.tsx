@@ -260,7 +260,7 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
               <EmbeddedButton
                 key={ label }
                 label="filter"
-                on={ label in env.current.filters }
+                color={ (label in env.current.filters) ? "success" : "light" }
                 toggle="modal"
                 target={ content.format.label[label] === "text" ? id.current.textFilter : id.current.dateFilter }
                 onClick={ handleClickFilter }

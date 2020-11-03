@@ -1,56 +1,62 @@
 import * as React from "react"
-import { useState, useRef, useCallback } from "react"
+import { useState, useRef, useCallback, useImperativeHandle } from "react"
 
 import FileForm from "../parts/file-form"
 import TextForm from "../parts/text-form"
 import ButtonSet from "../sets/button-set"
 
-type BundleUploadFormProps = {
+type FileUploadFormProps = {
   className?: string,
+  auxiliary?: string,
   disabled? : boolean,
+  button?   : string,
+  accept?   : string,
   onSubmit? : (name: string, obj: any, description: string) => void,
   onCancel? : () => void
 }
 
-const BundleUploadForm = React.memo<BundleUploadFormProps>(({
+const FileUploadForm = React.memo<FileUploadFormProps>(({
   className = "",
+  auxiliary = null,
   disabled  = false,
+  button    = "Upload",
+  accept    = null,
   onSubmit  = undefined,
   onCancel  = undefined
 }) => {
   const [valid, setValid] = useState<boolean>(false)
 
-  const ref = useRef({
+  const refs = useRef({
     file: React.createRef<HTMLInputElement>(),
-    desc: React.createRef<HTMLInputElement>()
+    aux : React.createRef<HTMLInputElement>()
   })
 
   const data = useRef({
     name: "",
     obj : null,
-    desc: ""
+    aux : ""
   })
 
   const handleChangeFile = useCallback((name: string, obj: any) => {
     data.current.name = name
     data.current.obj  = obj
-    setValid(!!name.match(/^.+[.]tgz$/))
-  }, [true])
+    setValid(!!name.match(new RegExp(`^.+${ accept }$`)))
+  }, [accept])
 
   const handleChangeDescription = useCallback((value: string) => {
-    data.current.desc = value
+    data.current.aux = value
   }, [true])
 
   const handleSubmit = useCallback(() => {
     if (onSubmit) {
-      onSubmit(data.current.name, data.current.obj, data.current.desc)
+      onSubmit(data.current.name, data.current.obj, data.current.aux)
     }
   }, [onSubmit])
 
   const handleCancel = useCallback(() => {
-    data.current.name = ref.current.file.current.value = ""
+    data.current.name = refs.current.file.current.value = ""
     data.current.obj  = null
-    data.current.desc = ref.current.desc.current.value = ""
+    data.current.aux  = refs.current.aux.current.value  = ""
     setValid(false)
     if (onCancel) {
       onCancel()
@@ -60,24 +66,26 @@ const BundleUploadForm = React.memo<BundleUploadFormProps>(({
   return (
     <div className={ className }>
       <FileForm
-        ref={ ref.current.file }
+        ref={ refs.current.file }
         className="mb-3"
         valid={ valid }
         filename={ data.current.name }
         disabled={ disabled }
-        accept=".tgz"
+        accept={ accept }
         onChange={ handleChangeFile }
       />
-      <TextForm
-        ref={ ref.current.desc }
-        className="mb-3"
-        valid={ true }
-        label="description"
-        disabled={ disabled }
-        onChange={ handleChangeDescription }
-      />
+      { auxiliary &&
+        <TextForm
+          ref={ refs.current.aux }
+          className="mb-3"
+          valid={ true }
+          label={ auxiliary }
+          disabled={ disabled }
+          onChange={ handleChangeDescription }
+        />
+      }
       <ButtonSet
-        submit="Upload"
+        submit={ button }
         cancel="Clear"
         valid={ valid }
         disabled={ disabled }
@@ -88,4 +96,4 @@ const BundleUploadForm = React.memo<BundleUploadFormProps>(({
   )
 })
 
-export default BundleUploadForm
+export default FileUploadForm

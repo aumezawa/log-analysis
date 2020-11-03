@@ -12,7 +12,7 @@ import ProjectPath from "../../lib/project-path"
 import ModalFrame from "../frames/modal-frame"
 import Message from "../parts/message"
 import ProgressBar from "../parts/progress-bar"
-import BundleUploadForm from "../sets/bundle-upload-form"
+import FileUploadForm from "../sets/file-upload-form"
 
 type BundleUploadBoxProps = {
   id      : string,
@@ -101,7 +101,7 @@ const BundleUploadBox = React.memo<BundleUploadBoxProps>(({
       body={
         <>
           <Message
-            className=""
+            className="mb-0"
             message={ data.current.message }
             success={ status.current.done &&  status.current.success }
             failure={ status.current.done && !status.current.success }
@@ -110,9 +110,11 @@ const BundleUploadBox = React.memo<BundleUploadBoxProps>(({
             className="mb-3"
             progress={ status.current.progress }
           />
-          <BundleUploadForm
+          <FileUploadForm
             key={ formKey }
+            auxiliary="description"
             disabled={ !domain || !project || status.current.processing }
+            accept=".tgz"
             onSubmit={ handleSubmit }
             onCancel={ handleCancel }
           />

@@ -92,7 +92,7 @@ const FileTreeNode: React.FC<FileTreeNodeProps> = ({
         </>
       }
       {
-        !!filter &&
+        filter &&
         <>
           <ul className="list-group">
             { renderChildren() }

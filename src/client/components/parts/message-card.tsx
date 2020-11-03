@@ -4,6 +4,7 @@ type MessageCardProps = {
   className?: string,
   message?  : string,
   success?  : boolean,
+  warning?  : boolean,
   failure?  : boolean
 }
 
@@ -11,11 +12,13 @@ const MessageCard = React.memo<MessageCardProps>(({
   className = "my-3",
   message   = "No message",
   success   = false,
+  warning   = false,
   failure   = false
 }) => {
-  let color: string = "bg-light"
+  let color: string = "bg-info"
 
   color = (success) ? "bg-success" : color
+  color = (warning) ? "bg-warning" : color
   color = (failure) ? "bg-danger"  : color
 
   return (
