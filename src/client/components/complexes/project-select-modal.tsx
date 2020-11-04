@@ -49,10 +49,10 @@ const ProjectSelectModal = React.memo<ProjectSelectModalProps>(({
   })
 
   useEffect(() => {
+    reloadProject()
     data.current.filter = refs.current.text.current.value = ""
     data.current.project = null
-    refs.current.list.current.clear()
-    reloadProject()
+    setImmediate(() => refs.current.list.current.clear())
   }, [domain, action, reload])
 
   const reloadProject = useCallback(() => {
