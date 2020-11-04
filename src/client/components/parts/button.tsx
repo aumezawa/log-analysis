@@ -1,9 +1,12 @@
 import * as React from "react"
 import { useCallback } from "react"
 
+import { Icon } from "react-bootstrap-icons"
+
 type ButtonProps = {
   className?: string,
   label?    : string,
+  LIcon?    : Icon,
   color?    : "primary" | "secondary" | "success" | "warning" | "danger" | "info" | "light" | "dark",
   noAction? : boolean,
   disabled? : boolean,
@@ -15,6 +18,7 @@ type ButtonProps = {
 const Button = React.memo<ButtonProps>(({
   className = "",
   label     = "no label",
+  LIcon     = null,
   color     = "primary",
   noAction  = false,
   disabled  = false,
@@ -37,7 +41,7 @@ const Button = React.memo<ButtonProps>(({
       data-target={ "#" + target }
       onClick={ handleClick }
     >
-      { label }
+      { LIcon && <LIcon className="mr-2" /> }{ label }
     </button>
   )
 })

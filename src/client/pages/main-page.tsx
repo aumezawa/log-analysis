@@ -1,7 +1,7 @@
 import * as React from "react"
 import { useEffect, useRef, useCallback, useReducer } from "react"
 
-import { ChatRightText, HourglassSplit, HourglassTop, InfoCircle, Person, ReplyAllFill } from "react-bootstrap-icons"
+import { ChatRightText, HourglassSplit, HourglassTop, InfoCircle, Person, QuestionCircle, ReplyAllFill } from "react-bootstrap-icons"
 import { Display, FileEarmarkText, Search } from "react-bootstrap-icons"
 
 import Axios from "axios"
@@ -257,6 +257,7 @@ const MainPage: React.FC<MainPageProps> = ({
             <NavigatorBar
               title={ project }
               label="Help"
+              LIcon={ QuestionCircle }
               items={ [
                 <DropdownHeader
                   key="header"

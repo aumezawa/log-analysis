@@ -1,6 +1,6 @@
 import * as React from "react"
 
-import { InfoCircle } from "react-bootstrap-icons"
+import { InfoCircle, QuestionCircle } from "react-bootstrap-icons"
 
 import LayerFrame from "../components/frames/layer-frame"
 import CenterFrame from "../components/frames/center-frame"
@@ -26,6 +26,8 @@ const ErrorPage: React.FC<ErrorPageProps> = ({
       head={
         <NavigatorBar
           title={ project }
+          label="Help"
+          LIcon={ QuestionCircle }
           items={ [
             <DropdownHeader
               key="header"

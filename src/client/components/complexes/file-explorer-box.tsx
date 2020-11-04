@@ -2,7 +2,7 @@ import * as React from "react"
 import { useEffect, useRef, useCallback, useReducer } from "react"
 
 import { Search } from "react-bootstrap-icons"
-import { DisplayFill, Display, Download } from "react-bootstrap-icons"
+import { Display, Download, Terminal } from "react-bootstrap-icons"
 
 import Axios from "axios"
 import { AxiosResponse, AxiosError } from "axios"
@@ -36,7 +36,7 @@ const FileExplorerBox = React.memo<FileExplorerBoxProps>(({
   const data = useRef({
     filter: "",
     files : {
-      name    : "",
+      name    : "Empty",
       file    : false,
       children: []
     }
@@ -45,7 +45,7 @@ const FileExplorerBox = React.memo<FileExplorerBoxProps>(({
   useEffect(() => {
     data.current.filter = refs.current.text.current.value = ""
     data.current.files = {
-      name    : "",
+      name    : "Empty",
       file    : false,
       children: []
     }
@@ -146,7 +146,7 @@ const FileExplorerBox = React.memo<FileExplorerBoxProps>(({
           <DropdownItem
             key="terminal"
             label="legacy view"
-            LIcon={ DisplayFill }
+            LIcon={ Terminal }
             onClick={ handleClickTerminal }
           />,
           <DropdownItem

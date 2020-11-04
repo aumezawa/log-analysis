@@ -2,7 +2,7 @@ import * as React from "react"
 import { useEffect, useRef, useCallback, useReducer } from "react"
 
 import { Search } from "react-bootstrap-icons"
-import { DisplayFill, Display, Download } from "react-bootstrap-icons"
+import { Display, Download, Terminal } from "react-bootstrap-icons"
 
 import Axios from "axios"
 import { AxiosResponse, AxiosError } from "axios"
@@ -161,7 +161,7 @@ const FileSearchBox = React.memo<FileSearchBoxProps>(({
           <DropdownItem
             key="terminal"
             label="legacy view"
-            LIcon={ DisplayFill }
+            LIcon={ Terminal }
             onClick={ handleClickTerminal }
           />,
           <DropdownItem

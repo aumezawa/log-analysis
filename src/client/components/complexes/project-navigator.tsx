@@ -1,9 +1,11 @@
 import * as React from "react"
 import { useRef, useCallback, useReducer } from "react"
 
-import { CaretRight, CaretRightFill, Dot } from "react-bootstrap-icons"
-import { FolderPlus, FolderX, Folder, Folder2Open } from "react-bootstrap-icons"
-import { JournalArrowUp, JournalX } from "react-bootstrap-icons"
+import { CaretRight, CaretRightFill, Dot, QuestionCircle, Tools } from "react-bootstrap-icons"
+import { House } from "react-bootstrap-icons"
+import { FolderCheck, FolderPlus, FolderX, Folder, Folder2Open } from "react-bootstrap-icons"
+import { JournalArrowUp, JournalCheck, JournalX, Journal } from "react-bootstrap-icons"
+import { FileEarmarkText } from "react-bootstrap-icons"
 
 import UniqueId from "../../lib/unique-id"
 
@@ -166,6 +168,7 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
         <div className="borderable">
           <Button
             label={ domain || "Select Domain" }
+            LIcon={ House }
             color={ domain ? (domain !== "private" ? "success" : "warning") : "secondary" }
             toggle="modal"
             target={ id.current.domainSelect }
@@ -177,6 +180,7 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
             <>
               <Button
                 label="New Project"
+                LIcon={ FolderPlus }
                 color="info"
                 disabled={ !domain }
                 toggle="modal"
@@ -187,6 +191,7 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
           }
           <Button
             label={ project || "Select Project" }
+            LIcon={ project ? FolderCheck : Folder }
             color={ project ? "success" : "secondary" }
             disabled={ !domain }
             toggle="modal"
@@ -200,6 +205,7 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
             <>
               <Button
                 label="Upload Bundle"
+                LIcon={ JournalArrowUp }
                 color="info"
                 disabled={ !domain || !project }
                 toggle="modal"
@@ -210,6 +216,7 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
           }
           <Button
             label={ (bundle && data.current.bundleName) || "Select Bundle" }
+            LIcon={ (bundle && data.current.bundleName) ? JournalCheck : Journal }
             color={ (bundle && data.current.bundleName) ? "success" : "secondary" }
             disabled={ !domain || !project }
             toggle="modal"
@@ -223,6 +230,7 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
             <div className="borderable">
               <Button
                 label={ filename }
+                LIcon={ FileEarmarkText }
                 color="success"
                 noAction={ true }
               />
@@ -232,6 +240,7 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
         <div className="ml-auto mr-3">
           <DropdownButton
             label="Operations"
+            LIcon={ Tools }
             align="right"
             items={ [
               <DropdownHeader
