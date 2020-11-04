@@ -101,7 +101,7 @@ const MainPage: React.FC<MainPageProps> = ({
   }
 
   useEffect(() => {
-    const params = new URLSearchParams(query)
+    const params = new URLSearchParams(decodeURIComponent(query))
     const domain = params.get("domain")
     const project = params.get("project")
     const bundle = params.get("bundle")
@@ -125,9 +125,9 @@ const MainPage: React.FC<MainPageProps> = ({
         data.current.filepath   = domain && project && bundle && filepath
         data.current.filename   = domain && project && bundle && filepath && Path.basename(filepath)
         data.current.line       = domain && project && bundle && filepath && line      && Number(line)
-        data.current.filter     = domain && project && bundle && filepath && filter    && decodeURI(filter)
-        data.current.date_from  = domain && project && bundle && filepath && date_from && decodeURI(date_from)
-        data.current.date_to    = domain && project && bundle && filepath && date_to   && decodeURI(date_to)
+        data.current.filter     = domain && project && bundle && filepath && filter    && filter
+        data.current.date_from  = domain && project && bundle && filepath && date_from && date_from
+        data.current.date_to    = domain && project && bundle && filepath && date_to   && date_to
         if (filepath) {
           ref.current.files.current.click()
           ref.current.viewer.current.click()

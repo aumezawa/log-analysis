@@ -2,28 +2,28 @@ export default {
   encode: (domain: string = null, project: string = null, bundle: string = null, filepath: string = null, line: number = null, filter: string = null, date_from: string = null, date_to: string = null) => {
     let path: string = null
     if (domain) {
-      path = `log/${ domain }`
+      path = `log/${ encodeURIComponent(domain) }`
       if (project) {
-        path = `${ path }/projects/${ project }`
+        path = `${ path }/projects/${ encodeURIComponent(project) }`
         if (bundle) {
-          path = `${ path }/bundles/${ bundle }`
+          path = `${ path }/bundles/${ encodeURIComponent(bundle) }`
           if (filepath) {
-            path = `${ path }/files/${ filepath }`
+            path = `${ path }/files/${ filepath.split("/").map((node: string) => encodeURIComponent(node)).join("/") }`
             let firstParam: boolean = true
             if (line) {
-              path = `${ path }${ firstParam ? "?" : "&" }line=${ line }`
+              path = `${ path }${ firstParam ? "?" : "&" }line=${ encodeURIComponent(line) }`
               firstParam = false
             }
             if (filter) {
-              path = `${ path }${ firstParam ? "?" : "&" }filter=${ encodeURI(filter) }`
+              path = `${ path }${ firstParam ? "?" : "&" }filter=${ encodeURIComponent(filter) }`
               firstParam = false
             }
             if (date_from) {
-              path = `${ path }${ firstParam ? "?" : "&" }date_from=${ encodeURI(date_from) }`
+              path = `${ path }${ firstParam ? "?" : "&" }date_from=${ encodeURIComponent(date_from) }`
               firstParam = false
             }
             if (date_to) {
-              path = `${ path }${ firstParam ? "?" : "&" }date_to=${ encodeURI(date_to) }`
+              path = `${ path }${ firstParam ? "?" : "&" }date_to=${ encodeURIComponent(date_to) }`
               firstParam = false
             }
           }
@@ -34,10 +34,10 @@ export default {
   },
 
   strictEncodeFiles: (domain: string, project: string, bundle: string) => {
-    return domain && project && bundle && `log/${ domain }/projects/${ project }/bundles/${ bundle }/files`
+    return domain && project && bundle && `log/${ encodeURIComponent(domain) }/projects/${ encodeURIComponent(project) }/bundles/${ encodeURIComponent(bundle) }/files`
   },
 
   strictEncodeFilepath: (domain: string, project: string, bundle: string, filepath: string) => {
-    return domain && project && bundle && filepath && `log/${ domain }/projects/${ project }/bundles/${ bundle }/files/${ filepath }`
+    return domain && project && bundle && filepath && `log/${ encodeURIComponent(domain) }/projects/${ encodeURIComponent(project) }/bundles/${ encodeURIComponent(bundle) }/files/${ filepath.split("/").map((node: string) => encodeURIComponent(node)).join("/") }`
   }
 }

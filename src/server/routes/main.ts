@@ -8,7 +8,7 @@ import IndexPage from "../pages/index-page"
 
 const router: Router = express.Router()
 
-router.route("/log/:domain([0-9a-z]+)/projects/:projectName([0-9a-zA-Z_.#]+)/bundles/:bundleId([0-9]+)/files/*")
+router.route("/log/:domain/projects/:projectName/bundles/:bundleId/files/*")
 .get((req: Request, res: Response, next: NextFunction) => {
   let query = `?domain=${ req.params.domain }&project=${ req.params.projectName }&bundle=${ req.params.bundleId }&filepath=${ req.params[0] }`
   if (req.query.line) {
@@ -34,7 +34,7 @@ router.route("/log/:domain([0-9a-z]+)/projects/:projectName([0-9a-zA-Z_.#]+)/bun
   })
 })
 
-router.route("/log/:domain([0-9a-z]+)/projects/:projectName([0-9a-zA-Z_.#]+)/bundles/:bundleId([0-9]+)")
+router.route("/log/:domain/projects/:projectName/bundles/:bundleId")
 .get((req: Request, res: Response, next: NextFunction) => {
   const query = `?domain=${ req.params.domain }&project=${ req.params.projectName }&bundle=${ req.params.bundleId }`
   return res.status(200).send(
@@ -48,7 +48,7 @@ router.route("/log/:domain([0-9a-z]+)/projects/:projectName([0-9a-zA-Z_.#]+)/bun
   })
 })
 
-router.route("/log/:domain([0-9a-z]+)/projects/:projectName([0-9a-zA-Z_.#]+)")
+router.route("/log/:domain/projects/:projectName")
 .get((req: Request, res: Response, next: NextFunction) => {
   const query = `?domain=${ req.params.domain }&project=${ req.params.projectName }`
   return res.status(200).send(
@@ -62,7 +62,7 @@ router.route("/log/:domain([0-9a-z]+)/projects/:projectName([0-9a-zA-Z_.#]+)")
   })
 })
 
-router.route("/log/:domain([0-9a-z]+)")
+router.route("/log/:domain")
 .get((req: Request, res: Response, next: NextFunction) => {
   const query = `?domain=${ req.params.domain }`
   return res.status(200).send(
