@@ -11,6 +11,7 @@ import Escape from "../../lib/escape"
 
 import FunctionalTable from "../sets/functional-table"
 import Spinner from "../parts/spinner"
+import CenterText from "../parts/center-text"
 
 type FunctionalTableBoxProps = {
   className?          : string,
@@ -38,7 +39,7 @@ const FunctionalTableBox = React.memo<FunctionalTableBoxProps>(({
   const [ignored, forceUpdate] = useReducer(x => x + 1, 0)
 
   const data = useRef({
-    content: null
+    content   : null
   })
 
   const status = useRef({
@@ -94,7 +95,8 @@ const FunctionalTableBox = React.memo<FunctionalTableBoxProps>(({
   return (
     <>
       {  status.current.processing && <Spinner /> }
-      { !status.current.processing &&
+      { !status.current.processing && !data.current.content && <CenterText text="No Data" /> }
+      { !status.current.processing &&  data.current.content &&
         <FunctionalTable
           className={ className }
           content={ data.current.content }

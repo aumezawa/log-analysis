@@ -253,7 +253,7 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
       let header: Array<JSX.Element> = []
       if (content.format.hasHeader) {
         if (content.format.hasIndex) {
-          header.push(<th key="index" scope="col">#</th>)
+          header.push(<th key="index" scope="col" className="text-right">#</th>)
         }
         for (let label in content.format.label) {
           header.push(
@@ -273,7 +273,7 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
       }
       return <tr>{ header }</tr>
     } else {
-      return <tr><th>{ "#" }</th></tr>
+      return <></>
     }
   }
 
@@ -319,7 +319,7 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
         )
       })
     } else {
-      return <tr><td>{ "No content" }</td></tr>
+      return <tr><td className="text-center">{ "No content" }</td></tr>
     }
   }
 
