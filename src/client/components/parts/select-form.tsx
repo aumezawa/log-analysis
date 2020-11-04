@@ -3,7 +3,7 @@ import { useCallback } from "react"
 
 type SelectFormProps = {
   className?: string,
-  label?    : string,
+  label?    : string | JSX.Element,
   options?  : Array<string>,
   disabled? : boolean,
   onChange? : (value: string) => void

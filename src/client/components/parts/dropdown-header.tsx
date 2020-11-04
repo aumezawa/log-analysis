@@ -1,14 +1,18 @@
 import * as React from "react"
 
+import { Icon } from "react-bootstrap-icons"
+
 type DropdownHeaderProrps = {
-  label?: string
+  label?: string,
+  LIcon?: Icon,
 }
 
 const DropdownHeader: React.FC<DropdownHeaderProrps> = ({
-  label = "No label"
+  label = "No label",
+  LIcon = null
 }) => (
   <h6 className="dropdown-header">
-    { label }
+    { LIcon && <LIcon className="mr-2" size="1rem" /> }{ label }
   </h6>
 )
 

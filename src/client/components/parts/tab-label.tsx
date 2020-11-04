@@ -1,7 +1,10 @@
 import * as React from "react"
 
+import { Icon } from "react-bootstrap-icons"
+
 type TabLabelProps = {
   label?  : string,
+  LIcon?  : Icon,
   labelId : string,
   itemId  : string,
   active? : boolean
@@ -9,6 +12,7 @@ type TabLabelProps = {
 
 const TabLabel = React.forwardRef<HTMLAnchorElement, TabLabelProps>(({
   label   = "label",
+  LIcon   = null,
   labelId = undefined,
   itemId  = undefined,
   active  = false
@@ -24,7 +28,7 @@ const TabLabel = React.forwardRef<HTMLAnchorElement, TabLabelProps>(({
       aria-controls={ itemId }
       aria-selected="true"
     >
-      { label }
+      { LIcon && <LIcon className="mr-2" /> }{ label }
     </a>
   </li>
 ))

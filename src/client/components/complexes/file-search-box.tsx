@@ -1,6 +1,9 @@
 import * as React from "react"
 import { useEffect, useRef, useCallback, useReducer } from "react"
 
+import { Search } from "react-bootstrap-icons"
+import { DisplayFill, Display, Download } from "react-bootstrap-icons"
+
 import Axios from "axios"
 import { AxiosResponse, AxiosError } from "axios"
 
@@ -138,8 +141,8 @@ const FileSearchBox = React.memo<FileSearchBoxProps>(({
       <TextForm
         ref={ refs.current.text }
         className="mb-3"
-        label="Search"
-        button="Go"
+        label={ null }
+        button={ <Search /> }
         valid={ data.current.searchable }
         disabled={ !path || !data.current.done }
         onChange={ handleChangeText }
@@ -152,16 +155,19 @@ const FileSearchBox = React.memo<FileSearchBoxProps>(({
           <DropdownItem
             key="view"
             label="view"
+            LIcon={ Display }
             onClick={ handleClickView }
           />,
           <DropdownItem
             key="terminal"
             label="legacy view"
+            LIcon={ DisplayFill }
             onClick={ handleClickTerminal }
           />,
           <DropdownItem
             key="download"
             label="download"
+            LIcon={ Download }
             onClick={ handleClickDownload }
           />
         ] }

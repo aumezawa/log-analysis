@@ -3,9 +3,9 @@ import { useCallback } from "react"
 
 type TextFormProps = {
   className?  : string,
-  label?      : string,
+  label?      : string | JSX.Element,
   auxiliary?  : string,
-  button?     : string,
+  button?     : string | JSX.Element,
   type?       : string,
   size?       : number,
   valid       : boolean,
@@ -43,11 +43,12 @@ const TextForm = React.memo(React.forwardRef<HTMLInputElement, TextFormProps>(({
   return (
     <div className={ className }>
       <div className="input-group">
-        <div className="input-group-prepend">
-          <span className="input-group-text">{ label }</span>
-        </div>
-        {
-          auxiliary &&
+        { label &&
+          <div className="input-group-prepend">
+            <span className="input-group-text">{ label }</span>
+          </div>
+        }
+        { auxiliary &&
           <div className="input-group-prepend">
             <span className="input-group-text">{ auxiliary }</span>
           </div>
@@ -60,8 +61,7 @@ const TextForm = React.memo(React.forwardRef<HTMLInputElement, TextFormProps>(({
           disabled={ disabled }
           onChange={ handleChange }
         />
-        {
-          button &&
+        { button &&
           <div className="input-group-append">
             <button
               className="btn btn-outline-secondary"

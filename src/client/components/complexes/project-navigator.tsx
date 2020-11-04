@@ -2,6 +2,8 @@ import * as React from "react"
 import { useRef, useCallback, useReducer } from "react"
 
 import { CaretRight, CaretRightFill, Dot } from "react-bootstrap-icons"
+import { FolderPlus, FolderX, Folder, Folder2Open } from "react-bootstrap-icons"
+import { JournalArrowUp, JournalX } from "react-bootstrap-icons"
 
 import UniqueId from "../../lib/unique-id"
 
@@ -239,6 +241,7 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
               <DropdownItem
                 key="create-project"
                 label="Create New"
+                LIcon={ FolderPlus }
                 disabled={ !domain }
                 toggle="modal"
                 target={ id.current.projectCreate }
@@ -246,6 +249,7 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
               <DropdownItem
                 key="close-project"
                 label="Close"
+                LIcon={ Folder }
                 disabled={ !domain }
                 toggle="modal"
                 target={ id.current.projectSelect }
@@ -254,6 +258,7 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
               <DropdownItem
                 key="reopen-project"
                 label="Reopen"
+                LIcon={ Folder2Open }
                 disabled={ !domain }
                 toggle="modal"
                 target={ id.current.projectSelect }
@@ -262,6 +267,7 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
               <DropdownItem
                 key="delete-project"
                 label="Delete"
+                LIcon={ FolderX }
                 disabled={ !domain || (!["public", "private"].includes(domain) && privilege !== "root") }
                 toggle="modal"
                 target={ id.current.projectSelect }
@@ -275,6 +281,7 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
               <DropdownItem
                 key="upload-bundle"
                 label="Upload"
+                LIcon={ JournalArrowUp }
                 disabled={ !domain || !project }
                 toggle="modal"
                 target={ id.current.bundleUpload }
@@ -282,6 +289,7 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
               <DropdownItem
                 key="delete-bundle"
                 label="Delete"
+                LIcon={ JournalX }
                 disabled={ !domain || !project || (!["public", "private"].includes(domain) && privilege != "root") }
                 toggle="modal"
                 target={ id.current.bundleSelect }

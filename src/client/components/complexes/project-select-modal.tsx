@@ -1,6 +1,8 @@
 import * as React from "react"
 import { useEffect, useRef, useCallback, useReducer } from "react"
 
+import { Search } from "react-bootstrap-icons"
+
 import Axios from "axios"
 import { AxiosResponse, AxiosError } from "axios"
 
@@ -171,8 +173,8 @@ const ProjectSelectModal = React.memo<ProjectSelectModalProps>(({
           <TextForm
             ref={ refs.current.text }
             className="mb-3"
+            label={ <Search /> }
             valid={ true }
-            label="Filter"
             onChange={ handleChangeFilter }
           />
           <ListForm

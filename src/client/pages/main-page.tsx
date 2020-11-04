@@ -1,6 +1,9 @@
 import * as React from "react"
 import { useEffect, useRef, useCallback, useReducer } from "react"
 
+import { ChatRightText, HourglassSplit, HourglassTop, InfoCircle, Person, ReplyAllFill } from "react-bootstrap-icons"
+import { Display, FileEarmarkText, Search } from "react-bootstrap-icons"
+
 import Axios from "axios"
 import { AxiosResponse, AxiosError } from "axios"
 
@@ -257,23 +260,27 @@ const MainPage: React.FC<MainPageProps> = ({
               items={ [
                 <DropdownHeader
                   key="header"
-                  label={ `Version: ${ version }` }
+                  label={ `version: ${ version }` }
+                  LIcon={ InfoCircle }
                 />,
                 <DropdownDivider key="divider-1" />,
                 <DropdownHeader
                   key="user"
-                  label={ `User: ${ decodeURI(alias) }` }
+                  label={ decodeURI(alias) }
+                  LIcon={ Person }
                 />,
                 <DropdownDivider key="divider-2" />,
                 <DropdownItem
                   key="token-status"
                   label="Show Token Status"
+                  LIcon={ HourglassSplit }
                   toggle="modal"
                   target={ id.current.tokenStatus }
                 />,
                 <DropdownItem
                   key="token-update"
                   label="Update Token"
+                  LIcon={ HourglassTop }
                   toggle="modal"
                   target={ id.current.tokenUpdate }
                 />,
@@ -282,6 +289,7 @@ const MainPage: React.FC<MainPageProps> = ({
                   ref={ ref.current.whatsnew }
                   key="whatsnew"
                   label="Show What's New"
+                  LIcon={ ChatRightText }
                   toggle="modal"
                   target={ id.current.whatsnew }
                 />,
@@ -289,6 +297,7 @@ const MainPage: React.FC<MainPageProps> = ({
                 <DropdownItem
                   key="logout"
                   label="Logout"
+                  LIcon={ ReplyAllFill }
                   onClick={ handleClickLogout }
                 />
               ] }
@@ -313,6 +322,7 @@ const MainPage: React.FC<MainPageProps> = ({
             left={
               <TabFrame
                 labels={ ["Files", "Search"] }
+                LIcons={ [ FileEarmarkText, Search ] }
                 items={ [
                   <FileExplorerBox
                     path={ ProjectPath.strictEncodeFiles(data.current.domain, data.current.project, data.current.bundle) }
@@ -329,6 +339,7 @@ const MainPage: React.FC<MainPageProps> = ({
             right={
               <TabFrame
                 labels={ ["Viewer"] }
+                LIcons={ [ Display ] }
                 items={ [
                   <>
                     { !data.current.terminal &&

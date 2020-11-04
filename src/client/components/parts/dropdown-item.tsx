@@ -1,9 +1,12 @@
 import * as React from "react"
 import { useCallback } from "react"
 
+import { Icon, Dot } from "react-bootstrap-icons"
+
 type DropdownItemProps = {
   className?: string,
   label?    : string,
+  LIcon?    : Icon,
   title?    : string,
   disabled? : boolean,
   toggle?   : string,
@@ -14,6 +17,7 @@ type DropdownItemProps = {
 const DropdownItem = React.forwardRef<HTMLButtonElement, DropdownItemProps>(({
   className = "",
   label     = "action",
+  LIcon     = Dot,
   title     = "",
   disabled  = false,
   toggle    = "",
@@ -37,7 +41,7 @@ const DropdownItem = React.forwardRef<HTMLButtonElement, DropdownItemProps>(({
       data-target={ "#" + target }
       onClick={ handleClick }
     >
-      { label }
+      { LIcon && <LIcon className="mr-2" /> }{ label }
     </button>
   )
 })

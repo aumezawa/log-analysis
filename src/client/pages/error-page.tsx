@@ -1,5 +1,7 @@
 import * as React from "react"
 
+import { InfoCircle } from "react-bootstrap-icons"
+
 import LayerFrame from "../components/frames/layer-frame"
 import CenterFrame from "../components/frames/center-frame"
 
@@ -24,7 +26,13 @@ const ErrorPage: React.FC<ErrorPageProps> = ({
       head={
         <NavigatorBar
           title={ project }
-          items={ [<DropdownHeader key="header" label={ `Version: ${ version }` } />] }
+          items={ [
+            <DropdownHeader
+              key="header"
+              label={ `version: ${ version }` }
+              LIcon={ InfoCircle }
+            />
+          ] }
         />
       }
       body={ <CenterFrame body={ <ErrorBox /> } /> }

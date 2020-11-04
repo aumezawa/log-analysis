@@ -1,6 +1,9 @@
 import * as React from "react"
 import { useEffect, useRef, useCallback, useReducer } from "react"
 
+import { Search } from "react-bootstrap-icons"
+import { DisplayFill, Display, Download } from "react-bootstrap-icons"
+
 import Axios from "axios"
 import { AxiosResponse, AxiosError } from "axios"
 
@@ -126,8 +129,8 @@ const FileExplorerBox = React.memo<FileExplorerBoxProps>(({
       <TextForm
         ref={ refs.current.text }
         className="mb-3"
+        label={ <Search /> }
         valid={ true }
-        label="Filter"
         onChange={ handleChangeFilter }
       />
       <FileTreeRoot
@@ -137,16 +140,19 @@ const FileExplorerBox = React.memo<FileExplorerBoxProps>(({
           <DropdownItem
             key="view"
             label="view"
+            LIcon={ Display }
             onClick={ handleClickView }
           />,
           <DropdownItem
             key="terminal"
             label="legacy view"
+            LIcon={ DisplayFill }
             onClick={ handleClickTerminal }
           />,
           <DropdownItem
             key="download"
             label="download"
+            LIcon={ Download }
             onClick={ handleClickDownload }
           />
         ] }

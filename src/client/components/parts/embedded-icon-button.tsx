@@ -1,8 +1,10 @@
 import * as React from "react"
 import { useCallback } from "react"
 
-type EmbeddedButtonProps= {
-  label?  : string,
+import { Icon, Dot } from "react-bootstrap-icons"
+
+type EmbeddedIconButtonProps= {
+  LIcon?  : Icon,
   color?  : "primary" | "secondary" | "success" | "warning" | "danger" | "info" | "light" | "dark",
   title?  : string,
   toggle? : string,
@@ -10,8 +12,8 @@ type EmbeddedButtonProps= {
   onClick?: (targetValue: string, parentValue: string) => void
 }
 
-const EmbeddedButton = React.memo<EmbeddedButtonProps>(({
-  label   = "button",
+const EmbeddedIconButton = React.memo<EmbeddedIconButtonProps>(({
+  LIcon   = Dot,
   color   = "primary",
   title   = "",
   toggle  = "",
@@ -26,15 +28,17 @@ const EmbeddedButton = React.memo<EmbeddedButtonProps>(({
 
   return (
     <span
-      className={ `badge embedded-button badge-${ color }` }
+      className="embedded-button"
       title={ title }
       data-toggle={ toggle }
       data-target={ "#" + target }
       onClick={ handleClick }
     >
-      { label }
+      <LIcon
+        className={ `text-${ color }` }
+      />
     </span>
   )
 })
 
-export default EmbeddedButton
+export default EmbeddedIconButton

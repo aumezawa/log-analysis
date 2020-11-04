@@ -1,10 +1,12 @@
 import * as React from "react"
 import { useEffect, useRef, useCallback, useReducer } from "react"
 
+import { Hash, ListOl, Reply, Search } from "react-bootstrap-icons"
+
 import ModalFrame from "../frames/modal-frame"
 import TextFilterForm from "../sets/text-filter-form"
 import DateFilterForm from "../sets/date-filter-form"
-import EmbeddedButton from "../parts/embedded-button"
+import EmbeddedIconButton from "../parts/embedded-icon-button"
 import SelectForm from "../parts/select-form"
 import Pagination from "../parts/pagination"
 import TextForm from "../parts/text-form"
@@ -257,9 +259,9 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
           header.push(
             <th key={ label } scope="col" title={ label }>
               { label }
-              <EmbeddedButton
+              <EmbeddedIconButton
                 key={ label }
-                label="filter"
+                LIcon={ Search }
                 color={ (label in env.current.filters) ? "success" : "light" }
                 toggle="modal"
                 target={ content.format.label[label] === "text" ? id.current.textFilter : id.current.dateFilter }
@@ -449,7 +451,7 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
         <SelectForm
           ref={ ref.current.select }
           className="flex-area-left"
-          label="rows"
+          label={ <ListOl /> }
           options={ ROWS }
           onChange={ handleChangeMaxRow }
         />
@@ -462,8 +464,8 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
         <TextForm
           ref={ ref.current.text }
           className="flex-area-right"
-          label="line"
-          button="GoTo"
+          label={ <Hash /> }
+          button={ <Reply /> }
           size={ 4 }
           valid={ input.current.line > 0 && input.current.line <= env.current.rows }
           validation={ false }

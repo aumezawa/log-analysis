@@ -1,6 +1,8 @@
 import * as React from "react"
 import { useRef } from "react"
 
+import { Icon } from "react-bootstrap-icons"
+
 import TabLabel from "../parts/tab-label"
 import TabItem from "../parts/tab-item"
 
@@ -9,6 +11,7 @@ import UniqueId from "../../lib/unique-id"
 type TabFrameProps = {
   className?: string,
   labels    : Array<string>,
+  LIcons?   : Array<Icon>,
   items     : Array<JSX.Element>,
   refs      : Array<React.RefObject<HTMLAnchorElement>>,
   show?     : number,
@@ -18,6 +21,7 @@ type TabFrameProps = {
 const TabFrame: React.FC<TabFrameProps> = ({
   className = "",
   labels    = undefined,
+  LIcons    = [],
   items     = undefined,
   refs      = undefined,
   show      = 0,
@@ -37,6 +41,7 @@ const TabFrame: React.FC<TabFrameProps> = ({
               ref={ refs[index] }
               key={ `${ index }` }
               label={ label }
+              LIcon={ LIcons[index] }
               labelId={ id.current.label + index }
               itemId={ id.current.item + index }
               active={ index === show }
