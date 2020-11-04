@@ -94,6 +94,7 @@ const BundleSelectModal = React.memo<BundleSelectModalProps>(({
         return
       })
       .catch((err: AxiosError) => {
+        data.current.bundles = []
         forceUpdate()
         alert(err.response.data.msg)
         return

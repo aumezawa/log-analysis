@@ -68,6 +68,7 @@ const ProjectSelectModal = React.memo<ProjectSelectModalProps>(({
         return
       })
       .catch((err: AxiosError) => {
+        data.current.projects = []
         forceUpdate()
         alert(err.response.data.msg)
         return
