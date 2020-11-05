@@ -39,7 +39,7 @@ const Pagination = React.memo<PaginationProps>(({
       if (value < first || value > last) {
         return (
           <li className="page-item" key={ `${ value }` }>
-            <span className="page-link">&middot;</span>
+            <span className="page-link"> - </span>
           </li>
         )
       }
@@ -55,11 +55,11 @@ const Pagination = React.memo<PaginationProps>(({
     <nav className={ className }>
       <ul className="pagination">
         <li className="page-item">
-          <a className="page-link" href="#" title={ `${ first }` } onClick={ handleClick }>&laquo;</a>
+          <a className="page-link" href="#" title={ `${ first }` } onClick={ handleClick }>{ "<" }</a>
         </li>
         { renderItem() }
         <li className="page-item">
-          <a className="page-link" href="#" title={ `${ last }` } onClick={ handleClick }>&raquo;</a>
+          <a className="page-link" href="#" title={ `${ last }` } onClick={ handleClick }>{ ">" }</a>
         </li>
       </ul>
     </nav>

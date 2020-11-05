@@ -4,6 +4,7 @@ type MessageCardProps = {
   className?: string,
   message?  : string,
   success?  : boolean,
+  warning?  : boolean,
   failure?  : boolean
 }
 
@@ -11,13 +12,22 @@ const MessageCard = React.memo<MessageCardProps>(({
   className = "my-3",
   message   = "No message",
   success   = false,
+  warning   = false,
   failure   = false
-}) => (
-  <div className={ `card ${ className }` }>
-    <div className={ `card-body ${ success && "bg-success" } ${ failure && "bg-danger" } ${ success || failure || "bg-light" }` }>
-      { message }
+}) => {
+  let color: string = "bg-info"
+
+  color = (success) ? "bg-success" : color
+  color = (warning) ? "bg-warning" : color
+  color = (failure) ? "bg-danger"  : color
+
+  return (
+    <div className={ `card ${ className }` }>
+      <div className={ `card-body ${ color }` }>
+        { message }
+      </div>
     </div>
-  </div>
-))
+  )
+})
 
 export default MessageCard

@@ -21,7 +21,7 @@ const Table: React.FC<TableProps> = ({
             <tr key={ `${ index }` }>
               {
                 line.map((cell: string, index: number) => (
-                  <td key={ `${ index }` }>
+                  <td key={ `${ index }` } className="table-main-content">
                     { cell }
                   </td>
                 ))

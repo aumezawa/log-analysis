@@ -1,6 +1,9 @@
 import * as React from "react"
 import { useEffect, useRef, useCallback, useReducer } from "react"
 
+import { Search } from "react-bootstrap-icons"
+import { Display, Download, Terminal } from "react-bootstrap-icons"
+
 import Axios from "axios"
 import { AxiosResponse, AxiosError } from "axios"
 
@@ -26,23 +29,23 @@ const FileExplorerBox = React.memo<FileExplorerBoxProps>(({
 }) => {
   const [ignored, forceUpdate] = useReducer(x => x + 1, 0)
 
-  const ref = useRef({
+  const refs = useRef({
     text  : React.createRef<HTMLInputElement>()
   })
 
   const data = useRef({
     filter: "",
     files : {
-      name    : "",
+      name    : "Empty",
       file    : false,
       children: []
     }
   })
 
   useEffect(() => {
-    data.current.filter = ref.current.text.current.value = ""
+    data.current.filter = refs.current.text.current.value = ""
     data.current.files = {
-      name    : "",
+      name    : "Empty",
       file    : false,
       children: []
     }
@@ -124,10 +127,10 @@ const FileExplorerBox = React.memo<FileExplorerBoxProps>(({
   return (
     <div className={ `${ className } text-left text-monospace` }>
       <TextForm
-        ref={ ref.current.text }
+        ref={ refs.current.text }
         className="mb-3"
+        label={ <Search /> }
         valid={ true }
-        label="Filter"
         onChange={ handleChangeFilter }
       />
       <FileTreeRoot
@@ -137,16 +140,19 @@ const FileExplorerBox = React.memo<FileExplorerBoxProps>(({
           <DropdownItem
             key="view"
             label="view"
+            LIcon={ Display }
             onClick={ handleClickView }
           />,
           <DropdownItem
             key="terminal"
             label="legacy view"
+            LIcon={ Terminal }
             onClick={ handleClickTerminal }
           />,
           <DropdownItem
             key="download"
             label="download"
+            LIcon={ Download }
             onClick={ handleClickDownload }
           />
         ] }

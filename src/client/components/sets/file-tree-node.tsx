@@ -1,6 +1,8 @@
 import * as React from "react"
 import { useState, useRef, useCallback } from "react"
 
+import { Icon, Folder, Folder2Open, FileEarmarkText } from "react-bootstrap-icons"
+
 import FileTreeLeaf from "../sets/file-tree-leaf"
 
 import * as Path from "path"
@@ -8,19 +10,25 @@ import * as Path from "path"
 import UniqueId from "../../lib/unique-id"
 
 type FileTreeNodeProps = {
-  node    : DirectoryType,
-  path?   : string,
-  depth?  : number,
-  filter? : string,
-  actions?: Array<JSX.Element>
+  node        : DirectoryType,
+  NIconOpen?  : Icon,
+  NIconClose? : Icon,
+  LIcon?      : Icon,
+  path?       : string,
+  depth?      : number,
+  filter?     : string,
+  actions?    : Array<JSX.Element>
 }
 
 const FileTreeNode: React.FC<FileTreeNodeProps> = ({
-  node    = undefined,
-  path    = "/",
-  depth   = 0,
-  filter  = "",
-  actions = []
+  node        = undefined,
+  NIconOpen   = Folder2Open,
+  NIconClose  = Folder,
+  LIcon       = FileEarmarkText,
+  path        = "/",
+  depth       = 0,
+  filter      = "",
+  actions     = []
 }) => {
   const [open, setOpen] = useState<boolean>(false)
 
@@ -40,6 +48,7 @@ const FileTreeNode: React.FC<FileTreeNodeProps> = ({
           <FileTreeLeaf
             key={ childLeaf.name }
             leaf={ childLeaf }
+            LIcon={ LIcon }
             path={ (childLeaf.link) || Path.join(path, childLeaf.name) }
             depth={ depth + 1 }
             filter={ filter }
@@ -51,6 +60,9 @@ const FileTreeNode: React.FC<FileTreeNodeProps> = ({
         return (
           <FileTreeNode
             key={ childNode.name }
+            NIconOpen={ NIconOpen }
+            NIconClose={ NIconClose }
+            LIcon={ LIcon }
             node={ childNode }
             path={ Path.join(path, childNode.name) }
             depth={ depth + 1 }
@@ -80,7 +92,7 @@ const FileTreeNode: React.FC<FileTreeNodeProps> = ({
               { "-".repeat(depth) }
             </div>
             <div className="list-group-item-inner-center text-nowrap">
-              { open ? "[-]" : "[+]" }
+              { open ? <NIconOpen /> : <NIconClose /> }
             </div>
             <div className="list-group-item-inner-right flex-main-area text-break">
               { node && node.name }
@@ -92,7 +104,7 @@ const FileTreeNode: React.FC<FileTreeNodeProps> = ({
         </>
       }
       {
-        !!filter &&
+        filter &&
         <>
           <ul className="list-group">
             { renderChildren() }

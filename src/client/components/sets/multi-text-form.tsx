@@ -4,16 +4,24 @@ import { useState, useRef, useCallback } from "react"
 import TextForm from "../parts/text-form"
 import ButtonSet from "../sets/button-set"
 
-type ProjectCreateFormProps = {
+type MultiTextFormProps = {
   className?: string,
+  label?    : string,
+  auxiliary?: string,
+  button?   : string,
   disabled? : boolean,
+  accept?   : RegExp,
   onSubmit? : (name: string, description: string) => void,
   onCancel? : () => void
 }
 
-const ProjectCreateForm = React.memo<ProjectCreateFormProps>(({
+const MultiTextForm = React.memo<MultiTextFormProps>(({
   className = "",
+  label     = "No label",
+  auxiliary = null,
+  button    = "Sumbit",
   disabled  = false,
+  accept    = null,
   onSubmit  = undefined,
   onCancel  = undefined
 }) => {
@@ -21,32 +29,32 @@ const ProjectCreateForm = React.memo<ProjectCreateFormProps>(({
 
   const ref = useRef({
     name: React.createRef<HTMLInputElement>(),
-    desc: React.createRef<HTMLInputElement>()
+    aux : React.createRef<HTMLInputElement>()
   })
 
   const data = useRef({
     name: "",
-    desc: ""
+    aux : ""
   })
 
   const handleChangeName = useCallback((value: string) => {
     data.current.name = value
-    setValid(!!value.match(/^[0-9a-zA-Z#@_+-]{1,}$/))
+    setValid(!!value.match(accept))
   }, [true])
 
   const handleChangeDescription = useCallback((value: string) => {
-    data.current.desc = value
+    data.current.aux = value
   }, [true])
 
   const handleSubmit = useCallback(() => {
     if (onSubmit) {
-      onSubmit(data.current.name, data.current.desc)
+      onSubmit(data.current.name, data.current.aux)
     }
   }, [onSubmit])
 
   const handleCancel = useCallback(() => {
     data.current.name = ref.current.name.current.value = ""
-    data.current.desc = ref.current.desc.current.value = ""
+    data.current.aux  = ref.current.aux.current.value  = ""
     setValid(false)
     if (onCancel) {
       onCancel()
@@ -59,20 +67,22 @@ const ProjectCreateForm = React.memo<ProjectCreateFormProps>(({
         ref={ ref.current.name }
         className="mb-3"
         valid={ valid }
-        label="project name"
+        label={ label }
         disabled={ disabled }
         onChange={ handleChangeName }
       />
-      <TextForm
-        ref={ ref.current.desc }
-        className="mb-3"
-        valid={ true }
-        label="description"
-        disabled={ disabled }
-        onChange={ handleChangeDescription }
-      />
+      { auxiliary &&
+        <TextForm
+          ref={ ref.current.aux }
+          className="mb-3"
+          valid={ true }
+          label={ auxiliary }
+          disabled={ disabled }
+          onChange={ handleChangeDescription }
+        />
+      }
       <ButtonSet
-        submit="Create"
+        submit={ button }
         cancel="Clear"
         valid={ valid }
         disabled={ disabled }
@@ -83,4 +93,4 @@ const ProjectCreateForm = React.memo<ProjectCreateFormProps>(({
   )
 })
 
-export default ProjectCreateForm
+export default MultiTextForm

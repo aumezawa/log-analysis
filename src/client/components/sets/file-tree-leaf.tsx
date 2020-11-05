@@ -1,9 +1,12 @@
 import * as React from "react"
 
+import { Icon, FileEarmarkText } from "react-bootstrap-icons"
+
 import DropdownButton from "../parts/dropdown-button"
 
 type FileTreeLeafProps = {
   leaf    : FileType,
+  LIcon?  : Icon,
   path?   : string,
   depth?  : number,
   filter? : string,
@@ -12,6 +15,7 @@ type FileTreeLeafProps = {
 
 const TreeLeaf: React.FC<FileTreeLeafProps> = ({
   leaf    = undefined,
+  LIcon   = FileEarmarkText,
   path    = "/",
   depth   = 0,
   filter  = "",
@@ -25,15 +29,21 @@ const TreeLeaf: React.FC<FileTreeLeafProps> = ({
         <div className="list-group-item-inner-left text-nowrap">
           { "-".repeat(depth) }
         </div>
+        <div className="list-group-item-inner-center text-nowrap">
+          <LIcon />
+        </div>
         <div className="list-group-item-inner-right flex-main-area text-break">
           { leaf.name }
         </div>
       </>
     }
     {
-      !!filter &&
+      filter &&
       <>
-        <div className="list-group-item-inner-single flex-main-area text-break">
+        <div className="list-group-item-inner-left text-nowrap">
+          <LIcon />
+        </div>
+        <div className="list-group-item-inner-right flex-main-area text-break">
           { leaf.name }
         </div>
       </>

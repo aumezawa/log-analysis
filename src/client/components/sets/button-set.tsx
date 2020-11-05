@@ -51,7 +51,7 @@ const ButtonSet = React.memo<ButtonSetProps>(({
           </button>
         </div>
         {
-          !!cancel &&
+          cancel &&
           <div className="col-auto">
             <button
               className="btn btn-secondary"

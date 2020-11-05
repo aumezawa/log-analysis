@@ -1,38 +1,41 @@
 import * as React from "react"
-import { useRef, useCallback, useImperativeHandle } from "react"
+import { useRef, useEffect, useCallback, useReducer, useImperativeHandle } from "react"
 
 import UniqueId from "../../lib/unique-id"
 
 type RadioFormProps = {
-  className?      : string,
-  labels?         : Array<string>,
-  disabled?       : boolean,
-  checked?        : number,
-  onChange?       : (value: string) => void
+  className?: string,
+  labels?   : Array<string>,
+  onChange? : (value: string) => void
 }
 
-const RadioForm = React.memo(React.forwardRef<RedioFromReference, RadioFormProps>(({
-  className       = "",
-  labels          = [],
-  disabled        = false,
-  checked         = 0,
-  onChange        = undefined
+const RadioForm = React.memo(React.forwardRef<RedioFormReference, RadioFormProps>(({
+  className = "",
+  labels    = [],
+  onChange  = undefined
 }, ref) => {
+  const [ignored, forceUpdate] = useReducer(x => x + 1, 0)
+
   const refs = useRef(labels.map(() => React.createRef<HTMLInputElement>()))
 
   const id = useRef({
     radio: "radio-" + UniqueId()
   })
 
+  useEffect(() => {
+    refs.current = labels.map(() => React.createRef<HTMLInputElement>())
+    forceUpdate()
+  }, [labels.toString()])
+
   useImperativeHandle(ref, () => ({
-    checked(target: number) {
-      labels.forEach((label: string, index: number) => {
-        if (!!refs.current[index].current) {
-          refs.current[index].current.checked = (index === target)
+    checked: (target: number) => {
+      refs.current.forEach((ref: React.RefObject<HTMLInputElement>, index: number) => {
+        if (ref.current) {
+          ref.current.checked = (index === target)
         }
       })
     }
-  }))
+  }), [labels.toString()])
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     if (onChange) {
@@ -53,7 +56,6 @@ const RadioForm = React.memo(React.forwardRef<RedioFromReference, RadioFormProps
               name={ id.current.radio }
               value={ label }
               defaultChecked={ index === 0 }
-              disabled={ disabled }
               onChange={ handleChange }
             />
             <label
@@ -67,6 +69,10 @@ const RadioForm = React.memo(React.forwardRef<RedioFromReference, RadioFormProps
       }
     </div>
   )
-}))
+}), (prevProps: RadioFormProps, nextProps: RadioFormProps) => (
+  (prevProps.className === nextProps.className)
+  && (prevProps.labels.toString() === nextProps.labels.toString())
+  && (prevProps.onChange === nextProps.onChange)
+))
 
 export default RadioForm

@@ -22,11 +22,27 @@
   z-index: 3 !important;
 }
 
-.table-main-content {
-  word-break : break-all !important;
-  word-wrap : break-word !important;;
+.table-header-fixed th {
+  width: 1rem !important;
+  white-space: nowrap !important;
 }
 
-.table-sub-content {
+.table-header-fixed td.table-main-content {
+  word-break : break-all !important;
+  word-wrap : break-word !important;
+}
+
+.table-header-fixed td.table-sub-content {
+  width: 1rem !important;
   white-space: nowrap !important;
+}
+
+.table-header-fixed tbody th {
+  padding-left: 0.5rem !important;
+  padding-right: 0.5rem !important;
+}
+
+.table-header-fixed tbody td {
+  padding-left: 0.25rem !important;
+  padding-right: 0.25rem !important;
 }

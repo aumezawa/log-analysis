@@ -249,7 +249,6 @@ Access with your browser or issue HTTP requests.
   - method: `GET`
   - header: `{ X-Access-Token: <string> }`
   - path: `/api/v1/log/:domain/projects/:projectName/bundles/:bundleId/files/:filepath`
-  - query: `{ line: [1-9]{1}[0-9]+, filter: <string> }`
 - response
   - data: `{ msg: <string>, content: <string>, size: <number>, modifiedAt: <string> }`
 

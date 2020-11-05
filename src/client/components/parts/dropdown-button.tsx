@@ -1,11 +1,14 @@
 import * as React from "react"
 import { useRef } from "react"
 
+import { Icon } from "react-bootstrap-icons"
+
 import UniqueId from "../../lib/unique-id"
 
 type DropdownButtonProps = {
   className?: string,
   label?    : string,
+  LIcon?    : Icon,
   title?    : string,
   align?    : "left" | "right",
   items?    : Array<JSX.Element>,
@@ -15,7 +18,8 @@ type DropdownButtonProps = {
 const DropdownButton: React.FC<DropdownButtonProps> = ({
   className = "",
   label     = "Dropdown",
-  title     = undefined,
+  LIcon     = null,
+  title     = "",
   align     = "left",
   items     = [],
   shape     = "normal"
@@ -34,7 +38,7 @@ const DropdownButton: React.FC<DropdownButtonProps> = ({
         aria-haspopup="true"
         aria-expanded="false"
       >
-        { label }
+        { LIcon && <LIcon className="mr-2" /> }{ label }
       </button>
       <div
         className={ `dropdown-menu dropdown-menu-${ align }` }

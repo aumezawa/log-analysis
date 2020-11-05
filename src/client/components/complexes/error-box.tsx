@@ -5,7 +5,7 @@ import * as Cookie from "js-cookie"
 
 import Environment from "../../lib/environment"
 
-import MessageCard from "../parts/message-card"
+import Message from "../parts/message"
 import ButtonSet from "../sets/button-set"
 
 type ErrorBoxProps = {
@@ -49,7 +49,7 @@ const ErrorBox = React.memo<ErrorBoxProps>(({
 
   return (
     <div className={ className }>
-      <MessageCard
+      <Message
         message={ message }
         failure={ true }
       />

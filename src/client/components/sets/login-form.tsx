@@ -5,30 +5,30 @@ import TextForm from "../parts/text-form"
 import ButtonSet from "../sets/button-set"
 
 type LoginFormProps = {
-  className?: string,
-  username? : string,
-  domain?   : string,
-  disabled? : boolean,
-  onSubmit? : (username: string, password: string) => void,
-  onCancel? : () => void,
-  allowUser?: RegExp,
-  allowPass?: RegExp
+  className?  : string,
+  username?   : string,
+  domain?     : string,
+  disabled?   : boolean,
+  acceptUser? : RegExp,
+  acceptPass? : RegExp,
+  onSubmit?   : (username: string, password: string) => void,
+  onCancel?   : () => void
 }
 
 const LoginForm = React.memo<LoginFormProps>(({
-  className = "",
-  username  = null,
-  domain    = null,
-  disabled  = false,
-  onSubmit  = undefined,
-  onCancel  = undefined,
-  allowUser = /^[0-9a-zA-Z]{4,16}$/,
-  allowPass = /^[0-9a-zA-Z]{4,16}$/
+  className   = "",
+  username    = null,
+  domain      = null,
+  disabled    = false,
+  acceptUser  = /^[0-9a-zA-Z]{4,16}$/,
+  acceptPass  = /^[0-9a-zA-Z]{4,16}$/,
+  onSubmit    = undefined,
+  onCancel    = undefined
 }) => {
   const [validUser, setValidUser] = useState<boolean>(false)
   const [validPass, setValidPass] = useState<boolean>(false)
 
-  const ref = useRef({
+  const refs = useRef({
     username: React.createRef<HTMLInputElement>(),
     password: React.createRef<HTMLInputElement>()
   })
@@ -40,22 +40,22 @@ const LoginForm = React.memo<LoginFormProps>(({
 
   useEffect(() => {
     if (username) {
-      data.current.username = ref.current.username.current.value = username
-      setValidUser(!!username.match(allowUser))
+      data.current.username = refs.current.username.current.value = username
+      setValidUser(!!username.match(acceptUser))
     }
   }, [username])
 
   const handleChangeUsername = useCallback((value: string) => {
     if (!username) {
       data.current.username = value
-      setValidUser(!!value.match(allowUser))
+      setValidUser(!!value.match(acceptUser))
     }
-  }, [allowUser])
+  }, [acceptUser])
 
   const handleChangePassword = useCallback((value: string) => {
     data.current.password = value
-    setValidPass(!!value.match(allowPass))
-  }, [allowPass])
+    setValidPass(!!value.match(acceptPass))
+  }, [acceptPass])
 
   const handleSubmit = useCallback(() => {
     if (onSubmit) {
@@ -65,10 +65,10 @@ const LoginForm = React.memo<LoginFormProps>(({
 
   const handleCancel = useCallback(() => {
     if (!username) {
-      data.current.username = ref.current.username.current.value = ""
+      data.current.username = refs.current.username.current.value = ""
       setValidUser(false)
     }
-    data.current.password = ref.current.password.current.value = ""
+    data.current.password = refs.current.password.current.value = ""
     setValidPass(false)
     if (onCancel) {
       onCancel()
@@ -78,7 +78,7 @@ const LoginForm = React.memo<LoginFormProps>(({
   return (
     <div className={ className }>
       <TextForm
-        ref={ ref.current.username }
+        ref={ refs.current.username }
         className="mb-3"
         valid={ validUser }
         label="username"
@@ -87,7 +87,7 @@ const LoginForm = React.memo<LoginFormProps>(({
         onChange={ handleChangeUsername }
       />
       <TextForm
-        ref={ ref.current.password }
+        ref={ refs.current.password }
         className="mb-3"
         valid={ validPass }
         label="password"

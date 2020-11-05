@@ -1,6 +1,6 @@
 {
   "name": "log-analysis",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "description": "log analysis tools",
   "config": {
     "domains": "public,private",
@@ -14,7 +14,7 @@
     "certificate-path": "./local/cert/server-cert.pem",
     "log-path": "./local/log",
     "storage-path": "../data",
-    "date-format": "[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3}Z"
+    "date-format": "([0-9]{4}-[0-9]{2}-[0-9]{2}[T ][0-9]{2}:[0-9]{2}:[0-9]{2}.?[0-9]{0,3}Z?):? "
   },
   "scripts": {
     "add:user": "node ./bin/add-localuser.js",
@@ -55,6 +55,7 @@
     "node-pty": "^0.9.0",
     "popper.js": "^1.16.1",
     "react": "^16.13.1",
+    "react-bootstrap-icons": "^1.1.0",
     "react-dom": "^16.13.1",
     "serve-favicon": "^2.5.0",
     "socket.io": "^2.3.0",

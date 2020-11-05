@@ -6,6 +6,10 @@
   padding-right: 0rem !important;
 }
 
+.list-group-item-container > .list-group-item-inner-single, .list-group-item-inner-left, .list-group-item-inner-center, .list-group-item-inner-right {
+  align-self: center !important;
+}
+
 .list-group-item-container > .list-group-item-inner {
   display: flex !important;
 }

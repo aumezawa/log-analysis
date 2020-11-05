@@ -1,6 +1,8 @@
 import * as React from "react"
 import { useEffect, useRef, useCallback, useReducer } from "react"
 
+import { Search } from "react-bootstrap-icons"
+
 import Axios from "axios"
 import { AxiosResponse, AxiosError } from "axios"
 
@@ -14,45 +16,46 @@ import TextForm from "../parts/text-form"
 import ListForm from "../parts/list-form"
 import ButtonSet from "../sets/button-set"
 
-type ProjectManageModalProps = {
+type ProjectSelectModalProps = {
   id        : string,
   domain?   : string,
-  action?   : string,   // NOTE: "delete" | "open" | "close"
+  action?   : string,   // NOTE: "open" | "delete" | "reopen" | "close"
   reload?   : number,
-  onSubmit? : (value: string) => void
+  onSubmit? : (projectName: string) => void
 }
 
-const ProjectManageModal = React.memo<ProjectManageModalProps>(({
+const ProjectSelectModal = React.memo<ProjectSelectModalProps>(({
   id        = null,
   domain    = null,
-  action    = "delete",
+  action    = "open",
   reload    = 0,
   onSubmit  = undefined
 }) => {
   const [ignored, forceUpdate] = useReducer(x => x + 1, 0)
 
-  const ref = useRef({
-    text  : React.createRef<HTMLInputElement>()
+  const refs = useRef({
+    text  : React.createRef<HTMLInputElement>(),
+    list  : useRef({} as ListFormReference)
   })
 
   const data = useRef({
-    processing: false,
-    filter    : "",
-    project   : null,
-    projects  : []
+    filter      : "",
+    project     : null,
+    projects    : []
+  })
+
+  const status = useRef({
+    processing  : false
   })
 
   useEffect(() => {
     reloadProject()
-  }, [reload])
-
-  useEffect(() => {
-    data.current.filter = ref.current.text.current.value = ""
+    data.current.filter = refs.current.text.current.value = ""
     data.current.project = null
-    data.current.projects = []
-  }, [domain])
+    setImmediate(() => refs.current.list.current.clear())
+  }, [domain, action, reload])
 
-  const reloadProject = () => {
+  const reloadProject = useCallback(() => {
     if (domain) {
       const uri = `${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain) }/projects`
       Axios.get(uri, {
@@ -65,14 +68,16 @@ const ProjectManageModal = React.memo<ProjectManageModalProps>(({
         return
       })
       .catch((err: AxiosError) => {
+        data.current.projects = []
         forceUpdate()
         alert(err.response.data.msg)
         return
       })
     } else {
+      data.current.projects = []
       forceUpdate()
     }
-  }
+  }, [domain])
 
   const handleChangeFilter = useCallback((value: string) => {
     if (value.length !== 1) {
@@ -87,9 +92,15 @@ const ProjectManageModal = React.memo<ProjectManageModalProps>(({
   }, [true])
 
   const handleSubmit = useCallback(() => {
-    const uri = `${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, data.current.project) }`
+    if (action === "open") {
+      if (onSubmit) {
+        onSubmit(data.current.project)
+      }
+      return
+    }
 
-    data.current.processing = true
+    const uri = `${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, data.current.project) }`
+    status.current.processing = true
     forceUpdate()
 
     if (action === "delete") {
@@ -102,19 +113,21 @@ const ProjectManageModal = React.memo<ProjectManageModalProps>(({
           onSubmit(data.current.project)
         }
         data.current.project = null
-        data.current.processing = false
+        status.current.processing = false
         reloadProject()
         return
       })
       .catch((err: AxiosError) => {
-        data.current.processing = false
+        status.current.processing = false
         forceUpdate()
         alert(err.response.data.msg)
         return
       })
-    } else {
+    }
+
+    if (action === "reopen" || action === "close") {
       Axios.put(uri, {
-        status  : action
+        status  : (action === "reopen") ? "open" : "close"
       }, {
         headers : { "X-Access-Token": Cookie.get("token") || "" },
         data    : {}
@@ -124,12 +137,12 @@ const ProjectManageModal = React.memo<ProjectManageModalProps>(({
           onSubmit(data.current.project)
         }
         data.current.project = null
-        data.current.processing = false
+        status.current.processing = false
         reloadProject()
         return
       })
       .catch((err: AxiosError) => {
-        data.current.processing = false
+        status.current.processing = false
         forceUpdate()
         alert(err.response.data.msg)
         return
@@ -139,7 +152,10 @@ const ProjectManageModal = React.memo<ProjectManageModalProps>(({
 
   const listLabel = () => (
     data.current.projects.filter((project: ProjectInfo) => (
-      (action === "delete") || (action !== project.status)
+      (action === "open" && project.status === "open")
+      || (action === "delete")
+      || (action === "reopen" && project.status === "close")
+      || (action === "close" && project.status === "open")
     )).filter((project: ProjectInfo) => (
       project.name.includes(data.current.filter) || project.description.includes(data.current.filter)
     )).map((project: ProjectInfo) => (
@@ -156,13 +172,14 @@ const ProjectManageModal = React.memo<ProjectManageModalProps>(({
       body={
         <>
           <TextForm
-            ref={ ref.current.text }
+            ref={ refs.current.text }
             className="mb-3"
+            label={ <Search /> }
             valid={ true }
-            label="Filter"
             onChange={ handleChangeFilter }
           />
           <ListForm
+            ref={ refs.current.list }
             labels={ listLabel() }
             onChange={ handleSelectProject }
           />
@@ -172,9 +189,9 @@ const ProjectManageModal = React.memo<ProjectManageModalProps>(({
         <ButtonSet
           submit={ `${ action.charAt(0).toUpperCase() + action.slice(1) } Project` }
           cancel="Close"
-          valid={ !!data.current.project && !data.current.processing }
+          valid={ data.current.project && !status.current.processing }
           dismiss="modal"
-          keep={ true }
+          keep={ action !== "open" }
           onSubmit={ handleSubmit }
         />
       }
@@ -182,4 +199,4 @@ const ProjectManageModal = React.memo<ProjectManageModalProps>(({
   )
 })
 
-export default ProjectManageModal
+export default ProjectSelectModal
