@@ -9,7 +9,7 @@ import * as Crypto from "crypto"
 
 import Environment from "../../lib/environment"
 
-import MessageCard from "../parts/message-card"
+import Message from "../parts/message"
 import LoginForm from "../sets/login-form"
 
 type LoginBoxProps = {
@@ -34,7 +34,10 @@ const LoginBox = React.memo<LoginBoxProps>(({
   const params = new URLSearchParams(url.search)
 
   const data = useRef({
-    message   : defaultMessage,
+    message   : defaultMessage
+  })
+
+  const status = useRef({
     done      : false,
     success   : false
   })
@@ -42,7 +45,7 @@ const LoginBox = React.memo<LoginBoxProps>(({
   const handleSubmit = useCallback((username: string, password: string) => {
     const uri = `${ Environment.getBaseUrl() }/api/v1/public-key`
 
-    data.current.done = false
+    status.current.done = false
     forceUpdate()
     Axios.get(uri)
     .then((res: AxiosResponse) => {
@@ -56,8 +59,8 @@ const LoginBox = React.memo<LoginBoxProps>(({
     .then((res: AxiosResponse) => {
       Cookie.set("token", res.data.token)
       data.current.message = `${ res.data.msg }` + (redirect ? " Will redirect automatically in 3 sec." : "")
-      data.current.done = true
-      data.current.success = true
+      status.current.done = true
+      status.current.success = true
       forceUpdate()
       setTimeout(() => {
         if (redirect) {
@@ -68,7 +71,7 @@ const LoginBox = React.memo<LoginBoxProps>(({
           }
         } else {
           data.current.message = defaultMessage
-          data.current.done = false
+          status.current.done = false
           clearFrom()
           if (onDone) {
             onDone()
@@ -78,30 +81,30 @@ const LoginBox = React.memo<LoginBoxProps>(({
     })
     .catch((err: AxiosError) => {
       data.current.message = err.response.data.msg
-      data.current.done = true
-      data.current.success = false
+      status.current.done = true
+      status.current.success = false
       forceUpdate()
     })
   }, [redirect, onDone])
 
   const handleCancel = useCallback(() => {
     data.current.message = defaultMessage
-    data.current.done = false
-    data.current.success = false
+    status.current.done = false
+    status.current.success = false
     forceUpdate()
   }, [true])
 
   return (
     <div className={ className }>
-      <MessageCard
+      <Message
         message={ data.current.message }
-        success={ data.current.done && data.current.success }
-        failure={ data.current.done && !data.current.success }
+        success={ status.current.done &&  status.current.success }
+        failure={ status.current.done && !status.current.success }
       />
       <LoginForm
         key={ formKey }
         username={ username }
-        disabled={ data.current.done && data.current.success }
+        disabled={ status.current.done && status.current.success }
         onSubmit={ handleSubmit }
         onCancel={ handleCancel }
       />

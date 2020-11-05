@@ -18,10 +18,12 @@ const rootPath: string = process.cwd()
 const router: Router = express.Router()
 
 router.param("domain", (req: Request, res: Response, next: NextFunction, domain: string) => {
-  if (!req.app.get("domains").split(",").includes(domain)) {
+  req.domain = decodeURIComponent(domain)
+
+  if (!req.app.get("domains").split(",").includes(req.domain)) {
     // Bad Request
     return res.status(400).json({
-      msg: `domain: ${ domain } does not exist.`
+      msg: `domain: ${ req.domain } does not exist.`
     })
   }
 
@@ -31,7 +33,7 @@ router.param("domain", (req: Request, res: Response, next: NextFunction, domain:
   } else {
     domainPath = path.join(rootPath, req.app.get("storage-path"))
   }
-  domainPath = path.join(domainPath, (domain === "private") ? req.token.usr : domain)
+  domainPath = path.join(domainPath, (req.domain === "private") ? req.token.usr : req.domain)
 
   try {
     fs.mkdirSync(domainPath)
@@ -61,6 +63,8 @@ router.param("domain", (req: Request, res: Response, next: NextFunction, domain:
 })
 
 router.param("projectName", (req: Request, res: Response, next: NextFunction, projectName: string) => {
+  req.project = decodeURIComponent(projectName)
+
   if (!req.resPath) {
     logger.error("req.resPath does not exit...")
     // Internal Server Error
@@ -69,7 +73,7 @@ router.param("projectName", (req: Request, res: Response, next: NextFunction, pr
     })
   }
 
-  const projectPath: string = path.join(req.resPath, projectName)
+  const projectPath: string = path.join(req.resPath, req.project)
   const projectInfoPath: string = path.join(projectPath, "project.inf")
 
   try {
@@ -80,7 +84,7 @@ router.param("projectName", (req: Request, res: Response, next: NextFunction, pr
       if (TypeGurad.isErrnoException(err) && (err as NodeJS.ErrnoException).code === "ENOENT") {
         // Bad Request
         return res.status(400).json({
-          msg: `project: ${ projectName } does not exist.`
+          msg: `project: ${ req.project } does not exist.`
         })
       }
     }
@@ -108,6 +112,8 @@ router.param("projectName", (req: Request, res: Response, next: NextFunction, pr
 })
 
 router.param("bundleId", (req: Request, res: Response, next: NextFunction, bundleId: string) => {
+  req.bundle = decodeURIComponent(bundleId)
+
   if (!req.resPath) {
     logger.error("req.resPath does not exist...")
     // Internal Server Error
@@ -127,7 +133,7 @@ router.param("bundleId", (req: Request, res: Response, next: NextFunction, bundl
   let bundleInfo: BundleInfo
   try {
     bundleInfo = JSON.parse(fs.readFileSync(req.projectInfoPath, "utf8")).bundles.find((bundle: BundleInfo) => (
-      Number(bundleId) === bundle.id
+      Number(req.bundle) === bundle.id
     ))
   } catch (err) {
     if (err instanceof Error) {
@@ -142,14 +148,14 @@ router.param("bundleId", (req: Request, res: Response, next: NextFunction, bundl
   if (!bundleInfo) {
     // Bad Request
     return res.status(400).json({
-      msg: `bundle: bundle ID=${ bundleId } does not exist.`
+      msg: `bundle: bundle ID=${ req.bundle } does not exist.`
     })
   }
 
   if (!bundleInfo.available) {
     // Bad Request
     return res.status(400).json({
-      msg: `bundle: bundle ID=${ bundleId } is not available.`
+      msg: `bundle: bundle ID=${ req.bundle } is not available.`
     })
   }
 
@@ -173,7 +179,7 @@ router.param("bundleId", (req: Request, res: Response, next: NextFunction, bundl
 
 /* -------------------------------------------------------------------------- */
 
-router.route("/:domain([0-9a-z]+)/projects/:projectName([0-9a-zA-Z_.#]+)/bundles/:bundleId([0-9]+)/vms/:vmName")
+router.route("/:domain/projects/:projectName/bundles/:bundleId/vms/:vmName")
 .get((req: Request, res: Response, next: NextFunction) => {
   const result = child_process.spawnSync("python", [
     "main.py",
@@ -219,7 +225,7 @@ router.route("/:domain([0-9a-z]+)/projects/:projectName([0-9a-zA-Z_.#]+)/bundles
   })
 })
 
-router.route("/:domain([0-9a-z]+)/projects/:projectName([0-9a-zA-Z_.#]+)/bundles/:bundleId([0-9]+)/vms")
+router.route("/:domain/projects/:projectName/bundles/:bundleId/vms")
 .get((req: Request, res: Response, next: NextFunction) => {
   const result = child_process.spawnSync("python", [
     "main.py",
@@ -265,7 +271,7 @@ router.route("/:domain([0-9a-z]+)/projects/:projectName([0-9a-zA-Z_.#]+)/bundles
   })
 })
 
-router.route("/:domain([0-9a-z]+)/projects/:projectName([0-9a-zA-Z_.#]+)/bundles/:bundleId([0-9]+)/zdumps/:dumpName")
+router.route("/:domain/projects/:projectName/bundles/:bundleId/zdumps/:dumpName")
 .get((req: Request, res: Response, next: NextFunction) => {
   const result = child_process.spawnSync("python", [
     "main.py",
@@ -311,7 +317,7 @@ router.route("/:domain([0-9a-z]+)/projects/:projectName([0-9a-zA-Z_.#]+)/bundles
   })
 })
 
-router.route("/:domain([0-9a-z]+)/projects/:projectName([0-9a-zA-Z_.#]+)/bundles/:bundleId([0-9]+)/zdumps")
+router.route("/:domain/projects/:projectName/bundles/:bundleId/zdumps")
 .get((req: Request, res: Response, next: NextFunction) => {
   const result = child_process.spawnSync("python", [
     "main.py",
@@ -357,7 +363,7 @@ router.route("/:domain([0-9a-z]+)/projects/:projectName([0-9a-zA-Z_.#]+)/bundles
   })
 })
 
-router.route("/:domain([0-9a-z]+)/projects/:projectName([0-9a-zA-Z_.#]+)/bundles/:bundleId([0-9]+)/hosts/:hostName")
+router.route("/:domain/projects/:projectName/bundles/:bundleId/hosts/:hostName")
 .get((req: Request, res: Response, next: NextFunction) => {
   const result = child_process.spawnSync("python", [
     "main.py",
@@ -403,7 +409,7 @@ router.route("/:domain([0-9a-z]+)/projects/:projectName([0-9a-zA-Z_.#]+)/bundles
   })
 })
 
-router.route("/:domain([0-9a-z]+)/projects/:projectName([0-9a-zA-Z_.#]+)/bundles/:bundleId([0-9]+)/hosts")
+router.route("/:domain/projects/:projectName/bundles/:bundleId/hosts")
 .get((req: Request, res: Response, next: NextFunction) => {
   const result = child_process.spawnSync("python", [
     "main.py",
@@ -449,7 +455,7 @@ router.route("/:domain([0-9a-z]+)/projects/:projectName([0-9a-zA-Z_.#]+)/bundles
   })
 })
 
-router.route("/:domain([0-9a-z]+)/projects/:projectName([0-9a-zA-Z_.#]+)/bundles/:bundleId([0-9]+)/files/*")
+router.route("/:domain/projects/:projectName/bundles/:bundleId/files/*")
 .get((req: Request, res: Response, next: NextFunction) => {
   const nodePath: string = path.join(req.resPath, req.params[0])
 
@@ -462,7 +468,7 @@ router.route("/:domain([0-9a-z]+)/projects/:projectName([0-9a-zA-Z_.#]+)/bundles
       if (TypeGurad.isErrnoException(err) && (err as NodeJS.ErrnoException).code === "ENOENT") {
         // Bad Request
         return res.status(400).json({
-          msg: `file: /${ req.params[0] } does not exist in project ${ req.params.projectName } bundle ID=${ req.params.bundleId }.`
+          msg: `file: /${ req.params[0] } does not exist in project ${ req.project } bundle ID=${ req.bundle }.`
         })
       }
     }
@@ -476,7 +482,7 @@ router.route("/:domain([0-9a-z]+)/projects/:projectName([0-9a-zA-Z_.#]+)/bundles
     if (fileStat.isDirectory()) {
       // OK
       return res.status(200).json({
-        msg: `You get a file list of path /${ req.params[0] } of project ${ req.params.projectName } bundle ID=${ req.params.bundleId }.`,
+        msg: `You get a file list of path /${ req.params[0] } of project ${ req.project } bundle ID=${ req.bundle }.`,
         files: fs.readdirSync(nodePath)
       })
     } else {
@@ -498,7 +504,7 @@ router.route("/:domain([0-9a-z]+)/projects/:projectName([0-9a-zA-Z_.#]+)/bundles
 
         let content: any = null
         if (req.app.get("date-format") !== "") {
-          const regex = new RegExp(`^(${ req.app.get("date-format") }):? (.*)$`)
+          const regex = new RegExp(`^${ req.app.get("date-format") }(.*)$`)
           const fd = fs.openSync(nodePath, "r")
           const buffer = Buffer.alloc(40)
           fs.readSync(fd, buffer, 0, 40, 0)
@@ -539,7 +545,7 @@ router.route("/:domain([0-9a-z]+)/projects/:projectName([0-9a-zA-Z_.#]+)/bundles
 
         // OK
         return res.status(200).json({
-          msg: `You get a file content of path /${ req.params[0] } of project ${ req.params.projectName } bundle ID=${ req.params.bundleId }.`,
+          msg: `You get a file content of path /${ req.params[0] } of project ${ req.project } bundle ID=${ req.bundle }.`,
           content: content,
           size: fileStat.size,
           modifiedAt: fileStat.mtime
@@ -548,13 +554,13 @@ router.route("/:domain([0-9a-z]+)/projects/:projectName([0-9a-zA-Z_.#]+)/bundles
       if (req.query.mode && req.query.mode === "term") {
         // OK
         return res.status(200).json({
-          msg: `You get a terminal command to open the file of path /${ req.params[0] } of project ${ req.params.projectName } bundle ID=${ req.params.bundleId }.`,
+          msg: `You get a terminal command to open the file of path /${ req.params[0] } of project ${ req.project } bundle ID=${ req.bundle }.`,
           cmd: `${ os.platform() === "win32" ? "more" : "less" } ${ nodePath }`
         })
       }
       // OK
       return res.status(200).json({
-        msg: `You get a file content of path /${ req.params[0] } of project ${ req.params.projectName } bundle ID=${ req.params.bundleId }.`,
+        msg: `You get a file content of path /${ req.params[0] } of project ${ req.project } bundle ID=${ req.bundle }.`,
         content: fs.readFileSync(nodePath, "utf8"),
         size: fileStat.size,
         modifiedAt: fileStat.mtime
@@ -577,7 +583,7 @@ router.route("/:domain([0-9a-z]+)/projects/:projectName([0-9a-zA-Z_.#]+)/bundles
   })
 })
 
-router.route("/:domain([0-9a-z]+)/projects/:projectName([0-9a-zA-Z_.#]+)/bundles/:bundleId([0-9]+)/files")
+router.route("/:domain/projects/:projectName/bundles/:bundleId/files")
 .get((req: Request, res: Response, next: NextFunction) => {
   let allFiles: NodeType
   try {
@@ -611,7 +617,7 @@ router.route("/:domain([0-9a-z]+)/projects/:projectName([0-9a-zA-Z_.#]+)/bundles
 
   // OK
   return res.status(200).json({
-    msg: `You get a file list of project ${ req.params.projectName } bundle ID=${ req.params.bundleId }.`,
+    msg: `You get a file list of project ${ req.project } bundle ID=${ req.bundle }.`,
     files: allFiles
   })
 })
@@ -623,12 +629,12 @@ router.route("/:domain([0-9a-z]+)/projects/:projectName([0-9a-zA-Z_.#]+)/bundles
 })
 
 
-router.route("/:domain([0-9a-z]+)/projects/:projectName([0-9a-zA-Z_.#]+)/bundles/:bundleId([0-9]+)")
+router.route("/:domain/projects/:projectName/bundles/:bundleId")
 .get((req: Request, res: Response, next: NextFunction) => {
   let bundleInfo: BundleInfo
   try {
     bundleInfo = JSON.parse(fs.readFileSync(req.projectInfoPath, "utf8")).bundles.find((bundle: BundleInfo) => (
-      (Number(req.params.bundleId) === bundle.id)
+      (Number(req.bundle) === bundle.id)
     ))
   } catch (err) {
     if (err instanceof Error) {
@@ -642,7 +648,7 @@ router.route("/:domain([0-9a-z]+)/projects/:projectName([0-9a-zA-Z_.#]+)/bundles
 
   // OK
   return res.status(200).json({
-    msg: `You get a bundle name and description of project ${ req.params.projectName }.`,
+    msg: `You get a bundle name and description of project ${ req.project }.`,
     name: bundleInfo.name,
     description: bundleInfo.description
   })
@@ -659,7 +665,7 @@ router.route("/:domain([0-9a-z]+)/projects/:projectName([0-9a-zA-Z_.#]+)/bundles
   try {
     projectInfo = JSON.parse(fs.readFileSync(req.projectInfoPath, "utf8"))
     projectInfo.bundles = projectInfo.bundles.map((bundle: BundleInfo) => {
-      if (Number(req.params.bundleId) === bundle.id) {
+      if (Number(req.bundle) === bundle.id) {
         bundle.description = req.body.description
       }
       return bundle
@@ -677,11 +683,11 @@ router.route("/:domain([0-9a-z]+)/projects/:projectName([0-9a-zA-Z_.#]+)/bundles
 
   // OK
   return res.status(200).json({
-    msg: `bundle: bundle ID=${ req.params.bundleId } description was updated successfully.`
+    msg: `bundle: bundle ID=${ req.bundle } description was updated successfully.`
   })
 })
 .delete((req: Request, res: Response, next: NextFunction) => {
-  if (!["public", "private"].includes(req.params.domain) && req.token.prv !== "root") {
+  if (!["public", "private"].includes(req.domain) && req.token.prv !== "root") {
     // Bad Request
     return res.status(400).json({
       msg: `bundle: ${ path.basename(req.resPath) } is only deleted by an administrator.`
@@ -692,7 +698,7 @@ router.route("/:domain([0-9a-z]+)/projects/:projectName([0-9a-zA-Z_.#]+)/bundles
   try {
     projectInfo = JSON.parse(fs.readFileSync(req.projectInfoPath, "utf8"))
     projectInfo.bundles = projectInfo.bundles.filter((bundle: BundleInfo) => (
-      (Number(req.params.bundleId) !== bundle.id)
+      (Number(req.bundle) !== bundle.id)
     ))
     fs.writeFileSync(req.projectInfoPath, JSON.stringify(projectInfo))
   } catch (err) {
@@ -719,7 +725,7 @@ router.route("/:domain([0-9a-z]+)/projects/:projectName([0-9a-zA-Z_.#]+)/bundles
 
   // OK
   return res.status(200).json({
-    msg: `bundle: bundle ID=${ req.params.bundleId } was deleted successfully.`
+    msg: `bundle: bundle ID=${ req.bundle } was deleted successfully.`
   })
 })
 .all((req: Request, res: Response, next: NextFunction) => {
@@ -729,7 +735,7 @@ router.route("/:domain([0-9a-z]+)/projects/:projectName([0-9a-zA-Z_.#]+)/bundles
   })
 })
 
-router.route("/:domain([0-9a-z]+)/projects/:projectName([0-9a-zA-Z_.#]+)/bundles")
+router.route("/:domain/projects/:projectName/bundles")
 .get((req: Request, res: Response, next: NextFunction) => {
   let projectInfo: ProjectInfo
   try {
@@ -746,7 +752,7 @@ router.route("/:domain([0-9a-z]+)/projects/:projectName([0-9a-zA-Z_.#]+)/bundles
 
   // OK
   return res.status(200).json({
-    msg: `You get a bundle list of project ${ req.params.projectName }.`,
+    msg: `You get a bundle list of project ${ req.project }.`,
     bundles: projectInfo.bundles
   })
 })
@@ -921,7 +927,7 @@ router.route("/:domain([0-9a-z]+)/projects/:projectName([0-9a-zA-Z_.#]+)/bundles
   })
 })
 
-router.route("/:domain([0-9a-z]+)/projects/:projectName([0-9a-zA-Z_.#]+)")
+router.route("/:domain/projects/:projectName")
 .get((req: Request, res: Response, next: NextFunction) => {
   let projectInfo: ProjectInfo
   try {
@@ -1043,14 +1049,14 @@ router.route("/:domain([0-9a-z]+)/projects/:projectName([0-9a-zA-Z_.#]+)")
 
   // OK
   return res.status(200).json({
-    msg: `project: ${ req.params.projectName } was updated successfully.`
+    msg: `project: ${ req.project } was updated successfully.`
   })
 })
 .delete((req: Request, res: Response, next: NextFunction) => {
-  if (!["public", "private"].includes(req.params.domain) && req.token.prv !== "root") {
+  if (!["public", "private"].includes(req.domain) && req.token.prv !== "root") {
     // Bad Request
     return res.status(400).json({
-      msg: `project: ${ req.params.projectName } is only deleted by an administrator.`
+      msg: `project: ${ req.project } is only deleted by an administrator.`
     })
   }
 
@@ -1068,7 +1074,7 @@ router.route("/:domain([0-9a-z]+)/projects/:projectName([0-9a-zA-Z_.#]+)")
 
   // OK
   return res.status(200).json({
-    msg: `project: ${ req.params.projectName } was deleted successfully.`
+    msg: `project: ${ req.project } was deleted successfully.`
   })
 })
 .all((req: Request, res: Response, next: NextFunction) => {
@@ -1078,7 +1084,7 @@ router.route("/:domain([0-9a-z]+)/projects/:projectName([0-9a-zA-Z_.#]+)")
   })
 })
 
-router.route("/:domain([0-9a-z]+)/projects")
+router.route("/:domain/projects")
 .get((req: Request, res: Response, next: NextFunction) => {
   let dirList: Array<string> = []
   try {
@@ -1126,10 +1132,10 @@ router.route("/:domain([0-9a-z]+)/projects")
     })
   }
 
-  if (!req.body.name.match(/^[0-9a-zA-Z_.#]+$/)) {
+  if (!req.body.name.match(/^[0-9a-zA-Z#@_+-]+$/)) {
     // Bad Request
     return res.status(400).json({
-      msg: "Project name must match the RegExp. (RegExp: /^[0-9a-zA-Z_.#]+$/)"
+      msg: "Project name must match the RegExp. (RegExp: /^[0-9a-zA-Z#@_+-]+$/)"
     })
   }
 
@@ -1183,11 +1189,11 @@ router.route("/:domain([0-9a-z]+)/projects")
 })
 
 
-router.route("/:domain([0-9a-z]+)")
+router.route("/:domain")
 .get((req: Request, res: Response, next: NextFunction) => {
   // OK
   return res.status(200).json({
-    msg: `domain: ${ req.params.domain } is available.`
+    msg: `domain: ${ req.domain } is available.`
   })
 })
 .all((req: Request, res: Response, next: NextFunction) => {

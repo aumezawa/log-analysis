@@ -7,7 +7,7 @@ import ButtonSet from "../sets/button-set"
 
 import LocalDate from "../../lib/local-date"
 
-type TextFilterFormProps = {
+type DateFilterFormProps = {
   className?: string,
   from?     : Date,
   to?       : Date,
@@ -17,7 +17,7 @@ type TextFilterFormProps = {
   onCancel? : () => void
 }
 
-const TextFilterForm = React.memo<TextFilterFormProps>(({
+const DateFilterForm = React.memo<DateFilterFormProps>(({
   className = "",
   from      = null,
   to        = null,
@@ -33,7 +33,7 @@ const TextFilterForm = React.memo<TextFilterFormProps>(({
       return
     }
 
-    if (from) {
+    if (from && from.toString() !== "Invalid Date") {
       data.current.from.enable = true
       data.current.from.date = from
       ref.current.from.enable.current.checked = true
@@ -43,7 +43,7 @@ const TextFilterForm = React.memo<TextFilterFormProps>(({
       ref.current.from.enable.current.checked = false
     }
 
-    if (to) {
+    if (to && to.toString() !== "Invalid Date") {
       data.current.to.enable = true
       data.current.to.date = to
       ref.current.to.enable.current.checked = true
@@ -172,4 +172,4 @@ const TextFilterForm = React.memo<TextFilterFormProps>(({
   )
 })
 
-export default TextFilterForm
+export default DateFilterForm

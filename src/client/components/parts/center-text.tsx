@@ -5,7 +5,7 @@ type CenterTextProps = {
 }
 
 const CenterText = React.memo<CenterTextProps>(({
-  text  = ""
+  text  = "No content"
 }) => (
   <div className="flex-container-column justify-content-center">
     <div className="align-self-center text-center text-monospace">

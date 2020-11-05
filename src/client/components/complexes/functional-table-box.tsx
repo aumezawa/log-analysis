@@ -11,6 +11,7 @@ import Escape from "../../lib/escape"
 
 import FunctionalTable from "../sets/functional-table"
 import Spinner from "../parts/spinner"
+import CenterText from "../parts/center-text"
 
 type FunctionalTableBoxProps = {
   className?          : string,
@@ -38,17 +39,17 @@ const FunctionalTableBox = React.memo<FunctionalTableBoxProps>(({
   const [ignored, forceUpdate] = useReducer(x => x + 1, 0)
 
   const data = useRef({
-    content: null
+    content   : null
   })
 
   const status = useRef({
-    progress: false
+    processing: false
   })
 
   useEffect(() => {
     if (path) {
       const uri = `${ Environment.getBaseUrl() }/api/v1/${ Escape.root(path) }?mode=json`
-      status.current.progress = true
+      status.current.processing = true
       forceUpdate()
       Axios.get(uri, {
         headers : { "X-Access-Token": Cookie.get("token") || "" },
@@ -56,13 +57,13 @@ const FunctionalTableBox = React.memo<FunctionalTableBoxProps>(({
       })
       .then((res: AxiosResponse) => {
         data.current.content = res.data.content
-        status.current.progress = false
+        status.current.processing = false
         forceUpdate()
         return
       })
       .catch((err: AxiosError) => {
         data.current.content = null
-        status.current.progress = false
+        status.current.processing = false
         forceUpdate()
         alert(err.response.data.msg)
         return
@@ -93,8 +94,9 @@ const FunctionalTableBox = React.memo<FunctionalTableBoxProps>(({
 
   return (
     <>
-      {  status.current.progress && <Spinner /> }
-      { !status.current.progress &&
+      {  status.current.processing && <Spinner /> }
+      { !status.current.processing && !data.current.content && <CenterText text="No Data" /> }
+      { !status.current.processing &&  data.current.content &&
         <FunctionalTable
           className={ className }
           content={ data.current.content }

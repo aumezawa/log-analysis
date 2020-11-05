@@ -29,7 +29,7 @@ const DateForm = React.memo(React.forwardRef<HTMLInputElement, DateFormProps>(({
   return (
     <div className={ className }>
       <div className="input-group">
-        { !!label &&
+        { label &&
           <div className="input-group-prepend">
             <span className="input-group-text">{ label }</span>
           </div>

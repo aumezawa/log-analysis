@@ -1,41 +1,41 @@
 import * as React from "react"
 import { useCallback } from "react"
 
-import { Icon, Dot } from "react-bootstrap-icons"
+import { Icon } from "react-bootstrap-icons"
 
-type DropdownItemProps = {
+type ButtonProps = {
   className?: string,
   label?    : string,
   LIcon?    : Icon,
-  title?    : string,
+  color?    : "primary" | "secondary" | "success" | "warning" | "danger" | "info" | "light" | "dark",
+  noAction? : boolean,
   disabled? : boolean,
   toggle?   : string,
   target?   : string,
-  onClick?  : (targetValue: string, parentValue: string) => void
+  onClick?  : () => void
 }
 
-const DropdownItem = React.forwardRef<HTMLButtonElement, DropdownItemProps>(({
+const Button = React.memo<ButtonProps>(({
   className = "",
-  label     = "action",
-  LIcon     = Dot,
-  title     = "",
+  label     = "no label",
+  LIcon     = null,
+  color     = "primary",
+  noAction  = false,
   disabled  = false,
   toggle    = "",
   target    = "",
   onClick   = undefined
-}, ref) => {
+}) => {
   const handleClick = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
     if (onClick) {
-      onClick((e.currentTarget as HTMLElement).title, (e.currentTarget.parentNode as HTMLElement).title)
+      onClick()
     }
-  }, [onClick])
+  }, [true])
 
   return (
     <button
-      ref={ ref }
-      className={ `dropdown-item text-monospace ${ className }` }
+      className={ `btn btn-${ color } ${ noAction && "btn-no-action" } ${ className } ` }
       type="button"
-      title={ title }
       disabled={ disabled }
       data-toggle={ toggle }
       data-target={ "#" + target }
@@ -46,4 +46,4 @@ const DropdownItem = React.forwardRef<HTMLButtonElement, DropdownItemProps>(({
   )
 })
 
-export default DropdownItem
+export default Button
