@@ -538,7 +538,7 @@ def GetPciCards(dirPath):
         dev  = _int(node.findtext('./value[@name="slot"]'), base=16)
         func = _int(node.findtext('./value[@name="function"]'), base=16)
         slot = _int(node.findtext('./value[@name="physical-slot"]'))
-        if (func == 0) and (slot <= 32):
+        if (func == 0) and (slot >= 1) and (slot <= 32):
             cards.append({
                 'slot'  : slot,
                 'device': node.findtext('./value[@name="device-name"]'),
