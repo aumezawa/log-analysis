@@ -1,6 +1,8 @@
 import * as React from "react"
 import { useEffect, useRef, useCallback, useReducer } from "react"
 
+import { Display, FileEarmarkMedical } from "react-bootstrap-icons"
+
 import Axios from "axios"
 import { AxiosResponse, AxiosError } from "axios"
 
@@ -72,10 +74,12 @@ const ZdumpExplorerBox = React.memo<ZdumpExplorerBoxProps>(({
     <div className={ `${ className } text-left text-monospace` }>
       <FileTreeRoot
         root={ zdumps.current }
+        LIcon={ FileEarmarkMedical }
         actions={ [
           <DropdownItem
-            key="select"
-            label="select"
+            key="open"
+            label="open"
+            LIcon={ Display }
             onClick={ handleClickSelect }
           />
         ] }

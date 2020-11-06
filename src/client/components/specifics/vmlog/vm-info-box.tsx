@@ -1,6 +1,8 @@
 import * as React from "react"
 import { useEffect, useRef, useReducer } from "react"
 
+import { Box, Diagram3, Gear, Server } from "react-bootstrap-icons"
+
 import Axios from "axios"
 import { AxiosResponse, AxiosError } from "axios"
 
@@ -72,6 +74,7 @@ const VmInfoBox = React.memo<VmInfoBoxProps>(({
         key="base"
         className="my-2"
         title="VM Base Information"
+        LIcon={ Box }
         content={ [
           ["name",        `${ vmInfo.current.name }`],
           ["version",     `${ vmInfo.current.version }`],
@@ -89,6 +92,7 @@ const VmInfoBox = React.memo<VmInfoBoxProps>(({
         key="options"
         className="my-2"
         title="VM Options"
+        LIcon={ Gear }
         content={ [
           ["uefi.secureBoot.enabled",                   `${ vmInfo.current.options.uefi_secureBoot_enabled }`],
           ["cpuid.coresPerSocket",                      `${ vmInfo.current.options.cpuid_coresPerSocket }`],
@@ -111,6 +115,7 @@ const VmInfoBox = React.memo<VmInfoBoxProps>(({
           key={ `${ nic.name }` }
           className="my-2"
           title={ `vNIC Information - ${ nic.name }` }
+          LIcon={ Diagram3 }
           content={ [
             ["device",    `${ nic.device }`],
             ["present",   `${ nic.present }`],
@@ -128,6 +133,7 @@ const VmInfoBox = React.memo<VmInfoBoxProps>(({
           key={ `${ scsi.name }` }
           className="my-2"
           title={ `vSCSI Information - ${ scsi.name }` }
+          LIcon={ Server }
           content={ [
             ["device",    `${ scsi.device }`],
             ["present",   `${ scsi.present }`],
@@ -143,6 +149,7 @@ const VmInfoBox = React.memo<VmInfoBoxProps>(({
           key={ `${ disk.name }` }
           className="my-2"
           title={ `vDisk Information - ${ disk.name }` }
+          LIcon={ Server }
           content={ [
             ["device",                  `${ disk.device }`],
             ["size",                    `${ disk.size } GB`],
@@ -160,6 +167,7 @@ const VmInfoBox = React.memo<VmInfoBoxProps>(({
           key={ `${ dpio.name }` }
           className="my-2"
           title={ `DPIO Information - ${ dpio.name }` }
+          LIcon={ Server }
           content={ [
             ["present",   `${ dpio.present }`],
             ["slot",      `${ dpio.slot }`],
@@ -175,6 +183,7 @@ const VmInfoBox = React.memo<VmInfoBoxProps>(({
           key={ `${ vf.name }` }
           className="my-2"
           title={ `SR-IOV VF Information - ${ vf.name }` }
+          LIcon={ Diagram3 }
           content={ [
             ["present",   `${ vf.present }`],
             ["slot",      `${ vf.slot }`],

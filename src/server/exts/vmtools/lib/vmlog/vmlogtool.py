@@ -674,10 +674,10 @@ def GetPackages(dirPath):
     packages = []
     try:
         with open(filePath, 'r') as fp:
-            title = True
+            title = 2
             for line in fp:
                 if title:
-                    title = False
+                    title = title - 1
                     continue
                 match = repattern.match(line)
                 if match:

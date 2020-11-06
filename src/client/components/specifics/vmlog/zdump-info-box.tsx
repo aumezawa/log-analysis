@@ -1,6 +1,8 @@
 import * as React from "react"
 import { useEffect, useRef, useReducer } from "react"
 
+import { FileEarmarkMedical, FileText, SortUp } from "react-bootstrap-icons"
+
 import Axios from "axios"
 import { AxiosResponse, AxiosError } from "axios"
 
@@ -72,6 +74,7 @@ const ZdumpInfoBox = React.memo<ZdumpInfoBoxProps>(({
         key="base"
         className="my-2"
         title="Zdump Base Information"
+        LIcon={ FileEarmarkMedical }
         content={ [
           ["name",          `${ zdump }`],
           ["build",         `${ zdumpInfo.current.build }`],
@@ -86,7 +89,8 @@ const ZdumpInfoBox = React.memo<ZdumpInfoBoxProps>(({
       <Table
         key="trace"
         className="my-2"
-        title="Zdump Back Trace"
+        title="Back Trace"
+        LIcon={ SortUp }
         content={ zdumpInfo.current.trace.map((line: string) => [line]) }
       />
     )
@@ -95,7 +99,8 @@ const ZdumpInfoBox = React.memo<ZdumpInfoBoxProps>(({
       <Table
         key="log"
         className="my-2"
-        title="Zdump Kernel Log (latest 3 days)"
+        title="Kernel Log (latest 3 days)"
+        LIcon={ FileText }
         content={ zdumpInfo.current.log.map((line: string) => [line]) }
       />
     )
