@@ -84,7 +84,9 @@ const HostInfoBox = React.memo<HostInfoBoxProps>(({
         content={ [
           ["hostname",  `${ hostInfo.current.hostname }`],
           ["version",   `${ hostInfo.current.version }`],
-          ["build",     `${ hostInfo.current.build }`]
+          ["build",     `${ hostInfo.current.build }`],
+          ["profile",   `${ hostInfo.current.profile }`],
+          ["uptime",    `${ hostInfo.current.uptime } days`]
         ] }
       />
     )

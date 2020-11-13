@@ -2,6 +2,8 @@ type HostInfo = {
   hostname  : string,
   version   : string,
   build     : string,
+  profile   : string,
+  uptime    : number,
   system    : HostSystemInfo,
   hardware  : HostHardwareInfo,
   network   : HostNetworkInfo,

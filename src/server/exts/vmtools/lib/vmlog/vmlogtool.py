@@ -76,6 +76,8 @@ def GetHostInfo(dirPath, esxName):
             'hostname'      : GetHostName(dirPath),
             'version'       : GetEsxiVersion(dirPath),
             'build'         : GetEsxiBuildNumber(dirPath),
+            'profile'       : GetHostProfile(dirPath),
+            'uptime'        : GetHostUptime(dirPath),
             'system'        : GetEsxiSystem(dirPath),
             'hardware'  : {
                 'machine'   : GetMachineModel(dirPath),
@@ -471,6 +473,19 @@ def GetEsxiBuildNumber(dirPath):
     filePath = os.path.join(dirPath, 'commands', 'uname_-a.txt')
     keyword  = r"^.*build-([0-9]+).*$"
     return SearchInText(filePath, keyword)
+
+
+def GetHostProfile(dirPath):
+    filePath = os.path.join(dirPath, 'commands', 'localcli_software-profile-get.txt')
+    keyword  = r"^\s*Name: (\S+)$"
+    return SearchInText(filePath, keyword, "Unknown")
+
+
+def GetHostUptime(dirPath):
+    filePath = os.path.join(dirPath, 'commands', 'localcli_system-stats-uptime-get.txt')
+    keyword  = r"^([0-9]+)$"
+    uptime   = SearchInText(filePath, keyword, 0)
+    return _int(uptime, calc=lambda x: x // 1000 // 1000 // 3600 // 24)
 
 
 def GetHostName(dirPath):
