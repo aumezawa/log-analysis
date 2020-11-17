@@ -1,11 +1,6 @@
-type ProjectSummary = {
-  name        : string,
-  description : string
-}
-
 type ProjectInfo = {
   name        : string,
-  status?     : "open" | "close",
+  status?     : string,  // open or close
   description : string,
   index       : number,
   bundles     : Array<BundleInfo>
@@ -16,4 +11,14 @@ type BundleInfo = {
   name        : string,
   description : string,
   available   : boolean
+}
+
+type FileInfo = {
+  name        : string,
+  directory   : string,
+  path        : string,
+  isDirectory : boolean,
+  children    : Array<string>,
+  size        : number,
+  modifiedAt  : Date
 }

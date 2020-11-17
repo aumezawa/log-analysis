@@ -79,6 +79,7 @@ const ProjectCreateModal = React.memo<ProjectCreateModalProps>(({
       id={ id }
       title="Project"
       message="Create a new project."
+      size="modal-lg"
       center={ false }
       body={
         <>

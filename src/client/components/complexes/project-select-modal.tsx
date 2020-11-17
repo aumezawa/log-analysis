@@ -168,6 +168,7 @@ const ProjectSelectModal = React.memo<ProjectSelectModalProps>(({
       id={ id }
       title="Project"
       message={ `Select to ${ action } a project.` }
+      size="modal-lg"
       center={ false }
       body={
         <>
