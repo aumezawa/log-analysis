@@ -12,7 +12,7 @@ const terminal = (server: http.Server) => {
   const io = socketio(server, { path: "/terminal" })
 
   io.on("connection", (socket: SocketIO.Socket) => {
-    const cmd = socket.handshake.query.cmd ? [...opt, decodeURI(socket.handshake.query.cmd)] : []
+    const cmd = socket.handshake.query.cmd ? [...opt, decodeURIComponent(socket.handshake.query.cmd)] : []
     const pty = nodepty.spawn(shell, cmd, {
       name: "xterm-color",
       cols: Number(socket.handshake.query.cols || 80),

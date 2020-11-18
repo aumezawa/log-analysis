@@ -144,7 +144,8 @@ router.route("/:domain/projects/:projectName/bundles/:bundleId/files/*")
 
 router.route("/:domain/projects/:projectName/bundles/:bundleId/files")
 .get((req: Request, res: Response, next: NextFunction) => {
-  return Project.getFileResourceList(req.token.usr, req.domain, req.project, req.bundleId)
+  const search = (typeof(req.query.search) === "string") ? decodeURIComponent(req.query.search) : undefined
+  return Project.getFileResourceList(req.token.usr, req.domain, req.project, req.bundleId, search)
   .then((node: NodeType) => {
     // OK
     return res.status(200).json({

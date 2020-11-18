@@ -103,21 +103,21 @@ function getChildResourceList(path: string): Promise<Array<string>> {
   })
 }
 
-function getResourceNodeSync(path: string): NodeType {
+function getResourceNodeSync(path: string, search?: string): NodeType {
   try {
-    return FSTool.lsRecursiveSync(path)
+    return FSTool.lsRecursiveSync(path, search)
   } catch (err) {
     (err instanceof Error) && logger.error(`${ err.name }: ${ err.message }`)
     return null
   }
 }
 
-function getResourceNode(path: string): Promise<NodeType> {
+function getResourceNode(path: string, search?: string): Promise<NodeType> {
   return new Promise<NodeType>((resolve: (node: NodeType) => void, reject: (err? :any) => void) => {
     return setImmediate(() => {
       let err = new Error(`Resource: ${ path } is invalid.`)
       err.name = "Internal"
-      const node = getResourceNodeSync(path)
+      const node = getResourceNodeSync(path, search)
       return (node !== null) ? resolve(node) : reject(err)
     })
   })
@@ -740,16 +740,16 @@ export function deleteBundleResource(user: string, domain: string, project: stri
 
 //--- File Functions
 
-function getFileResourceListSync(user: string, domain: string, project: string, bundleId: string): NodeType {
-  return getResourceNodeSync(getBundleResourcePathSync(user, domain, project, bundleId))
+function getFileResourceListSync(user: string, domain: string, project: string, bundleId: string, search?: string): NodeType {
+  return getResourceNodeSync(getBundleResourcePathSync(user, domain, project, bundleId), search)
 }
 
-export function getFileResourceList(user: string, domain: string, project: string, bundleId: string): Promise<NodeType> {
+export function getFileResourceList(user: string, domain: string, project: string, bundleId: string, search?: string): Promise<NodeType> {
   return new Promise<NodeType>((resolve: (node: NodeType) => void, reject: (err?: any) => void) => {
     return setImmediate(() => {
       let err = new Error(`file: bundle ID = ${ bundleId } is invalid resource.`)
       err.name = "External"
-      const node = getFileResourceListSync(user, domain, project, bundleId)
+      const node = getFileResourceListSync(user, domain, project, bundleId, search)
       return node ? resolve(node) : reject(err)
     })
   })

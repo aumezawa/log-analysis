@@ -15,6 +15,7 @@ import Escape from "../../lib/escape"
 import TextForm from "../parts/text-form"
 import FileTreeRoot from "../sets/file-tree-root"
 import DropdownItem from "../parts/dropdown-item"
+import Spinner from "../parts/spinner"
 
 type FileSearchBoxProps = {
   className?: string,
@@ -44,6 +45,10 @@ const FileSearchBox = React.memo<FileSearchBoxProps>(({
     }
   })
 
+  const status = useRef({
+    processing: false
+  })
+
   useEffect(() => {
     data.current.searchable = false
     data.current.searchtext = refs.current.text.current.value = ""
@@ -63,9 +68,10 @@ const FileSearchBox = React.memo<FileSearchBoxProps>(({
   }, [true])
 
   const handleClickSubmit = useCallback(() => {
-    const uri = `${ Environment.getBaseUrl() }/api/v1/${ Escape.root(path) }?search=${ encodeURI(data.current.searchtext) }`
+    const uri = `${ Environment.getBaseUrl() }/api/v1/${ Escape.root(path) }?search=${ encodeURIComponent(data.current.searchtext) }`
 
     data.current.done = false
+    status.current.processing = true
     forceUpdate()
     Axios.get(uri, {
       headers : { "X-Access-Token": Cookie.get("token") || "" },
@@ -74,6 +80,7 @@ const FileSearchBox = React.memo<FileSearchBoxProps>(({
     .then((res: AxiosResponse) => {
       data.current.files = res.data.files
       data.current.done = true
+      status.current.processing = false
       forceUpdate()
       return
     })
@@ -84,6 +91,7 @@ const FileSearchBox = React.memo<FileSearchBoxProps>(({
         file    : false,
         children: []
       }
+      status.current.processing = false
       forceUpdate()
       alert(err.response.data.msg)
       return
@@ -148,30 +156,33 @@ const FileSearchBox = React.memo<FileSearchBoxProps>(({
         onChange={ handleChangeText }
         onSubmit={ handleClickSubmit }
       />
-      <FileTreeRoot
-        root={ data.current.files }
-        filter="FILEONLY"
-        actions={ [
-          <DropdownItem
-            key="view"
-            label="view"
-            LIcon={ Display }
-            onClick={ handleClickView }
-          />,
-          <DropdownItem
-            key="terminal"
-            label="legacy view"
-            LIcon={ Terminal }
-            onClick={ handleClickTerminal }
-          />,
-          <DropdownItem
-            key="download"
-            label="download"
-            LIcon={ Download }
-            onClick={ handleClickDownload }
-          />
-        ] }
-      />
+      {  status.current.processing && <Spinner /> }
+      { !status.current.processing &&
+        <FileTreeRoot
+          root={ data.current.files }
+          filter="FILEONLY"
+          actions={ [
+            <DropdownItem
+              key="view"
+              label="view"
+              LIcon={ Display }
+              onClick={ handleClickView }
+            />,
+            <DropdownItem
+              key="terminal"
+              label="legacy view"
+              LIcon={ Terminal }
+              onClick={ handleClickTerminal }
+            />,
+            <DropdownItem
+              key="download"
+              label="download"
+              LIcon={ Download }
+              onClick={ handleClickDownload }
+            />
+          ] }
+        />
+      }
     </div>
   )
 })

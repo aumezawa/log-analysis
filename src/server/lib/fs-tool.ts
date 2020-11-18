@@ -7,28 +7,30 @@ export function isErrnoException(err: any, code: string): boolean {
 }
 
 
-export function lsRecursiveSync(node: string): NodeType {
+export function lsRecursiveSync(node: string, search?: string): NodeType {
   if (fs.statSync(node).isDirectory()) {
     return ({
       name: path.basename(node),
       file: false,
-      children: fs.readdirSync(node).map((name: string) => lsRecursiveSync(path.join(node, name)))
+      children: fs.readdirSync(node).map((name: string) => lsRecursiveSync(path.join(node, name), search)).filter((node: NodeType) => (!!node))
     })
   } else {
-    return ({
+    return (search && !fs.readFileSync(node, "utf8").includes(search))
+    ? null
+    : ({
       name: path.basename(node),
       file: true
     })
   }
 }
 
-export function lsRecursive(node: string, callback: (err?: any) => void): void
-export function lsRecursive(node: string): Promise<void>
-export function lsRecursive(node: string, callback?: (err?: any) => void): void | Promise<void> {
+export function lsRecursive(node: string, search: string, callback: (err?: any) => void): void
+export function lsRecursive(node: string, search?: string): Promise<void>
+export function lsRecursive(node: string, search?: string, callback?: (err?: any) => void): void | Promise<void> {
   const promise = new Promise<void>((resolve: () => void, reject: (err?: any) => void) => {
     return setImmediate(() => {
       try {
-        lsRecursiveSync(node)
+        lsRecursiveSync(node, search)
         return resolve()
       } catch (err) {
         return reject(err)
