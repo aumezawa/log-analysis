@@ -1,6 +1,8 @@
 type ProjectInfo = {
   name        : string,
   status?     : string,  // open or close
+  opened?     : string,
+  closed?     : string,
   description : string,
   index       : number,
   bundles     : Array<BundleInfo>

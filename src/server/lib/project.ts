@@ -4,6 +4,7 @@ import * as path from "path"
 import logger = require("../lib/logger")
 
 import * as FSTool from "../lib/fs-tool"
+import * as LocalDate from "../lib/local-date"
 
 const rootPath: string = process.cwd()
 
@@ -451,6 +452,8 @@ function createNewProjectInfoSync(user: string, domain: string, project: string,
   return updateProjectInfoSync(user, domain, project, {
     name        : project,
     status      : "open",
+    opened      : LocalDate.toISOString(LocalDate.now()),
+    closed      : null,
     description : description || "",
     index       : 0,
     bundles     : []
@@ -524,6 +527,7 @@ export function updateProjectStatus(user: string, domain: string, project: strin
       .then((projectInfo: ProjectInfo) => {
         bundles = projectInfo.bundles
         projectInfo.status = status
+        projectInfo.closed = (status === "close") ? LocalDate.toISOString(LocalDate.now()) : null
         return updateProjectInfo(user, domain, project, projectInfo)
       })
       .then(() => {
