@@ -1,36 +1,45 @@
 import * as React from "react"
 import { useRef, useEffect, useCallback, useReducer, useImperativeHandle } from "react"
 
-type ListFormProps = {
+type MultiSelectFromProps = {
   className?: string,
   labels?   : Array<string>,
-  onChange? : (value: string) => void
+  limit?    : number,
+  onChange? : (values: Array<string>) => void
 }
 
-const ListForm = React.memo(React.forwardRef<ListFormReference, ListFormProps>(({
+const MultiSelectFrom = React.memo(React.forwardRef<MultiSelectFromReference, MultiSelectFromProps>(({
   className = "",
   labels    = [],
+  limit     = 0,
   onChange  = undefined
 }, ref) => {
   const [ignored, forceUpdate] = useReducer(x => x + 1, 0)
 
   const refs = useRef(labels.map(() => React.createRef<HTMLButtonElement>()))
 
+  const data = useRef({
+    actives : []
+  })
+
   useEffect(() => {
     refs.current = labels.map(() => React.createRef<HTMLButtonElement>())
+    data.current.actives = []
     forceUpdate()
   }, [labels.toString()])
 
   useImperativeHandle(ref, () => ({
-    active: (target: number) => {
+    active: (targets: Array<number>) => {
+      data.current.actives = labels.filter((label: string, index: number) => (targets.includes(index))).slice(0, limit)
       refs.current.forEach((ref: React.RefObject<HTMLButtonElement>, index: number) => {
         if (!ref.current) {
           return
         }
-        ref.current.className = (index === target) ? (ref.current.className + " active") : (ref.current.className.replace(" active", ""))
+        ref.current.className = targets.includes(index) ? (ref.current.className + " active") : ref.current.className.replace(" active", "")
       })
     },
     clear: () => {
+      data.current.actives = []
       refs.current.forEach((ref: React.RefObject<HTMLButtonElement>) => {
         if (!ref.current) {
           return
@@ -38,20 +47,22 @@ const ListForm = React.memo(React.forwardRef<ListFormReference, ListFormProps>((
         ref.current.className = ref.current.className.replace(" active", "")
       })
     }
-  }), [labels.toString()])
+  }), [labels.toString(), limit])
 
   const handleClick = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
-    refs.current.forEach((ref: React.RefObject<HTMLButtonElement>, index: number) => {
-      if (index === labels.indexOf(e.currentTarget.value)) {
-        ref.current.className = ref.current.className + " active"
-      } else {
-        ref.current.className = ref.current.className.replace(" active", "")
+    if (data.current.actives.includes(e.currentTarget.value)) {
+      data.current.actives = data.current.actives.filter((active: string) => (active !== e.currentTarget.value))
+      e.currentTarget.className = e.currentTarget.className.replace(" active", "")
+    } else {
+      if (limit <= 0 || data.current.actives.length < limit) {
+        data.current.actives.push(e.currentTarget.value)
+        e.currentTarget.className = e.currentTarget.className + " active"
       }
-    })
-    if (onChange) {
-      onChange(e.currentTarget.value)
     }
-  }, [labels.toString(), onChange])
+    if (onChange) {
+      onChange(data.current.actives)
+    }
+  }, [labels.toString(), limit, onChange])
 
   return (
     <ul className={ `list-group ${ className }` }>
@@ -71,10 +82,11 @@ const ListForm = React.memo(React.forwardRef<ListFormReference, ListFormProps>((
       }
     </ul>
   )
-}), (prevProps: ListFormProps, nextProps: ListFormProps) => (
+}), (prevProps: MultiSelectFromProps, nextProps: MultiSelectFromProps) => (
   (prevProps.className === nextProps.className)
   && (prevProps.labels.toString() === nextProps.labels.toString())
+  && (prevProps.limit === nextProps.limit)
   && (prevProps.onChange === nextProps.onChange)
 ))
 
-export default ListForm
+export default MultiSelectFrom

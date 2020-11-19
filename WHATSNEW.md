@@ -1,3 +1,33 @@
+Version: **0.10.0** [2020/11/19]
+
+New Features:
+  - *None*
+
+Enhanced Features:
+  - Supported recording project closed date
+
+Bug Fixes:
+  - unexpected table layout on Firefox
+  - a request with multiple queries cannot be forwarded via error/login page
+  - unexpected result of search files
+
+***
+
+Version: **0.9.0** [2020/11/05]
+
+New Features:
+  - *None*
+
+Enhanced Features:
+  - Improved layout
+
+Bug Fixes:
+  - project/bundle list was not cleared on access error
+  - resources with symbol cannot be accessed
+  - page is crashed on launching project select modal
+
+***
+
 Version: **0.8.0** [2020/11/01]
 
 New Features:

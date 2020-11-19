@@ -26,7 +26,7 @@ const HelloPage = React.memo<HelloPageProps>(({
       <p>author = { author }</p>
       <p>version = { version }</p>
       <p>user = { user }</p>
-      <p>alias = { decodeURI(alias) }</p>
+      <p>alias = { decodeURIComponent(alias) }</p>
       <p>privilege = { privilege }</p>
       <p>domains = { domains }</p>
     </div>

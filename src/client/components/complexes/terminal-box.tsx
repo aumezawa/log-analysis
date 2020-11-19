@@ -42,7 +42,7 @@ const TerminalBox = React.memo<TerminalBoxProps>(({
         terminal.open(ref.current)
         fitAddon.fit()
 
-        socket = Socketio(`?cmd=${ encodeURI(res.data.cmd) }&cols=${ terminal.cols }&rows=${ terminal.rows }`, { path: "/terminal" })
+        socket = Socketio(`?cmd=${ encodeURIComponent(res.data.cmd) }&cols=${ terminal.cols }&rows=${ terminal.rows }`, { path: "/terminal" })
 
         terminal.onData((data: string) => {
           socket.emit("request", data)

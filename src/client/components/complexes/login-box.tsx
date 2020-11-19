@@ -65,7 +65,7 @@ const LoginBox = React.memo<LoginBoxProps>(({
       setTimeout(() => {
         if (redirect) {
           if (params.has("request")) {
-            location.href = `${ Environment.getBaseUrl() }${ params.get("request") }`
+            location.href = `${ Environment.getBaseUrl() }${ decodeURIComponent(params.get("request")) }`
           } else {
             location.href = `${ Environment.getBaseUrl() }`
           }

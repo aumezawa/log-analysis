@@ -30,13 +30,13 @@ router.use((req: Request, res: Response, next: NextFunction) => {
   const token = req.query.token || req.body.token || req.header("X-Access-Token") || req.cookies.token
   if (!token) {
     // Unauthorized
-    return res.redirect(`/login?request=${ req.url }`)
+    return res.redirect(`/login?request=${ encodeURIComponent(req.url) }`)
   }
 
   jwt.verify(token, req.app.get("token-key"), (err: jwt.VerifyErrors, decoded: object) => {
     if (err) {
       // Unauthorized
-      return res.redirect(`/error?type=token&msg=${ err.message }&request=${ req.url }`)
+      return res.redirect(`/error?type=token&msg=${ err.message }&request=${ encodeURIComponent(req.url) }`)
     }
 
     req.token = {

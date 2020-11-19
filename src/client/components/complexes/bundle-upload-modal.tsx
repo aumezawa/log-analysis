@@ -56,6 +56,7 @@ const BundleUploadBox = React.memo<BundleUploadBoxProps>(({
     params.append("bundle", obj)
     params.append("description", description)
 
+    data.current.message = "Please wait for uploading the bundle."
     status.current.processing = true
     status.current.done = false
     status.current.progress = 0
@@ -64,6 +65,9 @@ const BundleUploadBox = React.memo<BundleUploadBoxProps>(({
       headers: { "X-Access-Token": Cookie.get("token") || "" },
       onUploadProgress: (progressEvent: any) => {
         status.current.progress = Math.floor(progressEvent.loaded / progressEvent.total * 100)
+        if (status.current.progress === 100) {
+          data.current.message = "Uploading had done successfully. Please wait for decompressing the bundle."
+        }
         forceUpdate()
       }
     })
@@ -72,6 +76,7 @@ const BundleUploadBox = React.memo<BundleUploadBoxProps>(({
       status.current.processing = false
       status.current.done = true
       status.current.success = true
+      status.current.progress = 0
       clearFrom()
     })
     .catch((err: AxiosError) => {
@@ -79,6 +84,7 @@ const BundleUploadBox = React.memo<BundleUploadBoxProps>(({
       status.current.processing = false
       status.current.done = true
       status.current.success = false
+      status.current.progress = 0
       clearFrom()
     })
   }, [domain, project])
@@ -97,6 +103,7 @@ const BundleUploadBox = React.memo<BundleUploadBoxProps>(({
       id={ id }
       title="Log Bundle"
       message="Upload a log bundle."
+      size="modal-lg"
       center={ false }
       body={
         <>

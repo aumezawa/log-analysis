@@ -30,9 +30,10 @@ const RadioForm = React.memo(React.forwardRef<RedioFormReference, RadioFormProps
   useImperativeHandle(ref, () => ({
     checked: (target: number) => {
       refs.current.forEach((ref: React.RefObject<HTMLInputElement>, index: number) => {
-        if (ref.current) {
-          ref.current.checked = (index === target)
+        if (!ref.current) {
+          return
         }
+        ref.current.checked = (index === target)
       })
     }
   }), [labels.toString()])
