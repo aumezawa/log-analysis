@@ -16,9 +16,7 @@ declare namespace Express {
   export interface Request {
     domain?         : string,
     project?        : string,
-    bundle?         : string,
-    filepath?       : string,
-    resPath?        : string,
-    projectInfoPath?: string
+    bundleId?       : string,
+    bundleName?     : string
   }
 }

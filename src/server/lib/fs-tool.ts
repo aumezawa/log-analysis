@@ -2,7 +2,47 @@ import * as fs from "fs"
 import * as path from "path"
 import * as tar from "tar"
 
-const rmRecursiveSync: (node: string) => void = (node) => {
+export function isErrnoException(err: any, code: string): boolean {
+  return (err instanceof Error) && ((err as NodeJS.ErrnoException).code === code)
+}
+
+
+export function lsRecursiveSync(node: string, search?: string): NodeType {
+  if (fs.statSync(node).isDirectory()) {
+    return ({
+      name: path.basename(node),
+      file: false,
+      children: fs.readdirSync(node).map((name: string) => lsRecursiveSync(path.join(node, name), search)).filter((node: NodeType) => (!!node))
+    })
+  } else {
+    return (search && !fs.readFileSync(node, "utf8").includes(search))
+    ? null
+    : ({
+      name: path.basename(node),
+      file: true
+    })
+  }
+}
+
+export function lsRecursive(node: string, search: string, callback: (err?: any) => void): void
+export function lsRecursive(node: string, search?: string): Promise<void>
+export function lsRecursive(node: string, search?: string, callback?: (err?: any) => void): void | Promise<void> {
+  const promise = new Promise<void>((resolve: () => void, reject: (err?: any) => void) => {
+    return setImmediate(() => {
+      try {
+        lsRecursiveSync(node, search)
+        return resolve()
+      } catch (err) {
+        return reject(err)
+      }
+    })
+  })
+
+  return callback ? promise.then(callback, callback) && undefined : promise
+}
+
+
+export function rmRecursiveSync(node: string): void {
   if (fs.statSync(node).isDirectory()) {
     fs.readdirSync(node).forEach((child) => rmRecursiveSync(path.join(node, child)))
     fs.rmdirSync(node)
@@ -11,71 +51,116 @@ const rmRecursiveSync: (node: string) => void = (node) => {
   }
 }
 
-const rmRecursive: (node: string, callback: (err: Error) => void) => void = (node, callback) => {
-  setImmediate(() => {
-    try {
-      rmRecursiveSync(node)
-      callback(undefined)
-    } catch (err) {
-      if (err instanceof Error) {
-        callback(err)
-      } else {
-        callback(new Error("Failed to remove the file or directory."))
+export function rmRecursive(node: string, callback: (err?: any) => void): void
+export function rmRecursive(node: string): Promise<void>
+export function rmRecursive(node: string, callback?: (err?: any) => void): void | Promise<void> {
+  const promise = new Promise<void>((resolve: () => void, reject: (err?: any) => void) => {
+    return setImmediate(() => {
+      try {
+        rmRecursiveSync(node)
+        return resolve()
+      } catch (err) {
+        return reject(err)
       }
-    }
+    })
   })
+
+  return callback ? promise.then(callback, callback) && undefined : promise
 }
 
-const compressTgz: (name: string,  cwd: string, callback: (err: Error) => void) => void = (name, cwd, callback) => {
+
+export function extractRootTgzSync(name: string, cwd: string): string {
+  let root: string = null
+  let first: boolean = true
+  tar.list({
+    file: path.join(cwd, name),
+    sync: true,
+    filter: (path: string, entry: tar.FileStat) => (first && !(first = false)),
+    onentry: (entry: tar.FileStat) => {
+      const match = entry.header.path.match(/^([^/]+)[/].*$/)
+      root = (match ? match[1] : null)
+    }
+  })
+  return root
+}
+
+export function extractRootTgz(name: string, cwd: string, callback: (err?: any, root?: string) => void): void
+export function extractRootTgz(name: string, cwd: string): Promise<string>
+export function extractRootTgz(name: string, cwd: string, callback?: (err?: any, root?: string) => void): void | Promise<string> {
+  const promise = new Promise<string>((resolve: (root?: string) => void, reject: (err?: any) => void) => {
+    return setImmediate(() => {
+      try {
+        return resolve(extractRootTgzSync(name, cwd))
+      } catch (err) {
+        return reject(err)
+      }
+    })
+  })
+
+  const resolve = (root?: string):void => {
+    callback(undefined, root)
+  }
+
+  return callback ? promise.then(resolve, callback) && undefined : promise
+}
+
+
+export function compressTgzSync(directory: string, cwd: string, preserve?: boolean):void {
   tar.create({
-    file: path.join(cwd, name + ".tgz"),
+    file: path.join(cwd, directory + ".tgz"),
     cwd : cwd,
+    sync: true,
     gzip: true
-  }, [name], (err: Error) => {
-    if (err) {
-      callback(err)
-      return
-    }
-    try {
-      fs.statSync(path.join(cwd, name + ".tgz"))
-      rmRecursiveSync(path.join(cwd, name))
-      callback(undefined)
-    } catch (err) {
-      if (err instanceof Error) {
-        callback(err)
-      } else {
-        callback(new Error("Failed to compress the file."))
-      }
-    }
-  })
+  }, [directory])
+
+  if (!preserve) {
+    rmRecursiveSync(path.join(cwd, directory))
+  }
 }
 
-const decompressTgz: (name: string,  cwd: string, callback: (err: Error) => void) => void = (name, cwd, callback) => {
+export function compressTgz(directory: string, cwd: string, preserve: boolean, callback: (err?: any) => void): void
+export function compressTgz(directory: string, cwd: string, preserve: boolean): Promise<void>
+export function compressTgz(directory: string, cwd: string, preserve: boolean, callback?: (err?: any) => void): void | Promise<void> {
+  const promise = new Promise<void>((resolve: () => void, reject: (err?: any) => void) => {
+    return setImmediate(() => {
+      try {
+        compressTgzSync(directory, cwd, preserve)
+        return resolve()
+      } catch (err) {
+        return reject(err)
+      }
+    })
+  })
+
+  return callback ? promise.then(callback, callback) && undefined : promise
+}
+
+
+export function decompressTgzSync(file: string, cwd: string, preserve?: boolean): void {
   tar.extract({
-    file: path.join(cwd, name + ".tgz"),
-    cwd : cwd
-  }, undefined, (err: Error) => {
-    if (err) {
-      callback(err)
-      return
-    }
-    try {
-      fs.statSync(path.join(cwd, name))
-      rmRecursiveSync(path.join(cwd, name + ".tgz"))
-      callback(undefined)
-    } catch (err) {
-      if (err instanceof Error) {
-        callback(err)
-      } else {
-        callback(new Error("Failed to decompress the directory."))
-      }
-    }
-  })
+    file: path.join(cwd, file),
+    cwd : cwd,
+    sync: true
+  }, undefined)
+
+  if (!preserve) {
+    rmRecursiveSync(path.join(cwd, file))
+  }
 }
 
-export default {
-  rmRecursiveSync : rmRecursiveSync,
-  rmRecursive     : rmRecursive,
-  compressTgz     : compressTgz,
-  decompressTgz   : decompressTgz
+export function decompressTgz(file: string, cwd: string, preserve: boolean, callback: (err?: any) => void): void
+export function decompressTgz(file: string, cwd: string, preserve: boolean): Promise<void>
+export function decompressTgz(file: string, cwd: string, preserve: boolean, callback?: (err?: any) => void): void | Promise<void> {
+  const promise = new Promise<void>((resolve: () => void, reject: (err?: any) => void) => {
+    return setImmediate(() => {
+      try {
+        decompressTgzSync(file, cwd, preserve)
+        return resolve()
+      } catch (err) {
+        return reject(err)
+      }
+    })
+  })
+
+  return callback ? promise.then(callback, callback) && undefined : promise
 }

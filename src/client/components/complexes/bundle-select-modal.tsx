@@ -60,7 +60,7 @@ const BundleSelectModal = React.memo<BundleSelectModalProps>(({
     data.current.filter = refs.current.text.current.value = ""
     data.current.bundleId = null
     data.current.bundleName = null
-    setImmediate(() => refs.current.list.current.clear())
+    refs.current.list.current.clear()
   }, [domain, project, reload])
 
   useEffect(() => {

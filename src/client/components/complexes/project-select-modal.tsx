@@ -52,7 +52,7 @@ const ProjectSelectModal = React.memo<ProjectSelectModalProps>(({
     reloadProject()
     data.current.filter = refs.current.text.current.value = ""
     data.current.project = null
-    setImmediate(() => refs.current.list.current.clear())
+    refs.current.list.current.clear()
   }, [domain, action, reload])
 
   const reloadProject = useCallback(() => {
@@ -168,6 +168,7 @@ const ProjectSelectModal = React.memo<ProjectSelectModalProps>(({
       id={ id }
       title="Project"
       message={ `Select to ${ action } a project.` }
+      size="modal-lg"
       center={ false }
       body={
         <>

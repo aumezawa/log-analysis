@@ -299,7 +299,7 @@ const MainPage: React.FC<MainPageProps> = ({
                 <DropdownDivider key="divider-1" />,
                 <DropdownHeader
                   key="user"
-                  label={ decodeURI(alias) }
+                  label={ decodeURIComponent(alias) }
                   LIcon={ Person }
                 />,
                 <DropdownDivider key="divider-2" />,

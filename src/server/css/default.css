@@ -1,0 +1,6 @@
+#unsupported-message {
+  text-align: center !important;
+  font-size: 1rem !important;
+  font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
+  color: red !important;
+}

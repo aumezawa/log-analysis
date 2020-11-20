@@ -1,5 +1,6 @@
 dist/
 local/
 node_modules/
+public/css/
 public/js/
 *.pyc
