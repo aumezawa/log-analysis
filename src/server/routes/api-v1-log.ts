@@ -263,13 +263,6 @@ router.route("/:domain/projects/:projectName/bundles")
   })
 })
 .post((req: Request, res: Response, next: NextFunction) => {
-  if (!req.file) {
-    // Bad Request
-    return res.status(400).json({
-      msg: "log bundle is required. (param name: bundle)"
-    })
-  }
-
   return multer({
     storage: multer.diskStorage({
       destination : (req, file, cb) => cb(null, Project.getProjectResourcePathSync(req.token.usr, req.domain, req.project)),
@@ -281,6 +274,13 @@ router.route("/:domain/projects/:projectName/bundles")
       // Bad Request
       return res.status(500).json({
         msg: "Contact an administrator."
+      })
+    }
+
+    if (!req.file) {
+      // Bad Request
+      return res.status(400).json({
+        msg: "log bundle is required. (param name: bundle)"
       })
     }
 
