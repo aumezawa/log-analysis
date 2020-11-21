@@ -15,6 +15,8 @@ import Table from "../../../components/parts/table"
 import CenterText from "../../../components/parts/center-text"
 import Spinner from "../../../components/parts/spinner"
 
+import TableLayout from "../../../lib/table-layout"
+
 type VmInfoBoxProps = {
   className?: string,
   domain?   : string,
@@ -135,96 +137,70 @@ const VmInfoBox = React.memo<VmInfoBoxProps>(({
       />
     )
 
-    if (data.current.vms.length > 1) {
-      return tables
-    }
-
-    data.current.vms[0].nics.map((nic: VirtualNicInfo) => (
+    TableLayout(data.current.vms.map((vmInfo: VmInfo) => vmInfo.nics), "slot")
+    .forEach((content: Array<Array<string>>, index: number) => {
       tables.push(
         <Table
-          key={ `${ nic.name }` }
+          key={ `vnic-${ index }` }
           className="my-2"
-          title={ `vNIC Information - ${ nic.name }` }
+          title={ `vNIC Information - ${ index }` }
           LIcon={ Diagram3 }
-          content={ [
-            ["device",    `${ nic.device }`],
-            ["present",   `${ nic.present }`],
-            ["slot",      `${ nic.slot }`],
-            ["mac",       `${ nic.mac }`],
-            ["portgroup", `${ nic.portgroup }`]
-          ] }
+          content={ content }
         />
       )
-    ))
+    })
 
-    data.current.vms[0].scsis.map((scsi: VirtualScsiInfo) => (
+    TableLayout(data.current.vms.map((vmInfo: VmInfo) => vmInfo.scsis), "slot")
+    .forEach((content: Array<Array<string>>, index: number) => {
       tables.push(
         <Table
-          key={ `${ scsi.name }` }
+          key={ `scsi-${ index }` }
           className="my-2"
-          title={ `vSCSI Information - ${ scsi.name }` }
+          title={ `vSCSI Information - ${ index }` }
           LIcon={ Server }
-          content={ [
-            ["device",    `${ scsi.device }`],
-            ["present",   `${ scsi.present }`],
-            ["slot",      `${ scsi.slot }`]
-          ] }
+          content={ content }
         />
       )
-    ))
+    })
 
-    data.current.vms[0].disks.map((disk: VirtualDiskInfo) => (
+    TableLayout(data.current.vms.map((vmInfo: VmInfo) => vmInfo.disks), "name")
+    .forEach((content: Array<Array<string>>, index: number) => {
       tables.push(
         <Table
-          key={ `${ disk.name }` }
+          key={ `disk-${ index }` }
           className="my-2"
-          title={ `vDisk Information - ${ disk.name }` }
+          title={ `vDisk Information - ${ index }` }
           LIcon={ Server }
-          content={ [
-            ["device",                  `${ disk.device }`],
-            ["size",                    `${ disk.size } GB`],
-            ["present",                 `${ disk.present }`],
-            ["mode",                    `${ disk.mode }`],
-            ["physical disk (if rdm)",  `${ disk.pdisk }`]
-          ] }
+          content={ content }
         />
       )
-    ))
+    })
 
-    data.current.vms[0].dpios.map((dpio: PassthruDeviceInfo) => (
+    TableLayout(data.current.vms.map((vmInfo: VmInfo) => vmInfo.dpios), "slot")
+    .forEach((content: Array<Array<string>>, index: number) => {
       tables.push(
         <Table
-          key={ `${ dpio.name }` }
+          key={ `dpio-${ index }` }
           className="my-2"
-          title={ `DPIO Information - ${ dpio.name }` }
+          title={ `DPIO Information - ${ index }` }
           LIcon={ Server }
-          content={ [
-            ["present",   `${ dpio.present }`],
-            ["slot",      `${ dpio.slot }`],
-            ["id",        `${ dpio.id }`]
-          ] }
+          content={ content }
         />
       )
-    ))
+    })
 
-    data.current.vms[0].vfs.map((vf: VfNicInfo) => (
+    TableLayout(data.current.vms.map((vmInfo: VmInfo) => vmInfo.vfs), "slot")
+    .forEach((content: Array<Array<string>>, index: number) => {
       tables.push(
         <Table
-          key={ `${ vf.name }` }
+          key={ `vf-${ index }` }
           className="my-2"
-          title={ `SR-IOV VF Information - ${ vf.name }` }
+          title={ `SR-IOV VF Information - ${ index }` }
           LIcon={ Diagram3 }
-          content={ [
-            ["present",   `${ vf.present }`],
-            ["slot",      `${ vf.slot }`],
-            ["id",        `${ vf.id }`],
-            ["pfid",      `${ vf.pfid }`],
-            ["mac",       `${ vf.mac }`],
-            ["portgroup", `${ vf.portgroup }`]
-          ] }
+          content={ content }
         />
       )
-    ))
+    })
 
     return tables
   }

@@ -50,6 +50,9 @@ const MultiSelectModal = React.memo<MultiSelectModalProps>(({
   const reloadHost = useCallback(() => {
     if (domain && project) {
       const uri = `${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project) }/${ mode }`
+
+      data.current.list = []
+      forceUpdate()
       Axios.get(uri, {
         headers : { "X-Access-Token": Cookie.get("token") || "" },
         data    : {}
@@ -71,8 +74,8 @@ const MultiSelectModal = React.memo<MultiSelectModalProps>(({
     }
   }, [domain, project, mode])
 
-  const handleSelectHost = useCallback((values: Array<string>) => {
-    data.current.select = values
+  const handleSelect = useCallback((values: Array<string>) => {
+    data.current.select = values.map((value: string) => value.split(" ")[0])
     forceUpdate()
   }, [true])
 
@@ -81,6 +84,10 @@ const MultiSelectModal = React.memo<MultiSelectModalProps>(({
       onSubmit(data.current.select.join(","))
     }
   }, [onSubmit])
+
+  const listLabel = () => (
+    data.current.list.map((basename: BaseNameInfo) => `${ basename.name } [ ${ basename.bundleName } ]`)
+  )
 
   return (
     <ModalFrame
@@ -92,9 +99,9 @@ const MultiSelectModal = React.memo<MultiSelectModalProps>(({
       body={
         <MultiSelectFrom
           ref={ refs.current.select }
-          labels={ data.current.list }
+          labels={ listLabel() }
           limit={ 3 }
-          onChange={ handleSelectHost }
+          onChange={ handleSelect }
         />
       }
       foot={

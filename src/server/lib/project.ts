@@ -893,14 +893,20 @@ export function getZdumpInfo(user: string, domain: string, project: string, bund
   })
 }
 
-export function getProjectHostList(user: string, domain: string, project: string): Promise<Array<string>> {
-  return new Promise<Array<string>>((resolve: (list: Array<string>) => void, reject: (err?: any) => void) => {
+export function getProjectHostList(user: string, domain: string, project: string): Promise<Array<BaseNameInfo>> {
+  return new Promise<Array<BaseNameInfo>>((resolve: (list: Array<BaseNameInfo>) => void, reject: (err?: any) => void) => {
     return setImmediate(() => {
       return getProjectInfo(user, domain, project)
       .then((projectInfo: ProjectInfo) => {
-        let alllist: Array<string> = []
+        let alllist: Array<BaseNameInfo> = []
         projectInfo.bundles.filter((bundleInfo: BundleInfo) => bundleInfo.available).forEach((bundleInfo: BundleInfo) => {
-          const list = Vmtools.getHostListSync(getBundleResourcePathSync(user, domain, project, String(bundleInfo.id)))
+          const list = Vmtools.getHostListSync(getBundleResourcePathSync(user, domain, project, String(bundleInfo.id))).map((name: string) => {
+            return ({
+              name      : name,
+              bundleName: bundleInfo.name,
+              type      : "host"
+            })
+          })
           alllist = alllist.concat(list ? list : [])
         })
         return resolve(alllist)
@@ -936,14 +942,20 @@ export function getProjectHostInfo(user: string, domain: string, project: string
   })
 }
 
-export function getProjectVmList(user: string, domain: string, project: string): Promise<Array<string>> {
-  return new Promise<Array<string>>((resolve: (list: Array<string>) => void, reject: (err?: any) => void) => {
+export function getProjectVmList(user: string, domain: string, project: string): Promise<Array<BaseNameInfo>> {
+  return new Promise<Array<BaseNameInfo>>((resolve: (list: Array<BaseNameInfo>) => void, reject: (err?: any) => void) => {
     return setImmediate(() => {
       return getProjectInfo(user, domain, project)
       .then((projectInfo: ProjectInfo) => {
-        let alllist: Array<string> = []
+        let alllist: Array<BaseNameInfo> = []
         projectInfo.bundles.filter((bundleInfo: BundleInfo) => bundleInfo.available).forEach((bundleInfo: BundleInfo) => {
-          const list = Vmtools.getVmListSync(getBundleResourcePathSync(user, domain, project, String(bundleInfo.id)))
+          const list = Vmtools.getVmListSync(getBundleResourcePathSync(user, domain, project, String(bundleInfo.id))).map((name: string) => {
+            return ({
+              name      : name,
+              bundleName: bundleInfo.name,
+              type      : "vm"
+            })
+          })
           alllist = alllist.concat(list ? list : [])
         })
         return resolve(alllist)

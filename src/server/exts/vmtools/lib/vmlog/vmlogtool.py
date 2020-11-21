@@ -89,6 +89,7 @@ def GetHostInfo(dirPath, esxName):
             'network'   : {
                 'nics'      : GetNics(dirPath),
                 'vswitches' : GetVswitches(dirPath),
+                'portgroups': GetPortgroups(dirPath)
             },
             'storage'   : {
                 'hbas'      : GetHbas(dirPath),
@@ -601,21 +602,31 @@ def GetVswitches(dirPath):
     #
     switches = []
     for node in nodes:
-        portgroups  = []
-        for child in node.findall('./port-groups/port-group'):
-            portgroups.append({
-                'name'  : child.findtext('./value[@name="name"]'),
-                'vlan'  : _int(child.findtext('./value[@name="vlan-id"]'))
-            })
-            portgroups.sort(key=lambda x: x['name'])
         switches.append({
             'name'      : node.findtext('./value[@name="name"]'),
             'uplinks'   : sorted(node.findtext('./value[@name="uplinks"]', default='').split(',')),
-            'mtu'       : _int(node.findtext('./value[@name="mtu"]')),
-            'portgroups': portgroups
+            'mtu'       : _int(node.findtext('./value[@name="mtu"]'))
         })
     switches.sort(key=lambda x: x['name'])
     return switches
+
+
+def GetPortgroups(dirPath):
+    filePath = os.path.join(dirPath, 'commands', 'esxcfg-info_-a--F-xml.txt')
+    xpath    = './network-info/virtual-switch-info/virtual-switches/virtual-switch/port-groups/port-group'
+    nodes    = GetXmlNode(filePath, xpath, multi=True)
+    if nodes is None:
+        return []
+    #
+    portgroups = []
+    for node in nodes:
+        portgroups.append({
+            'name'      : node.findtext('./value[@name="name"]'),
+            'vswitch'   : node.findtext('./value[@name="virtual-switch"]'),
+            'vlan'      : _int(node.findtext('./value[@name="vlan-id"]'))
+        })
+    portgroups.sort(key=lambda x: x['name'])
+    return portgroups
 
 
 def GetHbas(dirPath):

@@ -15,6 +15,8 @@ import Table from "../../../components/parts/table"
 import CenterText from "../../../components/parts/center-text"
 import Spinner from "../../../components/parts/spinner"
 
+import TableLayout from "../../../lib/table-layout"
+
 type HostInfoBoxProps = {
   className?: string,
   domain?   : string,
@@ -149,112 +151,96 @@ const HostInfoBox = React.memo<HostInfoBoxProps>(({
       />
     )
 
-    if (data.current.hosts.length > 1) {
-      return tables
-    }
-
-    tables.push(
-      <Table
-        key="card"
-        className="my-2"
-        title="PCI Card Information"
-        LIcon={ Tags }
-        content={
-          data.current.hosts[0].hardware.cards.map((card: HostPciCardInfo) => (
-            [`slot ${ card.slot }`, `[${ card.sbdf }] ${ card.device }`]
-          ))
-        }
-      />
-    )
-
-    data.current.hosts[0].network.nics.map((nic: HostNicInfo) => (
+    TableLayout(data.current.hosts.map((hostInfo: HostInfo) => hostInfo.hardware.cards), "slot")
+    .forEach((content: Array<Array<string>>, index: number) => {
       tables.push(
         <Table
-          key={ `${ nic.name }` }
+          key={ `card-${ index }` }
           className="my-2"
-          title={ `NIC Information - ${ nic.name }` }
+          title={ `PCI Card Information - ${ index }` }
+          LIcon={ Tags }
+          content={ content }
+        />
+      )
+    })
+
+    TableLayout(data.current.hosts.map((hostInfo: HostInfo) => hostInfo.network.nics), "name", null, {speed: "Mbps"})
+    .forEach((content: Array<Array<string>>, index: number) => {
+      tables.push(
+        <Table
+          key={ `nic-${ index }` }
+          className="my-2"
+          title={ `NIC Information - ${ index }` }
           LIcon={ Diagram3 }
-          content={ [
-            ["speed",   `${ nic.speed } Mbps`],
-            ["mtu",     `${ nic.mtu }`],
-            ["linkup",  `${ nic.linkup }`],
-            ["sbdf",    `${ nic.sbdf }`],
-            ["device",  `${ nic.device }`],
-            ["port",    `${ nic.port }`],
-            ["mac",     `${ nic.mac }`],
-            ["driver",  `${ nic.driver }`]
-          ] }
+          content={ content }
         />
       )
-    ))
-    data.current.hosts[0].network.vswitches.map((vswitch: VirtualSwitchInfo) => (
+    })
+
+    TableLayout(data.current.hosts.map((hostInfo: HostInfo) => hostInfo.network.vswitches), "name")
+    .forEach((content: Array<Array<string>>, index: number) => {
       tables.push(
         <Table
-          key={ `${ vswitch.name }` }
+          key={ `vswitch-${ index }` }
           className="my-2"
+          title={ `vSwitch Information - ${ index }` }
           LIcon={ Diagram3 }
-          title={ `vSwitch Information - ${ vswitch.name }` }
-          content={ [
-            ["uplink",    `${ vswitch.uplinks.join(", ") }`],
-            ["mtu",       `${ vswitch.mtu }`]
-          ].concat(
-            vswitch.portgroups.map((portgroup: PortgroupInfo) => (
-              [`vlan - portgroup - ${ portgroup.name }`, `${ portgroup.vlan }`]
-            ))
-          ) }
+          content={ content }
         />
       )
-    ))
+    })
 
-    data.current.hosts[0].storage.hbas.map((hba: HostHbaInfo) => (
+    TableLayout(data.current.hosts.map((hostInfo: HostInfo) => hostInfo.network.portgroups), "name")
+    .forEach((content: Array<Array<string>>, index: number) => {
       tables.push(
         <Table
-          key={ `${ hba.name }` }
+          key={ `portgroup-${ index }` }
           className="my-2"
-          title={ `HBA Information - ${ hba.name }` }
-          LIcon={ Server }
-          content={ [
-            ["sbdf",    `${ hba.sbdf }`],
-            ["device",  `${ hba.device }`],
-            ["port",    `${ hba.port }`],
-            ["wwn",     `${ hba.wwn }`],
-            ["driver",  `${ hba.driver }`]
-          ] }
+          title={ `PortGroup Information - ${ index }` }
+          LIcon={ Diagram3 }
+          content={ content }
         />
       )
-    ))
-    data.current.hosts[0].storage.disks.map((disk: HostDiskInfo) => (
+    })
+
+    TableLayout(data.current.hosts.map((hostInfo: HostInfo) => hostInfo.storage.hbas), "name")
+    .forEach((content: Array<Array<string>>, index: number) => {
       tables.push(
         <Table
-          key={ `${ disk.name }` }
+          key={ `hba-${ index }` }
           className="my-2"
+          title={ `HBA Information - ${ index }` }
           LIcon={ Server }
-          title={ `Disk Information - ${ disk.name }` }
-          content={ [
-            ["alternate",   `${ disk.vml }`],
-            ["storage",     `${ disk.storage }`],
-            ["size",        `${ disk.size } GB`],
-            ["hbas",        `${ disk.adapters.join(", ") }`],
-            ["nmp - psp",   `${ disk.nmp_psp }`],
-            ["nmp - satp",  `${ disk.nmp_satp }`]
-          ] }
+          content={ content }
         />
       )
-    ))
+    })
 
-    tables.push(
-      <Table
-        key="package"
-        className="my-2"
-        title="Software Package Information"
-        LIcon={ Grid3x3Gap }
-        content={
-          data.current.hosts[0].packages.map((vib: HostPackageInfo) => (
-            [`${ vib.name }`, `${ vib.version }`]
-          ))
-        }
-      />
-    )
+    TableLayout(data.current.hosts.map((hostInfo: HostInfo) => hostInfo.storage.disks), "name", null, {size: "GB"})
+    .forEach((content: Array<Array<string>>, index: number) => {
+      tables.push(
+        <Table
+          key={ `disk-${ index }` }
+          className="my-2"
+          title={ `Disk Information - ${ index }` }
+          LIcon={ Server }
+          content={ content }
+        />
+      )
+    })
+
+    TableLayout(data.current.hosts.map((hostInfo: HostInfo) => hostInfo.packages), "name", "version",)
+    .forEach((content: Array<Array<string>>) => {
+      tables.push(
+        <Table
+          key={ `package` }
+          className="my-2"
+          title={ `Software Package Information` }
+          LIcon={ Grid3x3Gap }
+          content={ content }
+        />
+      )
+    })
 
     return tables
   }

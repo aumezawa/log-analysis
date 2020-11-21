@@ -341,6 +341,10 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
                 onClick={ handleClickDeleteBundle }
               />,
               <DropdownDivider key="divider-2" />,
+              <DropdownHeader
+                key="advance-header"
+                label="Advanced Operations"
+              />,
               <DropdownItem
                 key="compare-hosts"
                 label="Commpare Hosts"

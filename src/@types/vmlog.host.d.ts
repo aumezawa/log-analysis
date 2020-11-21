@@ -40,7 +40,8 @@ type HostPciCardInfo = {
 
 type HostNetworkInfo = {
   nics      : Array<HostNicInfo>,
-  vswitches : Array<VirtualSwitchInfo>
+  vswitches : Array<VirtualSwitchInfo>,
+  portgroups: Array<PortgroupInfo>
 }
 
 type HostNicInfo = {
@@ -58,13 +59,12 @@ type HostNicInfo = {
 type VirtualSwitchInfo = {
   name      : string,
   uplinks   : Array<string>,
-  mtu       : number,
-  portgroups: Array<PortgroupInfo>
-
+  mtu       : number
 }
 
 type PortgroupInfo = {
   name      : string,
+  vswitch   : string,
   vlan      : number
 }
 
