@@ -19,27 +19,32 @@ type HostInfoBoxProps = {
   className?: string,
   domain?   : string,
   project?  : string,
-  bundle?   : string
+  bundle?   : string,
+  hosts?    : string
 }
 
 const HostInfoBox = React.memo<HostInfoBoxProps>(({
   className = "px-2",
   domain    = null,
   project   = null,
-  bundle    = null
+  bundle    = null,
+  hosts     = null
 }) => {
   const [ignored, forceUpdate] = useReducer(x => x + 1, 0)
 
-  const hostInfo = useRef<HostInfo>(null)
+  const data = useRef({
+    hosts   : []
+  })
+
   const status = useRef({
     progress: false
   })
 
   useEffect(() => {
-    if (domain && project && bundle) {
+    if (domain && project && bundle && !hosts) {
       const uri = `${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project, bundle) }/hosts`
+      data.current.hosts = []
       status.current.progress = true
-      hostInfo.current = null
       forceUpdate()
       Axios.get(uri, {
         headers : { "X-Access-Token": Cookie.get("token") || "" },
@@ -54,23 +59,44 @@ const HostInfoBox = React.memo<HostInfoBoxProps>(({
         })
       })
       .then((res: AxiosResponse) => {
+        data.current.hosts = [res.data.host]
         status.current.progress = false
-        hostInfo.current = res.data.host
         forceUpdate()
         return
       })
       .catch((err: AxiosError) => {
+        data.current.hosts = []
         status.current.progress = false
-        hostInfo.current = null
+        forceUpdate()
+        return
+      })
+    } else if (domain && project && hosts) {
+      const uri = `${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project) }/hosts/${ hosts }`
+      data.current.hosts = []
+      status.current.progress = true
+      forceUpdate()
+      Axios.get(uri, {
+        headers : { "X-Access-Token": Cookie.get("token") || "" },
+        data    : {}
+      })
+      .then((res: AxiosResponse) => {
+        data.current.hosts = res.data.hosts
+        status.current.progress = false
+        forceUpdate()
+        return
+      })
+      .catch((err: AxiosError) => {
+        data.current.hosts = []
+        status.current.progress = false
         forceUpdate()
         return
       })
     } else {
+      data.current.hosts = []
       status.current.progress = false
-      hostInfo.current = null
       forceUpdate()
     }
-  }, [domain, project, bundle])
+  }, [domain, project, bundle, hosts])
 
   const render = () => {
     const tables: Array<JSX.Element> = []
@@ -82,11 +108,11 @@ const HostInfoBox = React.memo<HostInfoBoxProps>(({
         title="ESXi Base Information"
         LIcon={ HddStack }
         content={ [
-          ["hostname",  `${ hostInfo.current.hostname }`],
-          ["version",   `${ hostInfo.current.version }`],
-          ["build",     `${ hostInfo.current.build }`],
-          ["profile",   `${ hostInfo.current.profile }`],
-          ["uptime",    `${ hostInfo.current.uptime } days`]
+          ["hostname"].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.hostname }`)),
+          ["version" ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.version }`)),
+          ["build"   ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.build }`)),
+          ["profile" ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.profile }`)),
+          ["uptime"  ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.uptime } days`))
         ] }
       />
     )
@@ -98,9 +124,9 @@ const HostInfoBox = React.memo<HostInfoBoxProps>(({
         LIcon={ Gear }
         title="ESXi System Information"
         content={ [
-          ["power policy",                              `${ hostInfo.current.system.powerPolicy }`],
-          ["kernel param - pcipDisablePciErrReporting", `${ hostInfo.current.system.pcipDisablePciErrReporting }`],
-          ["kernel param - enableACPIPCIeHotplug",      `${ hostInfo.current.system.enableACPIPCIeHotplug }`]
+          ["power policy"                             ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.system.powerPolicy }`)),
+          ["kernel param - pcipDisablePciErrReporting"].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.system.pcipDisablePciErrReporting }`)),
+          ["kernel param - enableACPIPCIeHotplug"     ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.system.enableACPIPCIeHotplug }`))
         ] }
       />
     )
@@ -112,16 +138,21 @@ const HostInfoBox = React.memo<HostInfoBoxProps>(({
         title="Hardware Information"
         LIcon={ Cpu }
         content={ [
-          ["machine",             `${ hostInfo.current.hardware.machine }`],
-          ["serial number",       `${ hostInfo.current.hardware.serial }`],
-          ["cpu - model",         `${ hostInfo.current.hardware.cpu.model }`],
-          ["cpu - sockets",       `${ hostInfo.current.hardware.cpu.sockets }`],
-          ["cpu - total cores",   `${ hostInfo.current.hardware.cpu.cores }`],
-          ["cpu - total threads", `${ hostInfo.current.hardware.cpu.threads }`],
-          ["memory - total",      `${ hostInfo.current.hardware.memory } GB`]
+          ["machine"            ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.hardware.machine }`)),
+          ["serial number"      ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.hardware.serial }`)),
+          ["cpu - model"        ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.hardware.cpu.model }`)),
+          ["cpu - sockets"      ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.hardware.cpu.sockets }`)),
+          ["cpu - total cores"  ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.hardware.cpu.cores }`)),
+          ["cpu - total threads"].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.hardware.cpu.threads }`)),
+          ["memory - total"     ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.hardware.memory } GB`))
         ] }
       />
     )
+
+    if (data.current.hosts.length > 1) {
+      return tables
+    }
+
     tables.push(
       <Table
         key="card"
@@ -129,14 +160,14 @@ const HostInfoBox = React.memo<HostInfoBoxProps>(({
         title="PCI Card Information"
         LIcon={ Tags }
         content={
-          hostInfo.current.hardware.cards.map((card: HostPciCardInfo) => (
+          data.current.hosts[0].hardware.cards.map((card: HostPciCardInfo) => (
             [`slot ${ card.slot }`, `[${ card.sbdf }] ${ card.device }`]
           ))
         }
       />
     )
 
-    hostInfo.current.network.nics.map((nic: HostNicInfo) => (
+    data.current.hosts[0].network.nics.map((nic: HostNicInfo) => (
       tables.push(
         <Table
           key={ `${ nic.name }` }
@@ -156,7 +187,7 @@ const HostInfoBox = React.memo<HostInfoBoxProps>(({
         />
       )
     ))
-    hostInfo.current.network.vswitches.map((vswitch: VirtualSwitchInfo) => (
+    data.current.hosts[0].network.vswitches.map((vswitch: VirtualSwitchInfo) => (
       tables.push(
         <Table
           key={ `${ vswitch.name }` }
@@ -175,7 +206,7 @@ const HostInfoBox = React.memo<HostInfoBoxProps>(({
       )
     ))
 
-    hostInfo.current.storage.hbas.map((hba: HostHbaInfo) => (
+    data.current.hosts[0].storage.hbas.map((hba: HostHbaInfo) => (
       tables.push(
         <Table
           key={ `${ hba.name }` }
@@ -192,7 +223,7 @@ const HostInfoBox = React.memo<HostInfoBoxProps>(({
         />
       )
     ))
-    hostInfo.current.storage.disks.map((disk: HostDiskInfo) => (
+    data.current.hosts[0].storage.disks.map((disk: HostDiskInfo) => (
       tables.push(
         <Table
           key={ `${ disk.name }` }
@@ -218,7 +249,7 @@ const HostInfoBox = React.memo<HostInfoBoxProps>(({
         title="Software Package Information"
         LIcon={ Grid3x3Gap }
         content={
-          hostInfo.current.packages.map((vib: HostPackageInfo) => (
+          data.current.hosts[0].packages.map((vib: HostPackageInfo) => (
             [`${ vib.name }`, `${ vib.version }`]
           ))
         }
@@ -231,8 +262,8 @@ const HostInfoBox = React.memo<HostInfoBoxProps>(({
   return (
     <div className={ className }>
       {  status.current.progress &&   <Spinner /> }
-      { !status.current.progress &&  !hostInfo.current && <CenterText text="No Data" /> }
-      { !status.current.progress && !!hostInfo.current && render() }
+      { !status.current.progress &&  !data.current.hosts.length && <CenterText text="No Data" /> }
+      { !status.current.progress && !!data.current.hosts.length && render() }
     </div>
   )
 })

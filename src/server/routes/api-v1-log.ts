@@ -228,6 +228,110 @@ router.route("/:domain/projects/:projectName/bundles/:bundleId/hosts")
 })
 
 
+router.route("/:domain/projects/:projectName/vms/:vmNames")
+.get((req: Request, res: Response, next: NextFunction) => {
+  return Project.getProjectVmInfo(req.token.usr, req.domain, req.project, req.params.vmNames)
+  .then((list: Array<VmInfo>) => {
+    // OK
+    return res.status(200).json({
+      msg: "You get vms information.",
+      vms: list
+    })
+  })
+  .catch((err: any) => {
+    return ((err instanceof Error) && (err.name === "External"))
+      ? // Bad Request
+        res.status(400).json({ msg: err.message })
+      : // Internal Server Error
+        res.status(500).json({ msg: "Contact an administrator." })
+  })
+})
+.all((req: Request, res: Response, next: NextFunction) => {
+  // Method Not Allowed
+  return res.status(405).json({
+    msg: "GET method is only supported."
+  })
+})
+
+
+router.route("/:domain/projects/:projectName/vms")
+.get((req: Request, res: Response, next: NextFunction) => {
+  return Project.getProjectVmList(req.token.usr, req.domain, req.project)
+  .then((list: Array<string>) => {
+    // OK
+    return res.status(200).json({
+      msg: "You get a vm list.",
+      vms: list
+    })
+  })
+  .catch((err: any) => {
+    return ((err instanceof Error) && (err.name === "External"))
+      ? // Bad Request
+        res.status(400).json({ msg: err.message })
+      : // Internal Server Error
+        res.status(500).json({ msg: "Contact an administrator." })
+  })
+})
+.all((req: Request, res: Response, next: NextFunction) => {
+  // Method Not Allowed
+  return res.status(405).json({
+    msg: "GET method is only supported."
+  })
+})
+
+
+router.route("/:domain/projects/:projectName/hosts/:hostNames")
+.get((req: Request, res: Response, next: NextFunction) => {
+  return Project.getProjectHostInfo(req.token.usr, req.domain, req.project, req.params.hostNames)
+  .then((list: Array<HostInfo>) => {
+    // OK
+    return res.status(200).json({
+      msg: "You get hosts information.",
+      hosts: list
+    })
+  })
+  .catch((err: any) => {
+    return ((err instanceof Error) && (err.name === "External"))
+      ? // Bad Request
+        res.status(400).json({ msg: err.message })
+      : // Internal Server Error
+        res.status(500).json({ msg: "Contact an administrator." })
+  })
+})
+.all((req: Request, res: Response, next: NextFunction) => {
+  // Method Not Allowed
+  return res.status(405).json({
+    msg: "GET method is only supported."
+  })
+})
+
+
+router.route("/:domain/projects/:projectName/hosts")
+.get((req: Request, res: Response, next: NextFunction) => {
+  return Project.getProjectHostList(req.token.usr, req.domain, req.project)
+  .then((list: Array<string>) => {
+    // OK
+    return res.status(200).json({
+      msg: "You get a host list.",
+      hosts: list
+    })
+  })
+  .catch((err: any) => {
+    return ((err instanceof Error) && (err.name === "External"))
+      ? // Bad Request
+        res.status(400).json({ msg: err.message })
+      : // Internal Server Error
+        res.status(500).json({ msg: "Contact an administrator." })
+  })
+})
+.all((req: Request, res: Response, next: NextFunction) => {
+  // Method Not Allowed
+  return res.status(405).json({
+    msg: "GET method is only supported."
+  })
+})
+
+
 router.route("/:domain/projects/:projectName/bundles/:bundleId/files/*")
 .get((req: Request, res: Response, next: NextFunction) => {
   const file = req.params[0]

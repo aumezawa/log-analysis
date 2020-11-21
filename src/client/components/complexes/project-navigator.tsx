@@ -6,6 +6,7 @@ import { House } from "react-bootstrap-icons"
 import { FolderCheck, FolderPlus, FolderX, Folder, Folder2Open } from "react-bootstrap-icons"
 import { JournalArrowUp, JournalCheck, JournalX, Journal } from "react-bootstrap-icons"
 import { FileEarmarkText } from "react-bootstrap-icons"
+import { Box, HddStack } from "react-bootstrap-icons"
 
 import UniqueId from "../../lib/unique-id"
 
@@ -14,6 +15,7 @@ import ProjectCreateModal from "../complexes/project-create-modal"
 import ProjectSelectModal from "../complexes/project-select-modal"
 import BundleUploadModal from "../complexes/bundle-upload-modal"
 import BundleSelectModal from "../complexes/bundle-select-modal"
+import MultiSelectModal from "../specifics/vmlog/multi-select-modal"
 
 import Button from "../parts/button"
 import DropdownButton from "../parts/dropdown-button"
@@ -30,7 +32,9 @@ type ProjectNavigatorProps = {
   filename        : string,
   onChangeDomain  : (domainName: string) => void,
   onChangeProject : (projectName: string) => void,
-  onChangeBundle  : (bundleId: string) => void
+  onChangeBundle  : (bundleId: string) => void,
+  onChangeHosts   : (hosts: string) => void,
+  onChangeVms     : (vms: string) => void
 }
 
 const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
@@ -42,22 +46,27 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
   filename        = null,
   onChangeDomain  = undefined,
   onChangeProject = undefined,
-  onChangeBundle  = undefined
+  onChangeBundle  = undefined,
+  onChangeHosts   = undefined,
+  onChangeVms     = undefined
 }) => {
   const [ignored,       forceUpdate]       = useReducer(x => x + 1, 0)
   const [reloadProject, updateProjectList] = useReducer(x => x + 1, 0)
   const [reloadBundle,  updateBundleList]  = useReducer(x => x + 1, 0)
+  const [reloadSelect,  updateSelectList]  = useReducer(x => x + 1, 0)
 
   const id = useRef({
     domainSelect  : "modal-" + UniqueId(),
     projectCreate : "modal-" + UniqueId(),
     projectSelect : "modal-" + UniqueId(),
     bundleUpload  : "modal-" + UniqueId(),
-    bundleSelect  : "modal-" + UniqueId()
+    bundleSelect  : "modal-" + UniqueId(),
+    multiSelect   : "modal-" + UniqueId()
   })
 
   const data = useRef({
     action    : "open",
+    mode      : "hosts",
     bundleName: null
   })
 
@@ -100,6 +109,15 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
     forceUpdate()
   } , [true])
 
+  const handleChangeSelect = useCallback((value: string) => {
+    if (data.current.mode === "hosts" && onChangeHosts) {
+      onChangeHosts(value)
+    }
+    if (data.current.mode === "vms" && onChangeVms) {
+      onChangeVms(value)
+    }
+  }, [onChangeHosts, onChangeVms])
+
   const handleClickOpenProject = useCallback(() => {
     data.current.action = "open"
     updateProjectList()
@@ -128,6 +146,16 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
   const handleClickDeleteBundle = useCallback(() => {
     data.current.action = "delete"
     updateBundleList()
+  }, [true])
+
+  const handleClickCompareHosts = useCallback(() => {
+    data.current.mode = "hosts"
+    updateSelectList()
+  }, [true])
+
+  const handleClickCompareVms = useCallback(() => {
+    data.current.mode = "vms"
+    updateSelectList()
   }, [true])
 
   return (
@@ -163,6 +191,14 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
         reload={ reloadBundle }
         onSubmit={ handleChangeBundle }
         onUpdate={ handleUpdateBundleName }
+      />
+      <MultiSelectModal
+        id={ id.current.multiSelect }
+        domain={ domain }
+        project={ project }
+        mode={ data.current.mode }
+        reload={ reloadSelect }
+        onSubmit={ handleChangeSelect }
       />
       <div className="flex-container-row align-items-center">
         <div className="borderable">
@@ -303,6 +339,25 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
                 toggle="modal"
                 target={ id.current.bundleSelect }
                 onClick={ handleClickDeleteBundle }
+              />,
+              <DropdownDivider key="divider-2" />,
+              <DropdownItem
+                key="compare-hosts"
+                label="Commpare Hosts"
+                LIcon={ HddStack }
+                disabled={ !domain || !project }
+                toggle="modal"
+                target={ id.current.multiSelect }
+                onClick={ handleClickCompareHosts }
+              />,
+              <DropdownItem
+                key="compare-vms"
+                label="Commpare VMs"
+                LIcon={ Box }
+                disabled={ !domain || !project }
+                toggle="modal"
+                target={ id.current.multiSelect }
+                onClick={ handleClickCompareVms }
               />
             ] }
           />

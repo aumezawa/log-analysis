@@ -88,6 +88,8 @@ const MainPage: React.FC<MainPageProps> = ({
     domain    : domains.split(",")[0],
     project   : null,
     bundle    : null,
+    hosts     : null,
+    vms       : null,
     vmname    : null,
     dumpname  : null,
     filepath  : null,
@@ -171,6 +173,8 @@ const MainPage: React.FC<MainPageProps> = ({
     data.current.domain = domainName
     data.current.project = null
     data.current.bundle = null
+    data.current.hosts = null
+    data.current.vms = null
     data.current.vmname = null
     data.current.dumpname = null
     data.current.filepath = null
@@ -186,6 +190,8 @@ const MainPage: React.FC<MainPageProps> = ({
   const handleChangeProject = useCallback((projectName: string) => {
     data.current.project = projectName
     data.current.bundle = null
+    data.current.hosts = null
+    data.current.vms = null
     data.current.vmname = null
     data.current.dumpname = null
     data.current.filepath = null
@@ -200,6 +206,8 @@ const MainPage: React.FC<MainPageProps> = ({
 
   const handleChangeBundle = useCallback((bundleId: string) => {
     data.current.bundle = bundleId
+    data.current.hosts = null
+    data.current.vms = null
     data.current.vmname = null
     data.current.dumpname = null
     data.current.filepath = null
@@ -213,7 +221,20 @@ const MainPage: React.FC<MainPageProps> = ({
     updateAddressBar()
   }, [true])
 
+  const handleChangeHosts = useCallback((hosts: string) => {
+    data.current.hosts = hosts
+    ref.current.host.current.click()
+    forceUpdate()
+  }, [true])
+
+  const handleChangeVms = useCallback((vms: string) => {
+    data.current.vms = vms
+    ref.current.vm.current.click()
+    forceUpdate()
+  }, [true])
+
   const handleSelectVm = useCallback((value: string) => {
+    data.current.vms = null
     data.current.vmname = value
     ref.current.vm.current.click()
     forceUpdate()
@@ -350,6 +371,8 @@ const MainPage: React.FC<MainPageProps> = ({
                 onChangeDomain={ handleChangeDomain }
                 onChangeProject={ handleChangeProject }
                 onChangeBundle={ handleChangeBundle }
+                onChangeHosts={ handleChangeHosts }
+                onChangeVms={ handleChangeVms }
               />
             }
             left={
@@ -390,12 +413,14 @@ const MainPage: React.FC<MainPageProps> = ({
                     domain={ data.current.domain }
                     project={ data.current.project }
                     bundle={ data.current.bundle }
+                    hosts={ data.current.hosts }
                   />,
                   <VmInfoBox
                     domain={ data.current.domain }
                     project={ data.current.project }
                     bundle={ data.current.bundle }
-                    vm={ data.current.vmname }
+                    vmname={ data.current.vmname }
+                    vms={ data.current.vms }
                   />,
                   <ZdumpInfoBox
                     domain={ data.current.domain }

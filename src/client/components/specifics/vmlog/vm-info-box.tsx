@@ -20,7 +20,8 @@ type VmInfoBoxProps = {
   domain?   : string,
   project?  : string,
   bundle?   : string,
-  vm?       : string
+  vmname?   : string,
+  vms?      : string
 }
 
 const VmInfoBox = React.memo<VmInfoBoxProps>(({
@@ -28,43 +29,68 @@ const VmInfoBox = React.memo<VmInfoBoxProps>(({
   domain    = null,
   project   = null,
   bundle    = null,
-  vm        = null
+  vmname    = null,
+  vms       = null
 }) => {
   const [ignored, forceUpdate] = useReducer(x => x + 1, 0)
 
-  const vmInfo = useRef<VmInfo>(null)
+  const data = useRef({
+    vms     : []
+  })
+
   const status = useRef({
     progress: false
   })
 
   useEffect(() => {
-    if (domain && project && bundle && vm) {
-      const uri = `${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project, bundle) }/vms/${ vm }`
+    if (domain && project && bundle && vmname && !vms) {
+      const uri = `${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project, bundle) }/vms/${ vmname }`
+      data.current.vms = []
       status.current.progress = true
-      vmInfo.current = null
       forceUpdate()
       Axios.get(uri, {
         headers : { "X-Access-Token": Cookie.get("token") || "" },
         data    : {}
       })
       .then((res: AxiosResponse) => {
+        data.current.vms = [res.data.vm]
         status.current.progress = false
-        vmInfo.current = res.data.vm
         forceUpdate()
         return
       })
       .catch((err: AxiosError) => {
+        data.current.vms = []
         status.current.progress = false
-        vmInfo.current = null
+        forceUpdate()
+        return
+      })
+    } else if (domain && project && vms) {
+      const uri = `${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project) }/vms/${ vms }`
+      data.current.vms = []
+      status.current.progress = true
+      forceUpdate()
+      Axios.get(uri, {
+        headers : { "X-Access-Token": Cookie.get("token") || "" },
+        data    : {}
+      })
+      .then((res: AxiosResponse) => {
+        data.current.vms = res.data.vms
+        status.current.progress = false
+        forceUpdate()
+        return
+      })
+      .catch((err: AxiosError) => {
+        data.current.vms = []
+        status.current.progress = false
         forceUpdate()
         return
       })
     } else {
+      data.current.vms = []
       status.current.progress = false
-      vmInfo.current = null
       forceUpdate()
     }
-  }, [domain, project, bundle, vm])
+  }, [domain, project, bundle, vmname, vms])
 
   const render = () => {
     const tables: Array<JSX.Element> = []
@@ -76,13 +102,13 @@ const VmInfoBox = React.memo<VmInfoBoxProps>(({
         title="VM Base Information"
         LIcon={ Box }
         content={ [
-          ["name",        `${ vmInfo.current.name }`],
-          ["version",     `${ vmInfo.current.version }`],
-          ["cpus",        `${ vmInfo.current.cpus }`],
-          ["memory",      `${ vmInfo.current.memory } GB`],
-          ["firmware",    `${ vmInfo.current.firmware }`],
-          ["guest os",    `${ vmInfo.current.guest }`],
-          ["power state", `${ vmInfo.current.state }`]
+          ["name"       ].concat(data.current.vms.map((vmInfo: VmInfo) => `${ vmInfo.name }`)),
+          ["version"    ].concat(data.current.vms.map((vmInfo: VmInfo) => `${ vmInfo.version }`)),
+          ["cpus"       ].concat(data.current.vms.map((vmInfo: VmInfo) => `${ vmInfo.cpus }`)),
+          ["memory"     ].concat(data.current.vms.map((vmInfo: VmInfo) => `${ vmInfo.memory } GB`)),
+          ["firmware"   ].concat(data.current.vms.map((vmInfo: VmInfo) => `${ vmInfo.firmware }`)),
+          ["guest os"   ].concat(data.current.vms.map((vmInfo: VmInfo) => `${ vmInfo.guest }`)),
+          ["power state"].concat(data.current.vms.map((vmInfo: VmInfo) => `${ vmInfo.state }`))
         ] }
       />
     )
@@ -94,22 +120,26 @@ const VmInfoBox = React.memo<VmInfoBoxProps>(({
         title="VM Options"
         LIcon={ Gear }
         content={ [
-          ["uefi.secureBoot.enabled",                   `${ vmInfo.current.options.uefi_secureBoot_enabled }`],
-          ["cpuid.coresPerSocket",                      `${ vmInfo.current.options.cpuid_coresPerSocket }`],
-          ["numa.nodeAffinity",                         `${ vmInfo.current.options.numa_nodeAffinity }`],
-          ["numa.vcpu.maxPerMachineNode",               `${ vmInfo.current.options.numa_vcpu_maxPerMachineNode }`],
-          ["numa.vcpu.maxPerVirtualNode",               `${ vmInfo.current.options.numa_vcpu_maxPerVirtualNode }`],
-          ["numa.autosize",                             `${ vmInfo.current.options.numa_autosize }`],
-          ["sched.cpu.affinity",                        `${ vmInfo.current.options.sched_cpu_affinity }`],
-          ["sched.cpu.latencySensitivity",              `${ vmInfo.current.options.sched_cpu_latencySensitivity }`],
-          ["sched.cpu.min",                             `${ vmInfo.current.options.sched_cpu_min }`],
-          ["latency.enforceCpuMin",                     `${ vmInfo.current.options.latency_enforceCpuMin }`],
-          ["timeTracker.apparentTimeIgnoresInterrupts", `${ vmInfo.current.options.timeTracker_apparentTimeIgnoresInterrupts }`]
+          ["uefi.secureBoot.enabled"                  ].concat(data.current.vms.map((vmInfo: VmInfo) => `${ vmInfo.options.uefi_secureBoot_enabled }`)),
+          ["cpuid.coresPerSocket"                     ].concat(data.current.vms.map((vmInfo: VmInfo) => `${ vmInfo.options.cpuid_coresPerSocket }`)),
+          ["numa.nodeAffinity"                        ].concat(data.current.vms.map((vmInfo: VmInfo) => `${ vmInfo.options.numa_nodeAffinity }`)),
+          ["numa.vcpu.maxPerMachineNode"              ].concat(data.current.vms.map((vmInfo: VmInfo) => `${ vmInfo.options.numa_vcpu_maxPerMachineNode }`)),
+          ["numa.vcpu.maxPerVirtualNode"              ].concat(data.current.vms.map((vmInfo: VmInfo) => `${ vmInfo.options.numa_vcpu_maxPerVirtualNode }`)),
+          ["numa.autosize"                            ].concat(data.current.vms.map((vmInfo: VmInfo) => `${ vmInfo.options.numa_autosize }`)),
+          ["sched.cpu.affinity"                       ].concat(data.current.vms.map((vmInfo: VmInfo) => `${ vmInfo.options.sched_cpu_affinity }`)),
+          ["sched.cpu.latencySensitivity"             ].concat(data.current.vms.map((vmInfo: VmInfo) => `${ vmInfo.options.sched_cpu_latencySensitivity }`)),
+          ["sched.cpu.min"                            ].concat(data.current.vms.map((vmInfo: VmInfo) => `${ vmInfo.options.sched_cpu_min }`)),
+          ["latency.enforceCpuMin"                    ].concat(data.current.vms.map((vmInfo: VmInfo) => `${ vmInfo.options.latency_enforceCpuMin }`)),
+          ["timeTracker.apparentTimeIgnoresInterrupts"].concat(data.current.vms.map((vmInfo: VmInfo) => `${ vmInfo.options.timeTracker_apparentTimeIgnoresInterrupts }`))
         ] }
       />
     )
 
-    vmInfo.current.nics.map((nic: VirtualNicInfo) => (
+    if (data.current.vms.length > 1) {
+      return tables
+    }
+
+    data.current.vms[0].nics.map((nic: VirtualNicInfo) => (
       tables.push(
         <Table
           key={ `${ nic.name }` }
@@ -127,7 +157,7 @@ const VmInfoBox = React.memo<VmInfoBoxProps>(({
       )
     ))
 
-    vmInfo.current.scsis.map((scsi: VirtualScsiInfo) => (
+    data.current.vms[0].scsis.map((scsi: VirtualScsiInfo) => (
       tables.push(
         <Table
           key={ `${ scsi.name }` }
@@ -143,7 +173,7 @@ const VmInfoBox = React.memo<VmInfoBoxProps>(({
       )
     ))
 
-    vmInfo.current.disks.map((disk: VirtualDiskInfo) => (
+    data.current.vms[0].disks.map((disk: VirtualDiskInfo) => (
       tables.push(
         <Table
           key={ `${ disk.name }` }
@@ -161,7 +191,7 @@ const VmInfoBox = React.memo<VmInfoBoxProps>(({
       )
     ))
 
-    vmInfo.current.dpios.map((dpio: PassthruDeviceInfo) => (
+    data.current.vms[0].dpios.map((dpio: PassthruDeviceInfo) => (
       tables.push(
         <Table
           key={ `${ dpio.name }` }
@@ -177,7 +207,7 @@ const VmInfoBox = React.memo<VmInfoBoxProps>(({
       )
     ))
 
-    vmInfo.current.vfs.map((vf: VfNicInfo) => (
+    data.current.vms[0].vfs.map((vf: VfNicInfo) => (
       tables.push(
         <Table
           key={ `${ vf.name }` }
@@ -202,8 +232,8 @@ const VmInfoBox = React.memo<VmInfoBoxProps>(({
   return (
     <div className={ className }>
       {  status.current.progress &&   <Spinner /> }
-      { !status.current.progress &&  !vmInfo.current && <CenterText text="No Data" /> }
-      { !status.current.progress && !!vmInfo.current && render() }
+      { !status.current.progress &&  !data.current.vms.length && <CenterText text="No Data" /> }
+      { !status.current.progress && !!data.current.vms.length && render() }
     </div>
   )
 })
