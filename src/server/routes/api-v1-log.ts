@@ -257,7 +257,7 @@ router.route("/:domain/projects/:projectName/vms/:vmNames")
 router.route("/:domain/projects/:projectName/vms")
 .get((req: Request, res: Response, next: NextFunction) => {
   return Project.getProjectVmList(req.token.usr, req.domain, req.project)
-  .then((list: Array<BaseNameInfo>) => {
+  .then((list: Array<VmlogBaseInfo>) => {
     // OK
     return res.status(200).json({
       msg: "You get a vm list.",
@@ -309,7 +309,7 @@ router.route("/:domain/projects/:projectName/hosts/:hostNames")
 router.route("/:domain/projects/:projectName/hosts")
 .get((req: Request, res: Response, next: NextFunction) => {
   return Project.getProjectHostList(req.token.usr, req.domain, req.project)
-  .then((list: Array<BaseNameInfo>) => {
+  .then((list: Array<VmlogBaseInfo>) => {
     // OK
     return res.status(200).json({
       msg: "You get a host list.",

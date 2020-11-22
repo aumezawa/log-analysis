@@ -14,7 +14,7 @@ type TableProps = {
 }
 
 const Table: React.FC<TableProps> = ({
-  className = "",
+  className = "my-2",
   title     = "No Title",
   LIcon     = null,
   label     = true,

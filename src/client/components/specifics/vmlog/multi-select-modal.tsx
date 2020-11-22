@@ -86,7 +86,7 @@ const MultiSelectModal = React.memo<MultiSelectModalProps>(({
   }, [onSubmit])
 
   const listLabel = () => (
-    data.current.list.map((basename: BaseNameInfo) => `${ basename.name } [ ${ basename.bundleName } ]`)
+    data.current.list.map((basename: VmlogBaseInfo) => `${ basename.name } [ ${ basename.bundleName } ]`)
   )
 
   return (

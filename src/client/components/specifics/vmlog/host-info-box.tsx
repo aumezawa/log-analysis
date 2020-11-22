@@ -106,7 +106,6 @@ const HostInfoBox = React.memo<HostInfoBoxProps>(({
     tables.push(
       <Table
         key="base"
-        className="my-2"
         title="ESXi Base Information"
         LIcon={ HddStack }
         compare={ true }
@@ -123,7 +122,6 @@ const HostInfoBox = React.memo<HostInfoBoxProps>(({
     tables.push(
       <Table
         key="system"
-        className="my-2"
         title="ESXi System Information"
         LIcon={ Gear }
         compare={ true }
@@ -138,7 +136,6 @@ const HostInfoBox = React.memo<HostInfoBoxProps>(({
     tables.push(
       <Table
         key="hardware"
-        className="my-2"
         title="Hardware Information"
         LIcon={ Cpu }
         compare={ true }
@@ -159,7 +156,6 @@ const HostInfoBox = React.memo<HostInfoBoxProps>(({
       tables.push(
         <Table
           key={ `card-${ index }` }
-          className="my-2"
           title={ `PCI Card Information - ${ index }` }
           LIcon={ Tags }
           compare={ true }
@@ -173,7 +169,6 @@ const HostInfoBox = React.memo<HostInfoBoxProps>(({
       tables.push(
         <Table
           key={ `nic-${ index }` }
-          className="my-2"
           title={ `NIC Information - ${ index }` }
           LIcon={ Diagram3 }
           compare={ true }
@@ -187,7 +182,6 @@ const HostInfoBox = React.memo<HostInfoBoxProps>(({
       tables.push(
         <Table
           key={ `vswitch-${ index }` }
-          className="my-2"
           title={ `vSwitch Information - ${ index }` }
           LIcon={ Diagram3 }
           compare={ true }
@@ -201,7 +195,6 @@ const HostInfoBox = React.memo<HostInfoBoxProps>(({
       tables.push(
         <Table
           key={ `portgroup-${ index }` }
-          className="my-2"
           title={ `PortGroup Information - ${ index }` }
           LIcon={ Diagram3 }
           compare={ true }
@@ -215,7 +208,6 @@ const HostInfoBox = React.memo<HostInfoBoxProps>(({
       tables.push(
         <Table
           key={ `hba-${ index }` }
-          className="my-2"
           title={ `HBA Information - ${ index }` }
           LIcon={ Server }
           compare={ true }
@@ -229,7 +221,6 @@ const HostInfoBox = React.memo<HostInfoBoxProps>(({
       tables.push(
         <Table
           key={ `disk-${ index }` }
-          className="my-2"
           title={ `Disk Information - ${ index }` }
           LIcon={ Server }
           compare={ true }
@@ -243,7 +234,6 @@ const HostInfoBox = React.memo<HostInfoBoxProps>(({
       tables.push(
         <Table
           key={ `package` }
-          className="my-2"
           title={ `Software Package Information` }
           LIcon={ Grid3x3Gap }
           compare={ true }

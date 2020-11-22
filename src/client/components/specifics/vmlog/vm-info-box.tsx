@@ -100,7 +100,6 @@ const VmInfoBox = React.memo<VmInfoBoxProps>(({
     tables.push(
       <Table
         key="base"
-        className="my-2"
         title="VM Base Information"
         LIcon={ Box }
         compare={ true }
@@ -119,7 +118,6 @@ const VmInfoBox = React.memo<VmInfoBoxProps>(({
     tables.push(
       <Table
         key="options"
-        className="my-2"
         title="VM Options"
         LIcon={ Gear }
         compare={ true }
@@ -144,7 +142,6 @@ const VmInfoBox = React.memo<VmInfoBoxProps>(({
       tables.push(
         <Table
           key={ `vnic-${ index }` }
-          className="my-2"
           title={ `vNIC Information - ${ index }` }
           LIcon={ Diagram3 }
           compare={ true }
@@ -158,7 +155,6 @@ const VmInfoBox = React.memo<VmInfoBoxProps>(({
       tables.push(
         <Table
           key={ `scsi-${ index }` }
-          className="my-2"
           title={ `vSCSI Information - ${ index }` }
           LIcon={ Server }
           compare={ true }
@@ -172,7 +168,6 @@ const VmInfoBox = React.memo<VmInfoBoxProps>(({
       tables.push(
         <Table
           key={ `disk-${ index }` }
-          className="my-2"
           title={ `vDisk Information - ${ index }` }
           LIcon={ Server }
           compare={ true }
@@ -186,7 +181,6 @@ const VmInfoBox = React.memo<VmInfoBoxProps>(({
       tables.push(
         <Table
           key={ `dpio-${ index }` }
-          className="my-2"
           title={ `DPIO Information - ${ index }` }
           LIcon={ Server }
           compare={ true }
@@ -200,7 +194,6 @@ const VmInfoBox = React.memo<VmInfoBoxProps>(({
       tables.push(
         <Table
           key={ `vf-${ index }` }
-          className="my-2"
           title={ `SR-IOV VF Information - ${ index }` }
           LIcon={ Diagram3 }
           compare={ true }

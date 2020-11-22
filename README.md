@@ -304,6 +304,21 @@ Access with your browser or issue HTTP requests.
   - data: `{ msg: <string>, hosts: [<string>] }`
 
 
+### Get Host List in Project
+
+- request
+  - method: `GET`
+  - header: `{ X-Access-Token: <string> }`
+  - path: `/api/v1/log/:domain/projects/:projectName/hosts`
+- response
+  - data: `{ msg: <string>, hosts: [<VmlogBaseInfo>] }`
+
+**Note: definition**
+```
+<VmlogBaseInfo> := { name: <string>, bundleId: <number>, bundleName: <string>, type: "host" | "vm" }
+```
+
+
 ### Get Host Information
 
 - request
@@ -312,6 +327,18 @@ Access with your browser or issue HTTP requests.
   - path: `/api/v1/log/:domain/projects/:projectName/bundles/:bundleId/hosts/:hostName`
 - response
   - data: `{ msg: <string>, host: <HostInfo> }`
+
+
+### Get Hosts Information in Project
+
+- request
+  - method: `GET`
+  - header: `{ X-Access-Token: <string> }`
+  - path: `/api/v1/log/:domain/projects/:projectName/hosts/:hostNames`
+- response
+  - data: `{ msg: <string>, hosts: [<HostInfo>] }`
+
+**Note: <:hostNames> can contains multiple host names joined by comma **
 
 
 ### Get VM List
@@ -324,6 +351,21 @@ Access with your browser or issue HTTP requests.
   - data: `{ msg: <string>, vms: [<string>] }`
 
 
+### Get VM List in Project
+
+- request
+  - method: `GET`
+  - header: `{ X-Access-Token: <string> }`
+  - path: `/api/v1/log/:domain/projects/:projectName/bundles/:bundleId/vms`
+- response
+  - data: `{ msg: <string>, vms: [<VmlogBaseInfo>] }`
+
+**Note: definition**
+```
+<VmlogBaseInfo> := { name: <string>, bundleId: <number>, bundleName: <string>, type: "host" | "vm" }
+```
+
+
 ### Get VM Information
 
 - request
@@ -332,6 +374,18 @@ Access with your browser or issue HTTP requests.
   - path: `/api/v1/log/:domain/projects/:projectName/bundles/:bundleId/vms/:vmName`
 - response
   - data: `{ msg: <string>, vm: <VmInfo> }`
+
+
+### Get VMs Information in Project
+
+- request
+  - method: `GET`
+  - header: `{ X-Access-Token: <string> }`
+  - path: `/api/v1/log/:domain/projects/:projectName/vms/:vmNames`
+- response
+  - data: `{ msg: <string>, vms: [<VmInfo>] }`
+
+**Note: <:vmNames> can contains multiple vm names joined by comma **
 
 
 ### Get ZDUMP List
