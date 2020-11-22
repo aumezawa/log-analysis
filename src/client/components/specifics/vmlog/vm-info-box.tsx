@@ -103,6 +103,7 @@ const VmInfoBox = React.memo<VmInfoBoxProps>(({
         className="my-2"
         title="VM Base Information"
         LIcon={ Box }
+        compare={ true }
         content={ [
           ["name"       ].concat(data.current.vms.map((vmInfo: VmInfo) => `${ vmInfo.name }`)),
           ["version"    ].concat(data.current.vms.map((vmInfo: VmInfo) => `${ vmInfo.version }`)),
@@ -121,6 +122,7 @@ const VmInfoBox = React.memo<VmInfoBoxProps>(({
         className="my-2"
         title="VM Options"
         LIcon={ Gear }
+        compare={ true }
         content={ [
           ["uefi.secureBoot.enabled"                  ].concat(data.current.vms.map((vmInfo: VmInfo) => `${ vmInfo.options.uefi_secureBoot_enabled }`)),
           ["cpuid.coresPerSocket"                     ].concat(data.current.vms.map((vmInfo: VmInfo) => `${ vmInfo.options.cpuid_coresPerSocket }`)),
@@ -145,6 +147,7 @@ const VmInfoBox = React.memo<VmInfoBoxProps>(({
           className="my-2"
           title={ `vNIC Information - ${ index }` }
           LIcon={ Diagram3 }
+          compare={ true }
           content={ content }
         />
       )
@@ -158,12 +161,13 @@ const VmInfoBox = React.memo<VmInfoBoxProps>(({
           className="my-2"
           title={ `vSCSI Information - ${ index }` }
           LIcon={ Server }
+          compare={ true }
           content={ content }
         />
       )
     })
 
-    TableLayout(data.current.vms.map((vmInfo: VmInfo) => vmInfo.disks), "name")
+    TableLayout(data.current.vms.map((vmInfo: VmInfo) => vmInfo.disks), "name", null, {size: "GB"})
     .forEach((content: Array<Array<string>>, index: number) => {
       tables.push(
         <Table
@@ -171,6 +175,7 @@ const VmInfoBox = React.memo<VmInfoBoxProps>(({
           className="my-2"
           title={ `vDisk Information - ${ index }` }
           LIcon={ Server }
+          compare={ true }
           content={ content }
         />
       )
@@ -184,6 +189,7 @@ const VmInfoBox = React.memo<VmInfoBoxProps>(({
           className="my-2"
           title={ `DPIO Information - ${ index }` }
           LIcon={ Server }
+          compare={ true }
           content={ content }
         />
       )
@@ -197,6 +203,7 @@ const VmInfoBox = React.memo<VmInfoBoxProps>(({
           className="my-2"
           title={ `SR-IOV VF Information - ${ index }` }
           LIcon={ Diagram3 }
+          compare={ true }
           content={ content }
         />
       )

@@ -8,7 +8,7 @@ type Units = {
 
 export default (nodes: Array<Array<Datum>>, pkey: string, pvalue?: string, units?: Units): Array<Array<Array<string>>> => {
   if (nodes === null || nodes.length === 0 || nodes[0].length === 0 || !pkey) {
-    return null
+    return []
   }
 
   let keys: Array<string> = []

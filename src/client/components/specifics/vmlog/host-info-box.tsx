@@ -109,6 +109,7 @@ const HostInfoBox = React.memo<HostInfoBoxProps>(({
         className="my-2"
         title="ESXi Base Information"
         LIcon={ HddStack }
+        compare={ true }
         content={ [
           ["hostname"].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.hostname }`)),
           ["version" ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.version }`)),
@@ -123,8 +124,9 @@ const HostInfoBox = React.memo<HostInfoBoxProps>(({
       <Table
         key="system"
         className="my-2"
-        LIcon={ Gear }
         title="ESXi System Information"
+        LIcon={ Gear }
+        compare={ true }
         content={ [
           ["power policy"                             ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.system.powerPolicy }`)),
           ["kernel param - pcipDisablePciErrReporting"].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.system.pcipDisablePciErrReporting }`)),
@@ -139,6 +141,7 @@ const HostInfoBox = React.memo<HostInfoBoxProps>(({
         className="my-2"
         title="Hardware Information"
         LIcon={ Cpu }
+        compare={ true }
         content={ [
           ["machine"            ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.hardware.machine }`)),
           ["serial number"      ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.hardware.serial }`)),
@@ -159,6 +162,7 @@ const HostInfoBox = React.memo<HostInfoBoxProps>(({
           className="my-2"
           title={ `PCI Card Information - ${ index }` }
           LIcon={ Tags }
+          compare={ true }
           content={ content }
         />
       )
@@ -172,6 +176,7 @@ const HostInfoBox = React.memo<HostInfoBoxProps>(({
           className="my-2"
           title={ `NIC Information - ${ index }` }
           LIcon={ Diagram3 }
+          compare={ true }
           content={ content }
         />
       )
@@ -185,6 +190,7 @@ const HostInfoBox = React.memo<HostInfoBoxProps>(({
           className="my-2"
           title={ `vSwitch Information - ${ index }` }
           LIcon={ Diagram3 }
+          compare={ true }
           content={ content }
         />
       )
@@ -198,6 +204,7 @@ const HostInfoBox = React.memo<HostInfoBoxProps>(({
           className="my-2"
           title={ `PortGroup Information - ${ index }` }
           LIcon={ Diagram3 }
+          compare={ true }
           content={ content }
         />
       )
@@ -211,6 +218,7 @@ const HostInfoBox = React.memo<HostInfoBoxProps>(({
           className="my-2"
           title={ `HBA Information - ${ index }` }
           LIcon={ Server }
+          compare={ true }
           content={ content }
         />
       )
@@ -224,6 +232,7 @@ const HostInfoBox = React.memo<HostInfoBoxProps>(({
           className="my-2"
           title={ `Disk Information - ${ index }` }
           LIcon={ Server }
+          compare={ true }
           content={ content }
         />
       )
@@ -237,6 +246,7 @@ const HostInfoBox = React.memo<HostInfoBoxProps>(({
           className="my-2"
           title={ `Software Package Information` }
           LIcon={ Grid3x3Gap }
+          compare={ true }
           content={ content }
         />
       )
