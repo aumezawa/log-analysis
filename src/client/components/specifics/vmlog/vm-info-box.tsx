@@ -1,7 +1,7 @@
 import * as React from "react"
 import { useEffect, useRef, useReducer } from "react"
 
-import { Box, Diagram3, Gear, Server } from "react-bootstrap-icons"
+import { Box, Diagram3, Gear, JournalCheck, Server } from "react-bootstrap-icons"
 
 import Axios from "axios"
 import { AxiosResponse, AxiosError } from "axios"
@@ -37,6 +37,7 @@ const VmInfoBox = React.memo<VmInfoBoxProps>(({
   const [ignored, forceUpdate] = useReducer(x => x + 1, 0)
 
   const data = useRef({
+    bundles : [],
     vms     : []
   })
 
@@ -46,13 +47,20 @@ const VmInfoBox = React.memo<VmInfoBoxProps>(({
 
   useEffect(() => {
     if (domain && project && bundle && vmname && !vms) {
-      const uri = `${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project, bundle) }/vms/${ vmname }`
+      data.current.bundles = []
       data.current.vms = []
       status.current.progress = true
       forceUpdate()
-      Axios.get(uri, {
+      Axios.get(`${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project, bundle) }`, {
         headers : { "X-Access-Token": Cookie.get("token") || "" },
         data    : {}
+      })
+      .then((res: AxiosResponse) => {
+        data.current.bundles = [ { name: res.data.name, description: res.data.description } ]
+        return Axios.get(`${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project, bundle) }/vms/${ vmname }`, {
+          headers : { "X-Access-Token": Cookie.get("token") || "" },
+          data    : {}
+        })
       })
       .then((res: AxiosResponse) => {
         data.current.vms = [res.data.vm]
@@ -67,16 +75,27 @@ const VmInfoBox = React.memo<VmInfoBoxProps>(({
         return
       })
     } else if (domain && project && vms) {
-      const uri = `${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project) }/vms/${ vms }`
+      data.current.bundles = []
       data.current.vms = []
       status.current.progress = true
       forceUpdate()
-      Axios.get(uri, {
-        headers : { "X-Access-Token": Cookie.get("token") || "" },
-        data    : {}
+      Promise.all(vms.split(",").map((vm: string) => {
+        return Axios.get(`${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project, vm.split(":")[0]) }`, {
+          headers : { "X-Access-Token": Cookie.get("token") || "" },
+          data    : {}
+        })
+      }))
+      .then((reses: Array<AxiosResponse>) => {
+        data.current.bundles = reses.map((res: AxiosResponse) => ({ name: res.data.name, description: res.data.description }))
+        return Promise.all(vms.split(",").map((vm: string) => {
+          return Axios.get(`${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project, vm.split(":")[0]) }/vms/${ vm.split(":")[1] }`, {
+            headers : { "X-Access-Token": Cookie.get("token") || "" },
+            data    : {}
+          })
+        }))
       })
-      .then((res: AxiosResponse) => {
-        data.current.vms = res.data.vms
+      .then((reses: Array<AxiosResponse>) => {
+        data.current.vms = reses.map((res: AxiosResponse) => res.data.vm)
         status.current.progress = false
         forceUpdate()
         return
@@ -96,6 +115,18 @@ const VmInfoBox = React.memo<VmInfoBoxProps>(({
 
   const render = () => {
     const tables: Array<JSX.Element> = []
+
+    tables.push(
+      <Table
+        key="bundle"
+        title="Log Bundle Information"
+        LIcon={ JournalCheck }
+        content={ [
+          ["name"       ].concat(data.current.bundles.map((bundle: any) => `${ bundle.name }`)),
+          ["description"].concat(data.current.bundles.map((bundle: any) => `${ bundle.description }`))
+        ] }
+      />
+    )
 
     tables.push(
       <Table

@@ -1,6 +1,5 @@
 type VmlogBaseInfo = {
   name      : string,
-  bundleId  : number,
-  bundleName: string,
+  bundleInfo: BundleInfo,
   type      : string
 }

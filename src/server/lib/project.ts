@@ -903,36 +903,11 @@ export function getProjectHostList(user: string, domain: string, project: string
           const list = Vmtools.getHostListSync(getBundleResourcePathSync(user, domain, project, String(bundleInfo.id))).map((name: string) => {
             return ({
               name      : name,
-              bundleId  : bundleInfo.id,
-              bundleName: bundleInfo.name,
+              bundleInfo: bundleInfo,
               type      : "host"
             })
           })
           alllist = alllist.concat(list ? list : [])
-        })
-        return resolve(alllist)
-      })
-      .catch((err: any) => {
-        return reject(err)
-      })
-    })
-  })
-}
-
-export function getProjectHostInfo(user: string, domain: string, project: string, hosts: string): Promise<Array<HostInfo>> {
-  return new Promise<Array<HostInfo>>((resolve: (list: Array<HostInfo>) => void, reject: (err?: any) => void) => {
-    return setImmediate(() => {
-      return getProjectInfo(user, domain, project)
-      .then((projectInfo: ProjectInfo) => {
-        const alllist: Array<HostInfo> = []
-        hosts.split(",").forEach((host: string) => {
-          projectInfo.bundles.filter((bundleInfo: BundleInfo) => bundleInfo.available).forEach((bundleInfo: BundleInfo) => {
-            const list = Vmtools.getHostListSync(getBundleResourcePathSync(user, domain, project, String(bundleInfo.id)))
-            if (list.includes(host)) {
-              const hostInfo = Vmtools.getHostInfoSync(getBundleResourcePathSync(user, domain, project, String(bundleInfo.id)), host)
-              hostInfo && alllist.push(hostInfo)
-            }
-          })
         })
         return resolve(alllist)
       })
@@ -953,36 +928,11 @@ export function getProjectVmList(user: string, domain: string, project: string):
           const list = Vmtools.getVmListSync(getBundleResourcePathSync(user, domain, project, String(bundleInfo.id))).map((name: string) => {
             return ({
               name      : name,
-              bundleId  : bundleInfo.id,
-              bundleName: bundleInfo.name,
+              bundleInfo: bundleInfo,
               type      : "vm"
             })
           })
           alllist = alllist.concat(list ? list : [])
-        })
-        return resolve(alllist)
-      })
-      .catch((err: any) => {
-        return reject(err)
-      })
-    })
-  })
-}
-
-export function getProjectVmInfo(user: string, domain: string, project: string, vms: string): Promise<Array<VmInfo>> {
-  return new Promise<Array<VmInfo>>((resolve: (list: Array<VmInfo>) => void, reject: (err?: any) => void) => {
-    return setImmediate(() => {
-      return getProjectInfo(user, domain, project)
-      .then((projectInfo: ProjectInfo) => {
-        const alllist: Array<VmInfo> = []
-        vms.split(",").forEach((vm: string) => {
-          projectInfo.bundles.filter((bundleInfo: BundleInfo) => bundleInfo.available).forEach((bundleInfo: BundleInfo) => {
-            const list = Vmtools.getVmListSync(getBundleResourcePathSync(user, domain, project, String(bundleInfo.id)))
-            if (list.includes(vm)) {
-              const vmInfo = Vmtools.getVmInfoSync(getBundleResourcePathSync(user, domain, project, String(bundleInfo.id)), vm)
-              vmInfo && alllist.push(vmInfo)
-            }
-          })
         })
         return resolve(alllist)
       })

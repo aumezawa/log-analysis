@@ -1,7 +1,7 @@
 import * as React from "react"
 import { useEffect, useRef, useReducer } from "react"
 
-import { Cpu, Diagram3, Gear, Grid3x3Gap, HddStack, Server, Tags } from "react-bootstrap-icons"
+import { Cpu, Diagram3, Gear, Grid3x3Gap, HddStack, JournalCheck, Server, Tags } from "react-bootstrap-icons"
 
 import Axios from "axios"
 import { AxiosResponse, AxiosError } from "axios"
@@ -35,6 +35,7 @@ const HostInfoBox = React.memo<HostInfoBoxProps>(({
   const [ignored, forceUpdate] = useReducer(x => x + 1, 0)
 
   const data = useRef({
+    bundles : [],
     hosts   : []
   })
 
@@ -44,18 +45,23 @@ const HostInfoBox = React.memo<HostInfoBoxProps>(({
 
   useEffect(() => {
     if (domain && project && bundle && !hosts) {
-      const uri = `${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project, bundle) }/hosts`
+      data.current.bundles = []
       data.current.hosts = []
       status.current.progress = true
       forceUpdate()
-      Axios.get(uri, {
+      Axios.get(`${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project, bundle) }`, {
         headers : { "X-Access-Token": Cookie.get("token") || "" },
         data    : {}
       })
       .then((res: AxiosResponse) => {
-        const hostname = res.data.hosts[0]
-        const uri = `${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project, bundle) }/hosts/${ hostname }`
-        return Axios.get(uri, {
+        data.current.bundles = [ { name: res.data.name, description: res.data.description } ]
+        return Axios.get(`${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project, bundle) }/hosts`, {
+          headers : { "X-Access-Token": Cookie.get("token") || "" },
+          data    : {}
+        })
+      })
+      .then((res: AxiosResponse) => {
+        return Axios.get(`${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project, bundle) }/hosts/${ res.data.hosts[0] }`, {
           headers : { "X-Access-Token": Cookie.get("token") || "" },
           data    : {}
         })
@@ -73,16 +79,27 @@ const HostInfoBox = React.memo<HostInfoBoxProps>(({
         return
       })
     } else if (domain && project && hosts) {
-      const uri = `${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project) }/hosts/${ hosts }`
+      data.current.bundles = []
       data.current.hosts = []
       status.current.progress = true
       forceUpdate()
-      Axios.get(uri, {
-        headers : { "X-Access-Token": Cookie.get("token") || "" },
-        data    : {}
+      Promise.all(hosts.split(",").map((host: string) => {
+        return Axios.get(`${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project, host.split(":")[0]) }`, {
+          headers : { "X-Access-Token": Cookie.get("token") || "" },
+          data    : {}
+        })
+      }))
+      .then((reses: Array<AxiosResponse>) => {
+        data.current.bundles = reses.map((res: AxiosResponse) => ({ name: res.data.name, description: res.data.description }))
+        return Promise.all(hosts.split(",").map((host: string) => {
+          return Axios.get(`${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project, host.split(":")[0]) }/hosts/${ host.split(":")[1] }`, {
+            headers : { "X-Access-Token": Cookie.get("token") || "" },
+            data    : {}
+          })
+        }))
       })
-      .then((res: AxiosResponse) => {
-        data.current.hosts = res.data.hosts
+      .then((reses: Array<AxiosResponse>) => {
+        data.current.hosts = reses.map((res: AxiosResponse) => res.data.host)
         status.current.progress = false
         forceUpdate()
         return
@@ -102,6 +119,18 @@ const HostInfoBox = React.memo<HostInfoBoxProps>(({
 
   const render = () => {
     const tables: Array<JSX.Element> = []
+
+    tables.push(
+      <Table
+        key="bundle"
+        title="Log Bundle Information"
+        LIcon={ JournalCheck }
+        content={ [
+          ["name"       ].concat(data.current.bundles.map((bundle: any) => `${ bundle.name }`)),
+          ["description"].concat(data.current.bundles.map((bundle: any) => `${ bundle.description }`))
+        ] }
+      />
+    )
 
     tables.push(
       <Table
