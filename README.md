@@ -194,14 +194,14 @@ Access with your browser or issue HTTP requests.
   - data: `{ msg: <string> }`
 
 
-### Get a Bundle Description
+### Get a Bundle Name and Description
 
 - request
   - method: `GET`
   - header: `{ X-Access-Token: <string> }`
   - path: `/api/v1/log/:domain/projects/:projectName/bundles/:bundleId`
 - response
-  - data: `{ msg: <string>, description: <string> }`
+  - data: `{ msg: <string>, name:<string>, description: <string> }`
 
 
 ### Update a Bundle Description
