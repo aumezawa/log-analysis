@@ -648,10 +648,11 @@ export function existsBundleName(user: string, domain: string, project: string, 
 export function registerBundleResource(user: string, domain: string, project: string, bundleTgz: string, description?: string): Promise<void> {
   return new Promise<void>((resolve: () => void, reject: (err?: any) => void) => {
     return setImmediate(() => {
+      const bundlePath: string = joinResourcePathSync(getProjectResourcePathSync(user, domain, project), bundleTgz)
       let bundleId: string
       let bundleName: string
 
-      return extractBundleName(joinResourcePathSync(getProjectResourcePathSync(user, domain, project), bundleTgz))
+      return extractBundleName(bundlePath)
       .then((name: string) => {
         bundleName = name
         return existsBundleName(user, domain, project, bundleName)
@@ -667,10 +668,10 @@ export function registerBundleResource(user: string, domain: string, project: st
           description : description || "",
           available   : false
         })
-        return updateProjectInfo(domain, user, project, projectInfo)
+        return updateProjectInfo(user, domain, project, projectInfo)
       })
       .then(() => {
-        return decompressBundle(getBundleResourcePathSync(user, domain, project, bundleId) + ".tgz")
+        return decompressBundle(bundlePath)
       })
       .then(() => {
         return getProjectInfo(user, domain, project)
@@ -682,7 +683,7 @@ export function registerBundleResource(user: string, domain: string, project: st
           }
           return bundleInfo
         })
-        return updateProjectInfo(domain, user, project, projectInfo)
+        return updateProjectInfo(user, domain, project, projectInfo)
       })
       .then(() => {
         return resolve()
