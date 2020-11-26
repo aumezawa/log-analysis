@@ -155,12 +155,13 @@ Access with your browser or issue HTTP requests.
 ### Update a Project Status / Description
 
 - request
-  - method: `POST`
+  - method: `PUT`
   - header: `{ X-Access-Token: <string>, Content-Type: application/x-www-form-urlencoded }`
   - path: `/api/v1/log/:domain/projects/:projectName`
   - body: `{ status?: "open" | "close", description?: <string> }`
 - response
   - data: `{ msg: <string> }`
+
 
 ### Delete a Project
 
@@ -207,7 +208,7 @@ Access with your browser or issue HTTP requests.
 ### Update a Bundle Description
 
 - request
-  - method: `POST`
+  - method: `PUT`
   - header: `{ X-Access-Token: <string>, Content-Type: application/x-www-form-urlencoded }`
   - path: `/api/v1/log/:domain/projects/:projectName/bundles/:bundleId`
   - body: `{ description: <string> }`
