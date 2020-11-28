@@ -1,7 +1,7 @@
 import * as React from "react"
 import { useEffect, useRef, useCallback, useReducer } from "react"
 
-import { Hash, ListOl, Reply, Search } from "react-bootstrap-icons"
+import { Download, Hash, ListOl, Reply, Search } from "react-bootstrap-icons"
 
 import ModalFrame from "../frames/modal-frame"
 import TextFilterForm from "../sets/text-filter-form"
@@ -10,6 +10,7 @@ import EmbeddedIconButton from "../parts/embedded-icon-button"
 import SelectForm from "../parts/select-form"
 import Pagination from "../parts/pagination"
 import TextForm from "../parts/text-form"
+import Button from "../parts/button"
 
 import Escape from "../../lib/escape"
 import UniqueId from "../../lib/unique-id"
@@ -24,7 +25,8 @@ type FunctionalTableProps = {
   copy?               : boolean,
   onChangeLine?       : (line: number) => void,
   onChangeTextFilter? : (textFilter: string) => void,
-  onChangeDateFilter? : (dateFrom: string, dateTo: string) => void
+  onChangeDateFilter? : (dateFrom: string, dateTo: string) => void,
+  onClickDownload?    : (textFilter: string, dateFrom: string, dateTo: string) => void
 }
 
 const DEFAULT_ROW = 100
@@ -40,7 +42,8 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
   copy                = false,
   onChangeLine        = undefined,
   onChangeTextFilter  = undefined,
-  onChangeDateFilter  = undefined
+  onChangeDateFilter  = undefined,
+  onClickDownload     = undefined
 }) => {
   const [ignored, forceUpdate]  = useReducer(x => x + 1, 0)
 
@@ -62,7 +65,8 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
     rows    : 0,
     line    : 1,
     label   : null,
-    filters : {} as FilterSettings
+    filters : {} as FilterSettings,
+    dlable  : false
   })
 
   const input = useRef({
@@ -77,6 +81,7 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
       env.current.label = null
       env.current.page = Math.ceil(env.current.line / env.current.maxRow)
       env.current.filters = {} as FilterSettings
+      env.current.dlable = true
       scrollLine = env.current.line
 
       if (textFilter) {
@@ -151,10 +156,14 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
         sensitive : sensitive,
         condition : condition
       }
-      if (onChangeTextFilter) {
-        if ((env.current.label === "Content") && (mode === "Be included") && (sensitive === true)) {
+      if ((env.current.label === "Content") && (mode === "Be included") && (sensitive === true)) {
+        env.current.dlable = true
+        if (onChangeTextFilter) {
           onChangeTextFilter(condition)
-        } else {
+        }
+      } else {
+        env.current.dlable = false
+        if (onChangeTextFilter) {
           onChangeTextFilter(null)
         }
       }
@@ -167,6 +176,7 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
     if (env.current.label) {
       delete env.current.filters[env.current.label]
       env.current.page = Object.keys(env.current.filters).length ? 1 : Math.ceil(env.current.line / env.current.maxRow)
+      env.current.dlable = true
       if (onChangeTextFilter) {
         onChangeTextFilter(null)
       }
@@ -247,6 +257,17 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
       onChangeLine(env.current.line)
     }
   }, [onChangeLine])
+
+  const handleClickDownload = useCallback(() => {
+    const textFilter  = env.current.filters["Content"]
+    const text        = (textFilter && (textFilter.mode === "Be included") && textFilter.condition) || null
+    const dateFilter  = env.current.filters["Date"]
+    const dateFrom    = (dateFilter && dateFilter.from && dateFilter.from.toISOString()) || null
+    const dateTo      = (dateFilter && dateFilter.to   && dateFilter.to.toISOString())   || null
+    if (onClickDownload) {
+      onClickDownload(text, dateFrom, dateTo)
+    }
+  }, [onClickDownload])
 
   const renderHeader = () => {
     if (content) {
@@ -472,6 +493,14 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
           disabled={ !!Object.keys(env.current.filters).length }
           onChange={ handleChangeLine }
           onSubmit={ handleClickGoToLine }
+        />
+        <Button
+          label="download"
+          LIcon={ Download }
+          type="btn-outline"
+          color="secondary"
+          disabled={ !env.current.dlable }
+          onClick={ handleClickDownload }
         />
       </div>
     </div>

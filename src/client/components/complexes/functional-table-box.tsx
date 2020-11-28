@@ -92,6 +92,43 @@ const FunctionalTableBox = React.memo<FunctionalTableBoxProps>(({
     }
   }, [onChangeDateFilter])
 
+  const handleClickDownload = useCallback((textFilter: string, dateFrom: string, dateTo: string) => {
+    let uri = `${ Environment.getBaseUrl() }/api/v1/${ Escape.root(path) }?mode=download`
+    uri = (textFilter) ? `${ uri }&textFilter=${ encodeURIComponent(textFilter) }` : uri
+    uri = (dateFrom)   ? `${ uri }&dateFrom=${ encodeURIComponent(dateFrom) }`     : uri
+    uri = (dateTo)     ? `${ uri }&dateTo=${ encodeURIComponent(dateTo) }`         : uri
+    Axios.get(uri, {
+      headers : { "X-Access-Token": Cookie.get("token") || "" },
+      data    : {},
+      responseType: "blob"
+    })
+    .then((res: AxiosResponse) => {
+      const blob = new Blob([res.data], { type: res.data.type })
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement("a")
+
+      let filename: string
+      const match = res.headers["content-disposition"].match(/filename="(.*)"(;|$)/)
+      if (match) {
+        filename = match[1]
+        const matchUTF8 = res.headers["content-disposition"].match(/filename[*]=UTF-8''(.*)(;|$)/)
+        if (matchUTF8) {
+          filename = decodeURIComponent(matchUTF8[1])
+        }
+        link.href = url
+        link.setAttribute("download", filename)
+        document.body.appendChild(link)
+        link.click()
+        link.remove()
+        window.URL.revokeObjectURL(url)
+      }
+      return
+    })
+    .catch((err: AxiosError) => {
+      return
+    })
+  }, [path])
+
   return (
     <>
       {  status.current.processing && <Spinner /> }
@@ -107,6 +144,7 @@ const FunctionalTableBox = React.memo<FunctionalTableBoxProps>(({
           onChangeLine={ handleChangeLine }
           onChangeTextFilter={ handleChangeTextFilter }
           onChangeDateFilter={ handleChangeDateFilter }
+          onClickDownload={ handleClickDownload }
         />
       }
     </>

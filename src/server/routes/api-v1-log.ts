@@ -91,9 +91,31 @@ router.route("/:domain/projects/:projectName/bundles/:bundleId/files/*")
       if (req.query.mode && req.query.mode === "plain") {
         // OK
         return res.status(200).sendFile(fileInfo.path)
+        /*
+        return res.status(200)
+          .set({
+            "Accept-Ranges"       : "bytes",
+            "Cache-Control"       : "public, max-age=0",
+            "Last-Modified"       : `${ fileInfo.modifiedAt.toString() }`,
+            "Content-Type"        : "application/octet-stream"
+          })
+          .send(Project.getFileResourceAsBytesSync(req.token.usr, req.domain, req.project, req.bundleId, file))
+        */
       } else if (req.query.mode && req.query.mode === "download") {
+        const textFilter = (typeof(req.query.textFilter) === "string") ? decodeURIComponent(req.query.textFilter) : null
+        const dateFrom   = (typeof(req.query.dateFrom) === "string")   ? decodeURIComponent(req.query.dateFrom)   : null
+        const dateTo     = (typeof(req.query.dateTo) === "string")     ? decodeURIComponent(req.query.dateTo)     : null
         // OK
-        return res.status(200).download(fileInfo.path, fileInfo.name)
+        //return res.status(200).download(fileInfo.path, fileInfo.name)
+        return res.status(200)
+          .set({
+            "Content-Disposition" : `attachment; filename="${ fileInfo.name }"`,
+            "Accept-Ranges"       : "bytes",
+            "Cache-Control"       : "public, max-age=0",
+            "Last-Modified"       : `${ fileInfo.modifiedAt.toString() }`,
+            "Content-Type"        : "application/octet-stream"
+          })
+          .send(Project.getFileResourceAsBytesSync(req.token.usr, req.domain, req.project, req.bundleId, file, textFilter, dateFrom, dateTo))
       } else if (req.query.mode && req.query.mode === "json") {
         if (fileInfo.size >= 104857600) {
           // Service Unavailable

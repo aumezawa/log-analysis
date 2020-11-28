@@ -789,6 +789,44 @@ export function getFileResourceSync(user: string, domain: string, project: strin
   return getFileContentSync(getFilePathSync(user, domain, project, bundleId, file))
 }
 
+export function getFileResourceAsBytesSync(user: string, domain: string, project: string, bundleId: string, file: string, textFilter?: string, dateFrom?: string, dateTo?: string): string {
+  const filePath = getFilePathSync(user, domain, project, bundleId, file)
+
+  const regex = new RegExp(`^${ dateFormat }(.*)$`)
+
+  const hasDate = (dateFormat !== "") && !!getFileContentHeadSync(filePath).match(regex)
+
+  let content = getFileContentSync(filePath)
+
+  if (textFilter) {
+    content = content.split(/\r\n|\n|\r/)
+      .filter((line: string) => line.includes(textFilter))
+      .join("\n")
+  }
+
+  if (hasDate && (dateFrom || dateTo)) {
+    content = content.split(/\r\n|\n|\r/)
+      .filter((line: string) => {
+        const match = line.match(regex)
+        if (!match) {
+          return false
+        }
+
+        const at = new Date(match[1])
+        if (dateFrom && new Date(dateFrom) > at) {
+          return false
+        }
+        if (dateTo   && new Date(dateTo)   < at) {
+          return false
+        }
+        return true
+      })
+      .join("\n")
+  }
+
+  return content
+}
+
 export function getFileResourceAsJsonSync(user: string, domain: string, project: string, bundleId: string, file: string): TableContent {
   const filePath = getFilePathSync(user, domain, project, bundleId, file)
 
