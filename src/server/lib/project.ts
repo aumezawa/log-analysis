@@ -452,7 +452,7 @@ function createNewProjectInfoSync(user: string, domain: string, project: string,
   return updateProjectInfoSync(user, domain, project, {
     name        : project,
     status      : "open",
-    opened      : LocalDate.toISOString(LocalDate.now()),
+    opened      : LocalDate.now(true),
     closed      : null,
     description : description || "",
     index       : 0,
@@ -527,7 +527,7 @@ export function updateProjectStatus(user: string, domain: string, project: strin
       .then((projectInfo: ProjectInfo) => {
         bundles = projectInfo.bundles
         projectInfo.status = status
-        projectInfo.closed = (status === "close") ? LocalDate.toISOString(LocalDate.now()) : null
+        projectInfo.closed = (status === "close") ? LocalDate.now(true) : null
         return updateProjectInfo(user, domain, project, projectInfo)
       })
       .then(() => {
