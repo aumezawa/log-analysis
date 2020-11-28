@@ -1,7 +1,7 @@
 import * as React from "react"
 import { useCallback } from "react"
 
-import LocalDate from "../../lib/local-date"
+import * as LocalDate from "../../lib/local-date"
 
 type DateFormProps = {
   className?    : string,
@@ -9,7 +9,7 @@ type DateFormProps = {
   valid         : boolean,
   disabled?     : boolean,
   defaultValue? : string,
-  onChange?     : (value: Date) => void
+  onChange?     : (value: string) => void
 }
 
 const DateForm = React.memo(React.forwardRef<HTMLInputElement, DateFormProps>(({
@@ -17,12 +17,12 @@ const DateForm = React.memo(React.forwardRef<HTMLInputElement, DateFormProps>(({
   label         = "Date",
   valid         = undefined,
   disabled      = false,
-  defaultValue  = LocalDate.toISOString(LocalDate.now()),
+  defaultValue  = LocalDate.toInputFormat(new Date(), true),
   onChange      = undefined
 }, ref) => {
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     if (onChange) {
-      onChange(LocalDate.newDate(e.currentTarget.value))
+      onChange(e.currentTarget.value)
     }
   }, [onChange])
 
