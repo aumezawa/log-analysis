@@ -17,6 +17,9 @@ router.route("/log/:domain/projects/:projectName/bundles/:bundleId/files/*")
   if (req.query.filter) {
     query = `${ query }&filter=${ req.query.filter }`
   }
+  if (req.query.sensitive) {
+    query = `${ query }&sensitive=${ req.query.sensitive }`
+  }
   if (req.query.date_from) {
     query = `${ query }&date_from=${ req.query.date_from }`
   }

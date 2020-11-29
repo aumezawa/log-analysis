@@ -8,6 +8,8 @@ import ButtonSet from "../sets/button-set"
 
 type TextFilterFormProps = {
   className?: string,
+  mode?     : string,
+  sensitive?: boolean,
   condition?: string,
   disabled? : boolean,
   dismiss?  : string,
@@ -19,6 +21,8 @@ export const options: Array<string> = ["Be included", "Not be included", "Regex 
 
 const TextFilterForm = React.memo<TextFilterFormProps>(({
   className = "",
+  mode      = options[0],
+  sensitive = true,
   condition = null,
   disabled  = false,
   dismiss   = "",
@@ -28,13 +32,13 @@ const TextFilterForm = React.memo<TextFilterFormProps>(({
   const [valid, setValid] = useState<boolean>(false)
 
   useEffect(() => {
-    if (condition) {
-      data.current.mode       = ref.current.mode.current.value         = options[0]
-      data.current.sensitive  = ref.current.sensitive.current.checked  = true
+    if (mode && typeof(sensitive) === "boolean" && condition) {
+      data.current.mode       = ref.current.mode.current.value         = mode
+      data.current.sensitive  = ref.current.sensitive.current.checked  = sensitive
       data.current.condition  = ref.current.condition.current.value    = condition
       setValid(data.current.condition !== "")
     }
-  }, [condition])
+  }, [mode, sensitive, condition])
 
   const ref = useRef({
     mode      : React.createRef<HTMLSelectElement>(),

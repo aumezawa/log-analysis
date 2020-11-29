@@ -18,10 +18,11 @@ type FunctionalTableBoxProps = {
   path?               : string,
   line?               : number,
   textFilter?         : string,
+  textSensitive?      : boolean,
   dateFrom?           : string,
   dateTo?             : string,
   onChangeLine?       : (line: number) => void,
-  onChangeTextFilter? : (textFilter: string) => void,
+  onChangeTextFilter? : (textFilter: string, textSensitive: boolean) => void,
   onChangeDateFilter? : (dateFrom: string, dateTo: string) => void
 }
 
@@ -30,6 +31,7 @@ const FunctionalTableBox = React.memo<FunctionalTableBoxProps>(({
   path                = null,
   line                = null,
   textFilter          = null,
+  textSensitive       = true,
   dateFrom            = null,
   dateTo              = null,
   onChangeLine        = undefined,
@@ -80,9 +82,9 @@ const FunctionalTableBox = React.memo<FunctionalTableBoxProps>(({
     }
   }, [onChangeLine])
 
-  const handleChangeTextFilter = useCallback((textFilter: string) => {
+  const handleChangeTextFilter = useCallback((textFilter: string, textSensitive: boolean) => {
     if (onChangeTextFilter) {
-      onChangeTextFilter(textFilter)
+      onChangeTextFilter(textFilter, textSensitive)
     }
   }, [onChangeTextFilter])
 
@@ -91,6 +93,44 @@ const FunctionalTableBox = React.memo<FunctionalTableBoxProps>(({
       onChangeDateFilter(dateFrom, dateTo)
     }
   }, [onChangeDateFilter])
+
+  const handleClickDownload = useCallback((textFilter: string, textSensitive: boolean, dateFrom: string, dateTo: string) => {
+    let uri = `${ Environment.getBaseUrl() }/api/v1/${ Escape.root(path) }?mode=download`
+    uri = (textFilter)              ? `${ uri }&filter=${ encodeURIComponent(textFilter) }`  : uri
+    uri = (textSensitive === false) ? `${ uri }&sensitive=false`                             : uri
+    uri = (dateFrom)                ? `${ uri }&date_from=${ encodeURIComponent(dateFrom) }` : uri
+    uri = (dateTo)                  ? `${ uri }&date_to=${ encodeURIComponent(dateTo) }`     : uri
+    Axios.get(uri, {
+      headers : { "X-Access-Token": Cookie.get("token") || "" },
+      data    : {},
+      responseType: "blob"
+    })
+    .then((res: AxiosResponse) => {
+      const blob = new Blob([res.data], { type: res.data.type })
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement("a")
+
+      let filename: string
+      const match = res.headers["content-disposition"].match(/filename="(.*)"(;|$)/)
+      if (match) {
+        filename = match[1]
+        const matchUTF8 = res.headers["content-disposition"].match(/filename[*]=UTF-8''(.*)(;|$)/)
+        if (matchUTF8) {
+          filename = decodeURIComponent(matchUTF8[1])
+        }
+        link.href = url
+        link.setAttribute("download", filename)
+        document.body.appendChild(link)
+        link.click()
+        link.remove()
+        window.URL.revokeObjectURL(url)
+      }
+      return
+    })
+    .catch((err: AxiosError) => {
+      return
+    })
+  }, [path])
 
   return (
     <>
@@ -102,11 +142,13 @@ const FunctionalTableBox = React.memo<FunctionalTableBoxProps>(({
           content={ data.current.content }
           line={ line }
           textFilter={ textFilter }
+          textSensitive={ textSensitive }
           dateFrom={ dateFrom }
           dateTo={ dateTo }
           onChangeLine={ handleChangeLine }
           onChangeTextFilter={ handleChangeTextFilter }
           onChangeDateFilter={ handleChangeDateFilter }
+          onClickDownload={ handleClickDownload }
         />
       }
     </>

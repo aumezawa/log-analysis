@@ -299,9 +299,32 @@ router.route("/:domain/projects/:projectName/bundles/:bundleId/files/*")
       if (req.query.mode && req.query.mode === "plain") {
         // OK
         return res.status(200).sendFile(fileInfo.path)
+        /*
+        return res.status(200)
+          .set({
+            "Accept-Ranges"       : "bytes",
+            "Cache-Control"       : "public, max-age=0",
+            "Last-Modified"       : `${ fileInfo.modifiedAt.toString() }`,
+            "Content-Type"        : "application/octet-stream"
+          })
+          .send(Project.getFileResourceAsBytesSync(req.token.usr, req.domain, req.project, req.bundleId, file))
+        */
       } else if (req.query.mode && req.query.mode === "download") {
+        const filter    = (typeof(req.query.filter)    === "string") ? decodeURIComponent(req.query.filter)              : null
+        const sensitive = (typeof(req.query.sensitive) === "string") ? (req.query.sensitive === "false" ? false : true ) : true
+        const date_from = (typeof(req.query.date_from) === "string") ? decodeURIComponent(req.query.date_from)           : null
+        const date_to   = (typeof(req.query.date_to)   === "string") ? decodeURIComponent(req.query.date_to)             : null
         // OK
-        return res.status(200).download(fileInfo.path, fileInfo.name)
+        //return res.status(200).download(fileInfo.path, fileInfo.name)
+        return res.status(200)
+          .set({
+            "Content-Disposition" : `attachment; filename="${ fileInfo.name }"`,
+            "Accept-Ranges"       : "bytes",
+            "Cache-Control"       : "public, max-age=0",
+            "Last-Modified"       : `${ fileInfo.modifiedAt.toString() }`,
+            "Content-Type"        : "application/octet-stream"
+          })
+          .send(Project.getFileResourceAsBytesSync(req.token.usr, req.domain, req.project, req.bundleId, file, filter, sensitive, date_from, date_to))
       } else if (req.query.mode && req.query.mode === "json") {
         if (fileInfo.size >= 104857600) {
           // Service Unavailable

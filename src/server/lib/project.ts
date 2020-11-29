@@ -461,7 +461,7 @@ function createNewProjectInfoSync(user: string, domain: string, project: string,
   return updateProjectInfoSync(user, domain, project, {
     name        : project,
     status      : "open",
-    opened      : LocalDate.toISOString(LocalDate.now()),
+    opened      : LocalDate.now(true),
     closed      : null,
     description : description || "",
     index       : 0,
@@ -536,7 +536,7 @@ export function updateProjectStatus(user: string, domain: string, project: strin
       .then((projectInfo: ProjectInfo) => {
         bundles = projectInfo.bundles
         projectInfo.status = status
-        projectInfo.closed = (status === "close") ? LocalDate.toISOString(LocalDate.now()) : null
+        projectInfo.closed = (status === "close") ? LocalDate.now(true) : null
         return updateProjectInfo(user, domain, project, projectInfo)
       })
       .then(() => {
@@ -657,10 +657,11 @@ export function existsBundleName(user: string, domain: string, project: string, 
 export function registerBundleResource(user: string, domain: string, project: string, bundleTgz: string, description?: string): Promise<void> {
   return new Promise<void>((resolve: () => void, reject: (err?: any) => void) => {
     return setImmediate(() => {
+      const bundlePath: string = joinResourcePathSync(getProjectResourcePathSync(user, domain, project), bundleTgz)
       let bundleId: string
       let bundleName: string
 
-      return extractBundleName(joinResourcePathSync(getProjectResourcePathSync(user, domain, project), bundleTgz))
+      return extractBundleName(bundlePath)
       .then((name: string) => {
         bundleName = name
         return existsBundleName(user, domain, project, bundleName)
@@ -676,10 +677,10 @@ export function registerBundleResource(user: string, domain: string, project: st
           description : description || "",
           available   : false
         })
-        return updateProjectInfo(domain, user, project, projectInfo)
+        return updateProjectInfo(user, domain, project, projectInfo)
       })
       .then(() => {
-        return decompressBundle(getBundleResourcePathSync(user, domain, project, bundleId) + ".tgz", "vmtools")
+        return decompressBundle(bundlePath, "vmtools")
       })
       .then(() => {
         return getProjectInfo(user, domain, project)
@@ -691,7 +692,7 @@ export function registerBundleResource(user: string, domain: string, project: st
           }
           return bundleInfo
         })
-        return updateProjectInfo(domain, user, project, projectInfo)
+        return updateProjectInfo(user, domain, project, projectInfo)
       })
       .then(() => {
         return resolve()
@@ -795,6 +796,44 @@ export function getFileResourceInfo(user: string, domain: string, project: strin
 
 export function getFileResourceSync(user: string, domain: string, project: string, bundleId: string, file: string): string {
   return getFileContentSync(getFilePathSync(user, domain, project, bundleId, file))
+}
+
+export function getFileResourceAsBytesSync(user: string, domain: string, project: string, bundleId: string, file: string, filter?: string, sensitive: boolean = true, date_from?: string, date_to?: string): string {
+  const filePath = getFilePathSync(user, domain, project, bundleId, file)
+
+  const regex = new RegExp(`^${ dateFormat }(.*)$`)
+
+  const hasDate = (dateFormat !== "") && !!getFileContentHeadSync(filePath).match(regex)
+
+  let content = getFileContentSync(filePath)
+
+  if (filter) {
+    content = content.split(/\r\n|\n|\r/)
+      .filter((line: string) => sensitive ? line.includes(filter) : line.toUpperCase().includes(filter.toUpperCase()))
+      .join("\n")
+  }
+
+  if (hasDate && (date_from || date_to)) {
+    content = content.split(/\r\n|\n|\r/)
+      .filter((line: string) => {
+        const match = line.match(regex)
+        if (!match) {
+          return false
+        }
+
+        const at = new Date(match[1])
+        if (date_from && new Date(date_from) > at) {
+          return false
+        }
+        if (date_to   && new Date(date_to)   < at) {
+          return false
+        }
+        return true
+      })
+      .join("\n")
+  }
+
+  return content
 }
 
 export function getFileResourceAsJsonSync(user: string, domain: string, project: string, bundleId: string, file: string): TableContent {

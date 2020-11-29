@@ -5,15 +5,16 @@ import SwitchForm from "../parts/switch-form"
 import DateForm from "../parts/date-form"
 import ButtonSet from "../sets/button-set"
 
-import LocalDate from "../../lib/local-date"
+import * as LocalDate from "../../lib/local-date"
 
 type DateFilterFormProps = {
   className?: string,
-  from?     : Date,
-  to?       : Date,
+  from?     : string,
+  to?       : string,
+  local?    : boolean,
   disabled? : boolean,
   dismiss?  : string,
-  onSubmit? : (from: Date, to: Date) => void,
+  onSubmit? : (from: string, to: string) => void,
   onCancel? : () => void
 }
 
@@ -21,40 +22,13 @@ const DateFilterForm = React.memo<DateFilterFormProps>(({
   className = "",
   from      = null,
   to        = null,
+  local     = false,
   disabled  = false,
   dismiss   = "",
   onSubmit  = undefined,
   onCancel  = undefined
 }) => {
   const [ignored, forceUpdate]  = useReducer(x => x + 1, 0)
-
-  useEffect(() => {
-    if (!from && !to) {
-      return
-    }
-
-    if (from && from.toString() !== "Invalid Date") {
-      data.current.from.enable = true
-      data.current.from.date = from
-      ref.current.from.enable.current.checked = true
-      ref.current.from.date.current.value = from.toISOString().slice(0, 19)
-    } else {
-      data.current.from.enable = false
-      ref.current.from.enable.current.checked = false
-    }
-
-    if (to && to.toString() !== "Invalid Date") {
-      data.current.to.enable = true
-      data.current.to.date = to
-      ref.current.to.enable.current.checked = true
-      ref.current.to.date.current.value = to.toISOString().slice(0, 19)
-    } else {
-      data.current.to.enable = false
-      ref.current.to.enable.current.checked = false
-    }
-
-    forceUpdate()
-  }, [from, to])
 
   const ref = useRef({
     from: {
@@ -69,21 +43,48 @@ const DateFilterForm = React.memo<DateFilterFormProps>(({
 
   const data = useRef({
     from: {
+      valid : true,
       enable: true,
       date  : LocalDate.now()
     },
     to: {
+      valid : true,
       enable: true,
       date  : LocalDate.now()
     }
   })
 
-  const isValid = (at: { enable: boolean, date: Date }) => {
-    if (at.enable && at.date.toString() === "Invalid Date") {
-      return false
+  useEffect(() => {
+    if (LocalDate.isDate(from)) {
+      data.current.from.valid = true
+      data.current.from.enable = true
+      data.current.from.date = LocalDate.localize(from, 0)
+      ref.current.from.enable.current.checked = true
+      ref.current.from.date.current.value = LocalDate.toInputFormat(from, local)
+    } else {
+      data.current.from.valid = false
+      data.current.from.enable = false
+      data.current.from.date = null
+      ref.current.from.enable.current.checked = false
+      ref.current.from.date.current.value = ""
     }
-   return true
-  }
+
+    if (LocalDate.isDate(to)) {
+      data.current.to.valid = true
+      data.current.to.enable = true
+      data.current.to.date = LocalDate.localize(to, 0)
+      ref.current.to.enable.current.checked = true
+      ref.current.to.date.current.value = LocalDate.toInputFormat(to, local)
+    } else {
+      data.current.to.valid = false
+      data.current.to.enable = false
+      data.current.to.date = null
+      ref.current.to.enable.current.checked = false
+      ref.current.to.date.current.value = ""
+    }
+
+    forceUpdate()
+  }, [from, to, local])
 
   const handleChangeCheckFrom = useCallback((value: boolean) => {
     data.current.from.enable = value
@@ -95,23 +96,25 @@ const DateFilterForm = React.memo<DateFilterFormProps>(({
     forceUpdate()
   }, [true])
 
-  const handleChangeDateFrom = useCallback((value: Date) => {
-    data.current.from.date = value
+  const handleChangeDateFrom = useCallback((value: string) => {
+    data.current.from.valid = LocalDate.isDate(value)
+    data.current.from.date = LocalDate.fromInputFormat(value, local)
     forceUpdate()
-  }, [true])
+  }, [local])
 
-  const handleChangeDateTo = useCallback((value: Date) => {
-    data.current.to.date = value
+  const handleChangeDateTo = useCallback((value: string) => {
+    data.current.to.valid = LocalDate.isDate(value)
+    data.current.to.date = LocalDate.fromInputFormat(value, local)
     forceUpdate()
-  }, [true])
+  }, [local])
 
   const handleSubmit = useCallback(() => {
+    const from = data.current.from.enable ? data.current.from.date : null
+    const to   = data.current.to.enable   ? data.current.to.date   : null
     if (onSubmit) {
-      const from = data.current.from.enable ? data.current.from.date : null
-      const to   = data.current.to.enable   ? data.current.to.date   : null
       onSubmit(from, to)
     }
-  }, [onSubmit])
+  }, [local, onSubmit])
 
   const handleCancel = useCallback(() => {
     if (onCancel) {
@@ -134,9 +137,9 @@ const DateFilterForm = React.memo<DateFilterFormProps>(({
           ref={ ref.current.from.date }
           className="col-10"
           label=""
-          valid={ isValid(data.current.from) }
+          valid={ data.current.from.valid }
           disabled={ disabled || !data.current.from.enable }
-          defaultValue={ LocalDate.toISOString(data.current.from.date) }
+          defaultValue={ LocalDate.toInputFormat(data.current.from.date) }
           onChange={ handleChangeDateFrom }
         />
       </div>
@@ -153,17 +156,17 @@ const DateFilterForm = React.memo<DateFilterFormProps>(({
           ref={ ref.current.to.date }
           className="col-10"
           label=""
-          valid={ isValid(data.current.to) }
+          valid={ data.current.to.valid }
           disabled={ disabled || !data.current.to.enable }
-          defaultValue={ LocalDate.toISOString(data.current.to.date) }
+          defaultValue={ LocalDate.toInputFormat(data.current.to.date) }
           onChange={ handleChangeDateTo }
         />
       </div>
       <ButtonSet
         submit="Filter"
         cancel="Clear"
-        valid={ isValid(data.current.from) && isValid(data.current.to) }
-        disabled={ disabled || (!data.current.to.enable && !data.current.from.enable) }
+        valid={ (!data.current.from.enable || data.current.from.valid) && (!data.current.to.enable || data.current.to.valid) }
+        disabled={ disabled || (!data.current.from.enable && !data.current.to.enable) }
         dismiss={ dismiss }
         onSubmit={ handleSubmit }
         onCancel={ handleCancel }

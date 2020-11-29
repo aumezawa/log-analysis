@@ -1,3 +1,17 @@
+Version: **0.11.0** [2020/11/29]
+
+New Features:
+  - Supported downloading filtered contents on viewer
+  - Supported converting date to local time on viewer 
+
+Enhanced Features:
+  - Supported preserving sensitivity of text filter
+
+Bug Fixes:
+  - Failed in uploading a renamed log bundle
+
+***
+
 Version: **0.10.0** [2020/11/19]
 
 New Features:
