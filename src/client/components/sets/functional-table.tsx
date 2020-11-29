@@ -22,13 +22,14 @@ type FunctionalTableProps = {
   content?            : TableContent,
   line?               : number,
   textFilter?         : string,
+  textSensitive?      : boolean,
   dateFrom?           : string,
   dateTo?             : string,
   copy?               : boolean,
   onChangeLine?       : (line: number) => void,
-  onChangeTextFilter? : (textFilter: string) => void,
+  onChangeTextFilter? : (textFilter: string, textSensitive: boolean) => void,
   onChangeDateFilter? : (dateFrom: string, dateTo: string) => void,
-  onClickDownload?    : (textFilter: string, dateFrom: string, dateTo: string) => void
+  onClickDownload?    : (textFilter: string, textSensitive: boolean, dateFrom: string, dateTo: string) => void
 }
 
 const DEFAULT_ROW = 100
@@ -39,6 +40,7 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
   content             = null,
   line                = null,
   textFilter          = null,
+  textSensitive       = true,
   dateFrom            = null,
   dateTo              = null,
   copy                = false,
@@ -94,13 +96,13 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
           env.current.filters["Content"] = {
             type      : "text",
             mode      : "Be included",
-            sensitive : true,
+            sensitive : textSensitive,
             condition : textFilter
           }
           scrollLine = 1
         } else {
           if (onChangeTextFilter) {
-            onChangeTextFilter(null)
+            onChangeTextFilter(null, null)
           }
         }
       }
@@ -129,7 +131,7 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
       forceUpdate()
       scrollToLine(scrollLine)
     }
-  }, [content, line, textFilter, dateFrom, dateTo, onChangeTextFilter, onChangeDateFilter])
+  }, [content, line, textFilter, textSensitive, dateFrom, dateTo, onChangeTextFilter, onChangeDateFilter])
 
   const scrollToLine = (line: number) => {
     setImmediate(() => {
@@ -153,15 +155,15 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
         sensitive : sensitive,
         condition : condition
       }
-      if ((env.current.label === "Content") && (mode === "Be included") && (sensitive === true)) {
+      if ((env.current.label === "Content") && (mode === "Be included")) {
         env.current.dlable = true
         if (onChangeTextFilter) {
-          onChangeTextFilter(condition)
+          onChangeTextFilter(condition, sensitive)
         }
       } else {
         env.current.dlable = false
         if (onChangeTextFilter) {
-          onChangeTextFilter(null)
+          onChangeTextFilter(null, null)
         }
       }
       forceUpdate()
@@ -175,7 +177,7 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
       env.current.page = Object.keys(env.current.filters).length ? 1 : Math.ceil(env.current.line / env.current.maxRow)
       env.current.dlable = true
       if (onChangeTextFilter) {
-        onChangeTextFilter(null)
+        onChangeTextFilter(null, null)
       }
       forceUpdate()
       scrollToLine(Object.keys(env.current.filters).length ? 1 : env.current.line)
@@ -263,11 +265,12 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
   const handleClickDownload = useCallback(() => {
     const textFilter  = env.current.filters["Content"]
     const text        = (textFilter && (textFilter.mode === "Be included") && textFilter.condition) || null
+    const sensitive   = (textFilter && (textFilter.mode === "Be included") && textFilter.sensitive) || true
     const dateFilter  = env.current.filters["Date"]
     const dateFrom    = (dateFilter && dateFilter.from && dateFilter.from.toISOString()) || null
     const dateTo      = (dateFilter && dateFilter.to   && dateFilter.to.toISOString())   || null
     if (onClickDownload) {
-      onClickDownload(text, dateFrom, dateTo)
+      onClickDownload(text, sensitive, dateFrom, dateTo)
     }
   }, [onClickDownload])
 
@@ -451,6 +454,7 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
           message="Input a condition, or press [Clear] to reset."
           body={
             <TextFilterForm
+              sensitive={ env.current.filters["Content"] && env.current.filters["Content"].sensitive }
               condition={ env.current.filters["Content"] && env.current.filters["Content"].condition }
               dismiss="modal"
               onSubmit={ handleSubmitTextFilter }

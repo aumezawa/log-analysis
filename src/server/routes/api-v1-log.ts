@@ -102,9 +102,10 @@ router.route("/:domain/projects/:projectName/bundles/:bundleId/files/*")
           .send(Project.getFileResourceAsBytesSync(req.token.usr, req.domain, req.project, req.bundleId, file))
         */
       } else if (req.query.mode && req.query.mode === "download") {
-        const textFilter = (typeof(req.query.textFilter) === "string") ? decodeURIComponent(req.query.textFilter) : null
-        const dateFrom   = (typeof(req.query.dateFrom) === "string")   ? decodeURIComponent(req.query.dateFrom)   : null
-        const dateTo     = (typeof(req.query.dateTo) === "string")     ? decodeURIComponent(req.query.dateTo)     : null
+        const filter    = (typeof(req.query.filter)    === "string") ? decodeURIComponent(req.query.filter)              : null
+        const sensitive = (typeof(req.query.sensitive) === "string") ? (req.query.sensitive === "false" ? false : true ) : true
+        const date_from = (typeof(req.query.date_from) === "string") ? decodeURIComponent(req.query.date_from)           : null
+        const date_to   = (typeof(req.query.date_to)   === "string") ? decodeURIComponent(req.query.date_to)             : null
         // OK
         //return res.status(200).download(fileInfo.path, fileInfo.name)
         return res.status(200)
@@ -115,7 +116,7 @@ router.route("/:domain/projects/:projectName/bundles/:bundleId/files/*")
             "Last-Modified"       : `${ fileInfo.modifiedAt.toString() }`,
             "Content-Type"        : "application/octet-stream"
           })
-          .send(Project.getFileResourceAsBytesSync(req.token.usr, req.domain, req.project, req.bundleId, file, textFilter, dateFrom, dateTo))
+          .send(Project.getFileResourceAsBytesSync(req.token.usr, req.domain, req.project, req.bundleId, file, filter, sensitive, date_from, date_to))
       } else if (req.query.mode && req.query.mode === "json") {
         if (fileInfo.size >= 104857600) {
           // Service Unavailable

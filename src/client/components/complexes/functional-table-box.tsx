@@ -18,10 +18,11 @@ type FunctionalTableBoxProps = {
   path?               : string,
   line?               : number,
   textFilter?         : string,
+  textSensitive?      : boolean,
   dateFrom?           : string,
   dateTo?             : string,
   onChangeLine?       : (line: number) => void,
-  onChangeTextFilter? : (textFilter: string) => void,
+  onChangeTextFilter? : (textFilter: string, textSensitive: boolean) => void,
   onChangeDateFilter? : (dateFrom: string, dateTo: string) => void
 }
 
@@ -30,6 +31,7 @@ const FunctionalTableBox = React.memo<FunctionalTableBoxProps>(({
   path                = null,
   line                = null,
   textFilter          = null,
+  textSensitive       = true,
   dateFrom            = null,
   dateTo              = null,
   onChangeLine        = undefined,
@@ -80,9 +82,9 @@ const FunctionalTableBox = React.memo<FunctionalTableBoxProps>(({
     }
   }, [onChangeLine])
 
-  const handleChangeTextFilter = useCallback((textFilter: string) => {
+  const handleChangeTextFilter = useCallback((textFilter: string, textSensitive: boolean) => {
     if (onChangeTextFilter) {
-      onChangeTextFilter(textFilter)
+      onChangeTextFilter(textFilter, textSensitive)
     }
   }, [onChangeTextFilter])
 
@@ -92,11 +94,12 @@ const FunctionalTableBox = React.memo<FunctionalTableBoxProps>(({
     }
   }, [onChangeDateFilter])
 
-  const handleClickDownload = useCallback((textFilter: string, dateFrom: string, dateTo: string) => {
+  const handleClickDownload = useCallback((textFilter: string, textSensitive: boolean, dateFrom: string, dateTo: string) => {
     let uri = `${ Environment.getBaseUrl() }/api/v1/${ Escape.root(path) }?mode=download`
-    uri = (textFilter) ? `${ uri }&textFilter=${ encodeURIComponent(textFilter) }` : uri
-    uri = (dateFrom)   ? `${ uri }&dateFrom=${ encodeURIComponent(dateFrom) }`     : uri
-    uri = (dateTo)     ? `${ uri }&dateTo=${ encodeURIComponent(dateTo) }`         : uri
+    uri = (textFilter)              ? `${ uri }&filter=${ encodeURIComponent(textFilter) }`  : uri
+    uri = (textSensitive === false) ? `${ uri }&sensitive=false`                             : uri
+    uri = (dateFrom)                ? `${ uri }&date_from=${ encodeURIComponent(dateFrom) }` : uri
+    uri = (dateTo)                  ? `${ uri }&date_to=${ encodeURIComponent(dateTo) }`     : uri
     Axios.get(uri, {
       headers : { "X-Access-Token": Cookie.get("token") || "" },
       data    : {},
@@ -139,6 +142,7 @@ const FunctionalTableBox = React.memo<FunctionalTableBoxProps>(({
           content={ data.current.content }
           line={ line }
           textFilter={ textFilter }
+          textSensitive={ textSensitive }
           dateFrom={ dateFrom }
           dateTo={ dateTo }
           onChangeLine={ handleChangeLine }

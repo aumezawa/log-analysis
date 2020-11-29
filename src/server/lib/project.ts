@@ -789,7 +789,7 @@ export function getFileResourceSync(user: string, domain: string, project: strin
   return getFileContentSync(getFilePathSync(user, domain, project, bundleId, file))
 }
 
-export function getFileResourceAsBytesSync(user: string, domain: string, project: string, bundleId: string, file: string, textFilter?: string, dateFrom?: string, dateTo?: string): string {
+export function getFileResourceAsBytesSync(user: string, domain: string, project: string, bundleId: string, file: string, filter?: string, sensitive: boolean = true, date_from?: string, date_to?: string): string {
   const filePath = getFilePathSync(user, domain, project, bundleId, file)
 
   const regex = new RegExp(`^${ dateFormat }(.*)$`)
@@ -798,13 +798,13 @@ export function getFileResourceAsBytesSync(user: string, domain: string, project
 
   let content = getFileContentSync(filePath)
 
-  if (textFilter) {
+  if (filter) {
     content = content.split(/\r\n|\n|\r/)
-      .filter((line: string) => line.includes(textFilter))
+      .filter((line: string) => sensitive ? line.includes(filter) : line.toUpperCase().includes(filter.toUpperCase()))
       .join("\n")
   }
 
-  if (hasDate && (dateFrom || dateTo)) {
+  if (hasDate && (date_from || date_to)) {
     content = content.split(/\r\n|\n|\r/)
       .filter((line: string) => {
         const match = line.match(regex)
@@ -813,10 +813,10 @@ export function getFileResourceAsBytesSync(user: string, domain: string, project
         }
 
         const at = new Date(match[1])
-        if (dateFrom && new Date(dateFrom) > at) {
+        if (date_from && new Date(date_from) > at) {
           return false
         }
-        if (dateTo   && new Date(dateTo)   < at) {
+        if (date_to   && new Date(date_to)   < at) {
           return false
         }
         return true
