@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "target": "es5",
+    "module": "commonjs",
+    "lib": [
+      "es2020",
+      "dom"
+    ],
+    "sourceMap": false,
+    "outDir": "./dist/test",
+    "strict": true,
+    "strictNullChecks": false,
+    "moduleResolution": "node",
+    "typeRoots": ["./node_modules/@types", "./src/@types", "./src/test/@types"],
+    "esModuleInterop": false,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": [
+    "./src/test/**/*",
+    "./src/@types"
+  ]
+}

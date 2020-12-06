@@ -281,8 +281,8 @@ function getFileContent(file: string): Promise<string> {
 function getFileContentHeadSync(file: string): string {
   try {
     const fd = fs.openSync(file, "r")
-    const buffer = Buffer.alloc(40)
-    fs.readSync(fd, buffer, 0, 40, 0)
+    const buffer = Buffer.alloc(30)
+    fs.readSync(fd, buffer, 0, 30, 0)
     fs.closeSync(fd)
     return buffer.toString("utf8")
   } catch (err) {
