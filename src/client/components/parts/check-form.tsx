@@ -22,6 +22,10 @@ const CheckForm = React.memo(React.forwardRef<HTMLInputElement, CheckFormProps>(
     }
   }, [onChange])
 
+  const handleClick = useCallback(() => {
+    (ref as React.RefObject<HTMLInputElement>).current.click()
+  }, [true])
+
   return (
     <div className={ className }>
       <div className="input-group">
@@ -40,7 +44,8 @@ const CheckForm = React.memo(React.forwardRef<HTMLInputElement, CheckFormProps>(
           className="form-control text-monospace"
           type="text"
           value={ label }
-          disabled={ true }
+          readOnly={ true }
+          onClick={ handleClick }
         />
       </div>
     </div>

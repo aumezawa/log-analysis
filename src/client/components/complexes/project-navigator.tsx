@@ -170,6 +170,7 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
             label={ domain || "Select Domain" }
             LIcon={ House }
             color={ domain ? (domain !== "private" ? "success" : "warning") : "secondary" }
+            disabled={ privilege === "none" }
             toggle="modal"
             target={ id.current.domainSelect }
           />

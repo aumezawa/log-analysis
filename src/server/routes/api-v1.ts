@@ -58,6 +58,21 @@ router.route("/login")
     })
   }
 
+  if (req.body.username === "anonymous") {
+    // OK
+    const token = jwt.sign({
+      iss: process.env.npm_package_author_name,
+      sub: "token-" + process.env.npm_package_name,
+      usr: "anonymous",
+      als: "anonymous",
+      prv: "none"
+    }, req.app.get("token-key"), { expiresIn: req.app.get("token-period") })
+    return res.status(200).json({
+      msg: "Authentication successfully.",
+      token: token
+    })
+  }
+
   const username: string = req.body.username
   let password: string = req.body.password
   const encrypted: boolean = !!req.body.encrypted

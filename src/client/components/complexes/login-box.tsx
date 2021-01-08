@@ -105,6 +105,7 @@ const LoginBox = React.memo<LoginBoxProps>(({
         key={ formKey }
         username={ username }
         disabled={ status.current.done && status.current.success }
+        anonymous={ true }
         onSubmit={ handleSubmit }
         onCancel={ handleCancel }
       />
