@@ -60,7 +60,7 @@
     "react-bootstrap-icons": "^1.1.0",
     "react-dom": "^16.13.1",
     "serve-favicon": "^2.5.0",
-    "socket.io": "^2.3.0",
+    "socket.io": "^2.4.0",
     "socket.io-client": "^2.3.0",
     "tar": "^6.0.2",
     "xterm": "^4.6.0",
