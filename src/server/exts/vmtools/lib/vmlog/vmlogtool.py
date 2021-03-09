@@ -578,17 +578,18 @@ def GetNics(dirPath):
         bus  = _int(node.findtext('./pci-device/value[@name="bus"]'), base=16)
         dev  = _int(node.findtext('./pci-device/value[@name="slot"]'), base=16)
         func = _int(node.findtext('./pci-device/value[@name="function"]'), base=16)
-        nics.append({
-            'name'      : node.findtext('./value[@name="name"]'),
-            'speed'     : _int(node.findtext('./value[@name="actual-speed"]')),
-            'linkup'    : node.findtext('./value[@name="link-up"]') == 'true',
-            'mtu'       : _int(node.findtext('./value[@name="mtu"]')),
-            'sbdf'      : '%04x:%02x:%02x:%01x' % (seg, bus, dev, func),
-            'device'    : node.findtext('./pci-device/value[@name="device-name"]'),
-            'port'      : 'Device %s, Port %s' % (slot, func),
-            'mac'       : node.findtext('./value[@name="mac-address"]'),
-            'driver'    : node.findtext('./value[@name="driver"]')
-        })
+        if (seg is not None) and (bus is not None) and (dev is not None) and (func is not None):
+            nics.append({
+                'name'      : node.findtext('./value[@name="name"]'),
+                'speed'     : _int(node.findtext('./value[@name="actual-speed"]')),
+                'linkup'    : node.findtext('./value[@name="link-up"]') == 'true',
+                'mtu'       : _int(node.findtext('./value[@name="mtu"]')),
+                'sbdf'      : '%04x:%02x:%02x:%01x' % (seg, bus, dev, func),
+                'device'    : node.findtext('./pci-device/value[@name="device-name"]'),
+                'port'      : 'Device %s, Port %s' % (slot, func),
+                'mac'       : node.findtext('./value[@name="mac-address"]'),
+                'driver'    : node.findtext('./value[@name="driver"]')
+            })
     nics.sort(key=lambda x: x['name'])
     return nics
 
@@ -631,7 +632,7 @@ def GetPortgroups(dirPath):
 
 def GetHbas(dirPath):
     filePath = os.path.join(dirPath, 'commands', 'esxcfg-info_-a--F-xml.txt')
-    xpath    = './storage-info/all-scsi-iface/fibrechannel-scsi-interface/scsi-interface'
+    xpath    = './storage-info/all-scsi-iface/*/scsi-interface'
     nodes    = GetXmlNode(filePath, xpath, multi=True)
     if nodes is None:
         return []
@@ -643,27 +644,31 @@ def GetHbas(dirPath):
         bus  = _int(node.findtext('./pci-device/value[@name="bus"]'), base=16)
         dev  = _int(node.findtext('./pci-device/value[@name="slot"]'), base=16)
         func = _int(node.findtext('./pci-device/value[@name="function"]'), base=16)
-        hbas.append({
-            'name'      : node.findtext('./value[@name="name"]'),
-            'sbdf'      : '%04x:%02x:%02x:%01x' % (seg, bus, dev, func),
-            'device'    : node.findtext('./pci-device/value[@name="device-name"]'),
-            'port'      : 'Device %s, Port %s' % (slot, func),
-            'wwn'       : node.findtext('./value[@name="uid"]')[-16:],
-            'driver'    : node.findtext('./value[@name="driver"]')
-        })
+        if (seg is not None) and (bus is not None) and (dev is not None) and (func is not None):
+            hbas.append({
+                'name'      : node.findtext('./value[@name="name"]'),
+                'sbdf'      : '%04x:%02x:%02x:%01x' % (seg, bus, dev, func),
+                'device'    : node.findtext('./pci-device/value[@name="device-name"]'),
+                'port'      : 'Device %s, Port %s' % (slot, func),
+                'wwn'       : node.findtext('./value[@name="uid"]')[-16:],
+                'driver'    : node.findtext('./value[@name="driver"]')
+            })
     hbas.sort(key=lambda x: x['name'])
     return hbas
 
 
 def GetDisks(dirPath):
     filePath = os.path.join(dirPath, 'commands', 'esxcfg-info_-a--F-xml.txt')
-    xpath    = './storage-info/all-scsi-iface/fibrechannel-scsi-interface/scsi-interface/paths/scsi-path'
+    xpath    = './storage-info/all-scsi-iface/*/scsi-interface/paths/scsi-path'
     nodes    = GetXmlNode(filePath, xpath, multi=True)
     if nodes is None:
         return []
     #
     disks = []
     for node in nodes:
+        if node.find('./disk-lun/lun') is None:
+            continue
+        #
         name    = node.findtext('./value[@name="device-identifier"]')
         vml     = 'Unknown'
         for uid in node.findall('./disk-lun/lun/device-uids/device-uid'):
@@ -755,6 +760,9 @@ def GetVmxDict(vmxPath):
     except Exception as e:
         logger.error(e)
         return None
+    #
+    if 'numvcpus' not in vmxDict:
+        vmxDict['numvcpus'] = 1
     #
     return vmxDict
 
