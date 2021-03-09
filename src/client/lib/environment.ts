@@ -15,6 +15,10 @@ export default {
     `${ location.protocol }//${ location.host }`
   ),
 
+  updateTitle: (title: string) => {
+    document.title = title
+  },
+
   updateAddressBar: (url: string) => {
     window.history.replaceState(null, null, url)
   }
