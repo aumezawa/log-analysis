@@ -15,6 +15,10 @@ export default {
     `${ location.protocol }//${ location.host }`
   ),
 
+  getUrlParam: (param: string) => (
+    (new URLSearchParams(decodeURIComponent(location.search))).get(param)
+  ),
+
   updateTitle: (title: string) => {
     document.title = title
   },

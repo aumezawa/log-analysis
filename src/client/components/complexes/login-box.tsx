@@ -1,5 +1,5 @@
 import * as React from "react"
-import { useRef, useCallback, useReducer } from "react"
+import { useEffect, useRef, useCallback, useReducer } from "react"
 
 import Axios from "axios"
 import { AxiosResponse, AxiosError } from "axios"
@@ -34,13 +34,21 @@ const LoginBox = React.memo<LoginBoxProps>(({
   const params = new URLSearchParams(url.search)
 
   const data = useRef({
-    message   : defaultMessage
+    message   : defaultMessage,
+    anonymous : false
   })
 
   const status = useRef({
     done      : false,
     success   : false
   })
+
+  useEffect(() => {
+    if (Environment.getUrlParam("anonymous") === "true") {
+      data.current.anonymous = true
+      forceUpdate()
+    }
+  }, [true])
 
   const handleSubmit = useCallback((username: string, password: string) => {
     const uri = `${ Environment.getBaseUrl() }/api/v1/public-key`
@@ -105,7 +113,7 @@ const LoginBox = React.memo<LoginBoxProps>(({
         key={ formKey }
         username={ username }
         disabled={ status.current.done && status.current.success }
-        anonymous={ true }
+        anonymous={ data.current.anonymous }
         onSubmit={ handleSubmit }
         onCancel={ handleCancel }
       />
