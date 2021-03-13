@@ -1,7 +1,7 @@
 import * as React from "react"
 import { useEffect, useRef, useReducer } from "react"
 
-import { Cpu, Diagram3, Gear, Grid3x3Gap, HddStack, JournalCheck, Server, Tags } from "react-bootstrap-icons"
+import { Clock, Cpu, Diagram3, Gear, Grid3x3Gap, HddStack, JournalCheck, Server, Tags } from "react-bootstrap-icons"
 
 import Axios from "axios"
 import { AxiosResponse, AxiosError } from "axios"
@@ -162,6 +162,19 @@ const HostInfoBox = React.memo<HostInfoBoxProps>(({
       />
     )
 
+    TableLayout(data.current.hosts.map((hostInfo: HostInfo) => hostInfo.date.ntp), "remote")
+    .forEach((content: Array<Array<string>>, index: number) => {
+      tables.push(
+        <Table
+          key={ `ntp-${ index }` }
+          title={ `NTP Status Information - ${ index }` }
+          LIcon={ Clock }
+          compare={ true }
+          content={ content }
+        />
+      )
+    })
+
     tables.push(
       <Table
         key="hardware"
@@ -169,13 +182,16 @@ const HostInfoBox = React.memo<HostInfoBoxProps>(({
         LIcon={ Cpu }
         compare={ true }
         content={ [
-          ["machine"            ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.hardware.machine }`)),
-          ["serial number"      ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.hardware.serial }`)),
-          ["cpu - model"        ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.hardware.cpu.model }`)),
-          ["cpu - sockets"      ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.hardware.cpu.sockets }`)),
-          ["cpu - total cores"  ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.hardware.cpu.cores }`)),
-          ["cpu - total threads"].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.hardware.cpu.threads }`)),
-          ["memory - total"     ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.hardware.memory } GB`))
+          ["machine"             ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.hardware.machine }`)),
+          ["serial number"       ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.hardware.serial }`)),
+          ["bios version"        ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.hardware.bios }`)),
+          ["bmc version"         ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.hardware.bmc }`)),
+          ["cpu - model"         ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.hardware.cpu.model }`)),
+          ["cpu - sockets"       ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.hardware.cpu.sockets }`)),
+          ["cpu - total cores"   ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.hardware.cpu.cores }`)),
+          ["cpu - hyperthreading"].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.hardware.cpu.htEnable }`)),
+          ["memory - total"      ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.hardware.memory } GB`)),
+          ["# of numa nodes"     ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.hardware.numa }`))
         ] }
       />
     )
@@ -225,6 +241,19 @@ const HostInfoBox = React.memo<HostInfoBoxProps>(({
         <Table
           key={ `portgroup-${ index }` }
           title={ `PortGroup Information - ${ index }` }
+          LIcon={ Diagram3 }
+          compare={ true }
+          content={ content }
+        />
+      )
+    })
+
+    TableLayout(data.current.hosts.map((hostInfo: HostInfo) => hostInfo.network.vmknics), "name")
+    .forEach((content: Array<Array<string>>, index: number) => {
+      tables.push(
+        <Table
+          key={ `vmk-${ index }` }
+          title={ `VMkernel NIC Information - ${ index }` }
           LIcon={ Diagram3 }
           compare={ true }
           content={ content }

@@ -1,4 +1,5 @@
 type VmInfo = {
+  format    : string,
   name      : string,
   version   : string,
   cpus      : number,
@@ -21,9 +22,11 @@ type VmOptionInfo = {
   numa_vcpu_maxPerMachineNode               : string,
   numa_vcpu_maxPerVirtualNode               : string,
   numa_autosize                             : string,
+  numa_autosize_vcpu_maxPerVirtualNode      : string,
   sched_cpu_affinity                        : string,
   sched_cpu_latencySensitivity              : string,
   sched_cpu_min                             : string,
+  sched_mem_pin                             : string,
   latency_enforceCpuMin                     : string,
   timeTracker_apparentTimeIgnoresInterrupts : string
 }

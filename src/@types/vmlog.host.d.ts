@@ -1,10 +1,12 @@
 type HostInfo = {
+  format    : string,
   hostname  : string,
   version   : string,
   build     : string,
   profile   : string,
   uptime    : number,
   system    : HostSystemInfo,
+  date      : HostDateInfo,
   hardware  : HostHardwareInfo,
   network   : HostNetworkInfo,
   storage   : HostStorageInfo,
@@ -17,11 +19,23 @@ type HostSystemInfo = {
   enableACPIPCIeHotplug       : string
 }
 
+type HostDateInfo = {
+  ntp       : Array<HostNtpStatusInfo>
+}
+
+type HostNtpStatusInfo = {
+  remote    : string,
+  status    : string
+}
+
 type HostHardwareInfo = {
   machine   : string,
   serial    : string,
+  bios      : string,
+  bmc       : string,
   cpu       : HostCpuInfo,
   memory    : number,
+  numa      : number,
   cards     : Array<HostPciCardInfo>
 }
 
@@ -29,7 +43,7 @@ type HostCpuInfo = {
   model     : string,
   sockets   : number,
   cores     : number,
-  threads   : number
+  htEnable  : boolean
 }
 
 type HostPciCardInfo = {
@@ -41,7 +55,8 @@ type HostPciCardInfo = {
 type HostNetworkInfo = {
   nics      : Array<HostNicInfo>,
   vswitches : Array<VirtualSwitchInfo>,
-  portgroups: Array<PortgroupInfo>
+  portgroups: Array<PortgroupInfo>,
+  vmknics   : Array<VMKernelNicInfo>
 }
 
 type HostNicInfo = {
@@ -68,6 +83,14 @@ type PortgroupInfo = {
   vlan      : number
 }
 
+type VMKernelNicInfo = {
+  name      : string,
+  ip        : string,
+  portgroup : string,
+  mtu       : number,
+  mac       : string
+}
+
 type HostStorageInfo = {
   hbas      : Array<HostHbaInfo>,
   disks     : Array<HostDiskInfo>
@@ -89,7 +112,9 @@ type HostDiskInfo = {
   size      : number,
   adapters  : Array<string>,
   nmp_psp   : string,
-  nmp_satp  : string
+  nmp_satp  : string,
+  bootbank  : boolean,
+  vmfs      : string
 }
 
 type HostPackageInfo = {

@@ -7,7 +7,7 @@ from __future__ import print_function
 
 __all__     = ['DecompressBundle', 'GetHostList', 'GetHostInfo', 'GetVmList', 'GetVmInfo', 'GetZdumpList' 'GetZdumpInfo']
 __author__  = 'aume'
-__version   = '0.0.0'
+__version   = '0.1.0'
 
 
 ################################################################################
@@ -73,23 +73,29 @@ def GetHostInfo(dirPath, esxName):
     #
     try:
         return {
+            'format'        : __version,
             'hostname'      : GetHostName(dirPath),
             'version'       : GetEsxiVersion(dirPath),
             'build'         : GetEsxiBuildNumber(dirPath),
             'profile'       : GetHostProfile(dirPath),
             'uptime'        : GetHostUptime(dirPath),
             'system'        : GetEsxiSystem(dirPath),
+            'date'          : GetDateStatus(dirPath),
             'hardware'  : {
                 'machine'   : GetMachineModel(dirPath),
                 'serial'    : GetMachineSerialNumber(dirPath),
+                'bios'      : GetBiosVersion(dirPath),
+                'bmc'       : GetBmcVersion(dirPath),
                 'cpu'       : GetCpuInfo(dirPath),
                 'memory'    : GetMemory(dirPath),
+                'numa'      : GetNumOfNumaNodes(dirPath),
                 'cards'     : GetPciCards(dirPath)
             },
             'network'   : {
                 'nics'      : GetNics(dirPath),
                 'vswitches' : GetVswitches(dirPath),
-                'portgroups': GetPortgroups(dirPath)
+                'portgroups': GetPortgroups(dirPath),
+                'vmknics'   : GetVMKernelNics(dirPath)
             },
             'storage'   : {
                 'hbas'      : GetHbas(dirPath),
@@ -123,6 +129,7 @@ def GetVmInfo(dirPath, vmName):
     vmxDict = GetVmxDict(vmxPath)
     try:
         return {
+            'format'    : __version,
             'name'      : vmName,
             'version'   : int(vmxDict['virtualHW.version']),
             'cpus'      : int(vmxDict['numvcpus']),
@@ -389,17 +396,23 @@ def _RemoveReadonlyFileOnWin(func, path, _):
 ################################################################################
 ### Internal Functions - Get Information
 ################################################################################
-def SearchInText(filePath, keyword, default=None):
+def SearchInText(filePath, keyword, multi=False, default=None):
+    list = []
     repattern = re.compile(keyword)
     try:
         with open(filePath, 'r') as fp:
             for line in fp:
                 match = repattern.match(line)
                 if match:
-                    return match.groups()[0]
+                    if multi:
+                        list.append(match.groups()[0])
+                    else:
+                        return match.groups()[0]
     except Exception as e:
         logger.error(e)
         return default
+    if multi:
+        return list
     return default
 
 
@@ -507,6 +520,36 @@ def GetEsxiSystem(dirPath):
         'enableACPIPCIeHotplug'     : SearchInText(filePath2, keyword2, default="FALSE")
     }
 
+
+def GetDateStatus(dirPath):
+    filePath = os.path.join(dirPath, 'commands', 'ntpq_-p.txt')
+    keyword  = r"^([-*#+ x.o]\S+)[ ].*$"
+    remotes = SearchInText(filePath, keyword, multi=True)
+    if remotes:
+        servers = []
+        for remote in remotes:
+            servers.append({
+                'remote'    : remote[1:],
+                'status'    : '* (sys.peer)'     if remote[0] == '*' else
+                              '# (selected)'     if remote[0] == '#' else
+                              '+ (candidate)'    if remote[0] == '+' else
+                              '<space> (excess)' if remote[0] == ' ' else
+                              'x (falseticker)'  if remote[0] == 'x' else
+                              '- (outlayer)'     if remote[0] == '-' else
+                              '. (excess)'       if remote[0] == '.' else
+                              'o (pps.peer)'     if remote[0] == 'o' else
+                              'Unknown'
+            })
+    else:
+        servers = [{
+            'remote'    : 'n/a',
+            'status'    : 'n/a'
+        }]
+    return {
+        'ntp'   : servers
+    }
+
+
 def GetMachineModel(dirPath):
     filePath = os.path.join(dirPath, 'commands', 'esxcfg-info_-a--F-xml.txt')
     xpath    = './hardware-info/value[@name="product-name"]'
@@ -516,6 +559,20 @@ def GetMachineModel(dirPath):
 def GetMachineSerialNumber(dirPath):
     filePath = os.path.join(dirPath, 'commands', 'esxcfg-info_-a--F-xml.txt')
     xpath    = './hardware-info/value[@name="serial-number"]'
+    return SearchInXml(filePath, xpath)
+
+
+def GetBiosVersion(dirPath):
+    filePath  = os.path.join(dirPath, 'commands', 'esxcfg-info_-a--F-xml.txt')
+    xpath    = './hardware-info/value[@name="bios-version"]'
+    smbiosPath = os.path.join(dirPath, 'commands', 'smbiosDump.txt')
+    keyword  = r"^.*System BIOS release: (.*)$"
+    return SearchInXml(filePath, xpath) + ' ' + SearchInText(smbiosPath, keyword, '')
+
+
+def GetBmcVersion(dirPath):
+    filePath = os.path.join(dirPath, 'commands', 'esxcfg-info_-a--F-xml.txt')
+    xpath    = './hardware-info/value[@name="bmc-version"]'
     return SearchInXml(filePath, xpath)
 
 
@@ -529,7 +586,7 @@ def GetCpuInfo(dirPath):
         'model'     : model,
         'sockets'   : _int(SearchInXml(filePath, './hardware-info/cpu-info/value[@name="num-packages"]')),
         'cores'     : _int(SearchInXml(filePath, './hardware-info/cpu-info/value[@name="num-cores"]')),
-        'threads'   : _int(SearchInXml(filePath, './hardware-info/cpu-info/value[@name="num-threads"]'))
+        'htEnable'  : SearchInXml(filePath, './hardware-info/cpu-info/value[@name="hyperthreading-enabled"]') == 'true'
     }
 
 
@@ -538,6 +595,13 @@ def GetMemory(dirPath):
     xpath    = './hardware-info/memory-info/value[@name="physical-mem"]'
     memory   = SearchInXml(filePath, xpath)
     return _int(memory, calc=lambda x: x // 1024 // 1024 // 1024 + 1)
+
+
+def GetNumOfNumaNodes(dirPath):
+    filePath = os.path.join(dirPath, 'commands', 'esxcfg-info_-a--F-xml.txt')
+    xpath    = './hardware-info/memory-info/value[@name="num-numa-nodes"]'
+    nodes    = SearchInXml(filePath, xpath)
+    return _int(nodes)
 
 
 def GetPciCards(dirPath):
@@ -630,6 +694,26 @@ def GetPortgroups(dirPath):
     return portgroups
 
 
+def GetVMKernelNics(dirPath):
+    filePath = os.path.join(dirPath, 'commands', 'esxcfg-info_-a--F-xml.txt')
+    xpath    = './network-info/vmkernel-nic-info/kernel-nics/vmkernel-nic'
+    nodes    = GetXmlNode(filePath, xpath, multi=True)
+    if nodes is None:
+        return []
+    #
+    vmknics = []
+    for node in nodes:
+        vmknics.append({
+            'name'      : node.findtext('./value[@name="interface"]'),
+            'ip'        : node.findtext('./actual-ip-settings/ipv4-settings/value[@name="ipv4-address"]'),
+            'portgroup' : node.findtext('./value[@name="port-group"]'),
+            'mtu'       : _int(node.findtext('./value[@name="mtu"]')),
+            'mac'       : node.findtext('./value[@name="mac-address"]')
+        })
+    vmknics.sort(key=lambda x: x['name'])
+    return vmknics
+
+
 def GetHbas(dirPath):
     filePath = os.path.join(dirPath, 'commands', 'esxcfg-info_-a--F-xml.txt')
     xpath    = './storage-info/all-scsi-iface/*/scsi-interface'
@@ -670,15 +754,6 @@ def GetDisks(dirPath):
             continue
         #
         name    = node.findtext('./value[@name="device-identifier"]')
-        vml     = 'Unknown'
-        for uid in node.findall('./disk-lun/lun/device-uids/device-uid'):
-            if uid.findtext('./value[@name="uid"]').startswith('vml.'):
-                vml = uid.findtext('./value[@name="uid"]')
-        storage = ' '.join([ \
-            node.findtext('./disk-lun/lun/value[@name="vendor"]').replace(' ', ''), \
-            node.findtext('./disk-lun/lun/value[@name="model"]').replace(' ', ''), \
-            node.findtext('./disk-lun/lun/value[@name="revision"]').replace(' ', '') \
-        ])
         adapter = node.findtext('./value[@name="adapter-name"]')
         for disk in disks:
             if name == disk['name']:
@@ -686,6 +761,25 @@ def GetDisks(dirPath):
                 disk['adapters'].sort()
                 break
         else:
+            vml = 'Unknown'
+            for uid in node.findall('./disk-lun/lun/device-uids/device-uid'):
+                if uid.findtext('./value[@name="uid"]').startswith('vml.'):
+                    vml = uid.findtext('./value[@name="uid"]')
+            storage = ' '.join([ \
+                node.findtext('./disk-lun/lun/value[@name="vendor"]').replace(' ', ''), \
+                node.findtext('./disk-lun/lun/value[@name="model"]').replace(' ', ''), \
+                node.findtext('./disk-lun/lun/value[@name="revision"]').replace(' ', '') \
+            ])
+            bbFilePath = os.path.join(dirPath, 'commands', 'vmkfstools_-P--v-10-bootbank.txt')
+            bbKeyword  = r"^Logical device: (naa.[0-9a-f]+):[0-9]+$"
+            vmfs = 'n/a'
+            vmfsNodes = GetXmlNode(filePath, './storage-info/vmfs-filesystems/vm-filesystem', multi=True)
+            for vmfsNode in vmfsNodes:
+                for partNode in vmfsNode.findall('./extents/disk-lun-partition'):
+                    if name in partNode.findtext('./value[@name="name"]'):
+                        vmfs = vmfsNode.findtext('./value[@name="volume-name"]')
+                        break
+            #
             disks.append({
                 'name'      : name,
                 'vml'       : vml,
@@ -693,7 +787,9 @@ def GetDisks(dirPath):
                 'size'      : _int(node.findtext('./disk-lun/value[@name="size"]'), calc=lambda x: x // 1024 // 1024 // 1024),
                 'adapters'  : [adapter],
                 'nmp_psp'   : node.findtext('./disk-lun/lun/nmp-device-configuration/value[@name="path-selection-policy"]'),
-                'nmp_satp'  : node.findtext('./disk-lun/lun/nmp-device-configuration/value[@name="storage-array-type"]')
+                'nmp_satp'  : node.findtext('./disk-lun/lun/nmp-device-configuration/value[@name="storage-array-type"]'),
+                'bootbank'  : SearchInText(bbFilePath, bbKeyword, default="Unknown") == name,
+                'vmfs'      : vmfs
             })
     disks.sort(key=lambda x: x['name'])
     return disks
@@ -779,9 +875,11 @@ def GetVmOptions(vmxDict):
         ('numa_vcpu_maxPerMachineNode',                 'numa.vcpu.maxPerMachineNode',                  None),
         ('numa_vcpu_maxPerVirtualNode',                 'numa.vcpu.maxPerVirtualNode',                  None),
         ('numa_autosize',                               'numa.autosize',                                None),
+        ('numa_autosize_vcpu_maxPerVirtualNode',        'numa.autosize.vcpu.maxPerVirtualNode',         None),
         ('sched_cpu_affinity',                          'sched.cpu.affinity',                           None),
         ('sched_cpu_latencySensitivity',                'sched.cpu.latencySensitivity',                 None),
         ('sched_cpu_min',                               'sched.cpu.min',                                None),
+        ('sched_mem_pin',                               'sched.mem.pin',                                None),
         ('latency_enforceCpuMin',                       'latency.enforceCpuMin',                        None),
         ('timeTracker_apparentTimeIgnoresInterrupts',   'timeTracker.apparentTimeIgnoresInterrupts',    None)
     ]
