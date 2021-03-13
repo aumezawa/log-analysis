@@ -19,7 +19,7 @@ type VmExplorerBoxProps = {
   domain?   : string,
   project?  : string,
   bundle?   : string,
-  onSelect? : (value: string) => void
+  onSelect? : (action: string, value: string) => void
 }
 
 const VmExplorerBox = React.memo<VmExplorerBoxProps>(({
@@ -64,11 +64,30 @@ const VmExplorerBox = React.memo<VmExplorerBoxProps>(({
     }
   }, [domain, project, bundle])
 
-  const handleClickSelect = useCallback((targetValue: string, parentValue: string) => {
+  const handleClickSelectVmInfo = useCallback((targetValue: string, parentValue: string) => {
+    const vmName = parentValue.slice(1)   // NOTE: removed leading character '/'
     if (onSelect) {
-      onSelect(parentValue.slice(1))  // NOTE: removed leading character '/'
+      onSelect("vminfo", vmName)
     }
   }, [onSelect])
+
+  const handleClickSelectVmLog = useCallback((targetValue: string, parentValue: string) => {
+    const vmName = parentValue.slice(1)   // NOTE: removed leading character '/'
+    const uri = `${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project, bundle) }/vms/${ vmName }/logpath`
+    Axios.get(uri, {
+      headers : { "X-Access-Token": Cookie.get("token") || "" },
+      data    : {}
+    })
+    .then((res: AxiosResponse) => {
+      if (onSelect) {
+        onSelect("vmlog", res.data.vmlog)
+      }
+      return
+    })
+    .catch((err: AxiosError) => {
+      return
+    })
+  }, [domain, project, bundle, onSelect])
 
   return (
     <div className={ `${ className } text-left text-monospace` }>
@@ -77,11 +96,17 @@ const VmExplorerBox = React.memo<VmExplorerBoxProps>(({
         LIcon={ Box }
         actions={ [
           <DropdownItem
-            key="open"
-            label="open"
+            key="info"
+            label="open info"
+            LIcon={ Box }
+            onClick={ handleClickSelectVmInfo }
+          />,
+          <DropdownItem
+            key="log"
+            label="open log"
             LIcon={ Display }
-            onClick={ handleClickSelect }
-          />
+            onClick={ handleClickSelectVmLog }
+          />,
         ] }
       />
     </div>

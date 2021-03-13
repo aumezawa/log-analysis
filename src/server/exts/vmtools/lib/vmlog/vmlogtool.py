@@ -5,7 +5,7 @@
 
 from __future__ import print_function
 
-__all__     = ['DecompressBundle', 'GetHostList', 'GetHostInfo', 'GetVmList', 'GetVmInfo', 'GetZdumpList' 'GetZdumpInfo']
+__all__     = ['DecompressBundle', 'GetHostList', 'GetHostInfo', 'GetVmList', 'GetVmInfo', 'GetVmLogPath', 'GetZdumpList' 'GetZdumpInfo']
 __author__  = 'aume'
 __version   = '0.1.0'
 
@@ -52,6 +52,7 @@ def DecompressBundle(filePath, compressLargeFiles=False, preserveOriginalFile=Fa
     MargeFragmentFiles(os.path.join(dirPath, 'var', 'log'))
     MargeCompressedFragmentFiles(os.path.join(dirPath, 'var', 'run', 'log'))
     CleanupFile(os.path.join(dirPath, 'commands', 'esxcfg-info_-a--F-xml.txt'), r"^ResourceGroup:.*$")
+    MargeVmwareLogFiles(dirPath)
     if compressLargeFiles:
         CompressLargeFiles(os.path.join(dirPath, 'commands'))
         CompressLargeFiles(os.path.join(dirPath, 'var', 'run', 'log'))
@@ -147,6 +148,14 @@ def GetVmInfo(dirPath, vmName):
     except Exception as e:
         logger.error(e)
         return None
+
+
+def GetVmLogPath(dirPath, vmName):
+    vmxFile = GetVmxPath(dirPath, vmName)
+    if not vmxFile:
+        return None
+    vmLogPath = os.path.dirname(vmxFile) + '/' + 'vmware.log'
+    return vmLogPath
 
 
 ################################################################################
@@ -305,6 +314,39 @@ def MargeFragmentFiles(dirPath, suffix=r"[.]FRAG-[0-9]{5}"):
         except Exception as e:
             logger.error(e)
             return False
+    #
+    return True
+
+
+def MargeVmwareLogFiles(dirPath):
+    repattern = re.compile(r"^vmware-[0-9]+[.]log$")
+    try:
+        for vmName in GetVmList(dirPath):
+            vmxFile = GetVmxPath(dirPath, vmName)
+            vmxPath = os.path.join(dirPath, vmxFile)
+            vmDir = os.path.dirname(vmxPath)
+            #
+            logList = []
+            for filename in os.listdir(vmDir):
+                match = repattern.match(filename)
+                if match:
+                    logList.append(os.path.join(vmDir, filename))
+            logList.sort(key=lambda x: int(re.search(r"[0-9]+", x).group()))
+            #
+            orgFile = os.path.join(vmDir, 'vmware.log')
+            tmpFile = os.path.join(vmDir, 'vmware-latest.log')
+            if os.path.exists(orgFile):
+                os.rename(orgFile, tmpFile)
+                logList.append(tmpFile)
+            #
+            with open(orgFile, 'w') as fpOrg:
+                for logFile in logList:
+                    with open(logFile, 'r') as fpTmp:
+                        fpOrg.write(fpTmp.read())
+                    os.remove(logFile)
+    except Exception as e:
+        logger.error(e)
+        return False
     #
     return True
 

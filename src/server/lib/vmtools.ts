@@ -19,6 +19,7 @@ function execVmtoolsSync(node: string, mode: string, type?: string, target?: str
   if (mode === "get") {
     options[3]  = (type === "esx")    ? "-e"
                 : (type === "vm")     ? "-v"
+                : (type === "vmlog")  ? "-vl"
                 : (type === "zdump")  ? "-z"
                 : null
     options[4]  = (target === "LIST") ? "LIST"
@@ -69,6 +70,10 @@ export function getVmListSync(directory: string): Array<string> {
 
 export function getVmInfoSync(directory: string, vm: string): VmInfo {
   return execVmtoolsSync(directory, "get", "vm", vm) as VmInfo
+}
+
+export function getVmLogPathSync(directory: string, vm: string): string {
+  return execVmtoolsSync(directory, "get", "vmlog", vm) as string
 }
 
 export function getZdumpListSync(directory: string): Array<string> {

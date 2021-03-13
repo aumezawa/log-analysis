@@ -7,7 +7,7 @@ from __future__ import print_function
 
 __all__     = []
 __author__  = 'aume'
-__version   = '0.0.0'
+__version   = '0.1.0'
 
 
 ################################################################################
@@ -107,6 +107,12 @@ def GetArgs():
         help='LIST: get vm list, <NAME>: get a specific vm information',
         metavar='LIST | <NAME>'
     )
+    group_get.add_argument('-vl', '--vmlog',
+        action='store',
+        required=False,
+        help='<NAME>: get a specific vm log file path',
+        metavar='<NAME>'
+    )
     group_get.add_argument('-z', '--zdump',
         action='store',
         required=False,
@@ -165,6 +171,11 @@ if __name__ == '__main__':
                     printResult(vmlogtool.GetVmList(args.bundle))
                 else:
                     printResult(vmlogtool.GetVmInfo(args.bundle, args.vm))
+                logger.info('Succeeded.')
+                sys.exit(RET_NORMAL_END)
+            if args.vmlog:
+                logger.info('Get VM Log Path. VM = %s' % args.vmlog)
+                printResult(vmlogtool.GetVmLogPath(args.bundle, args.vmlog))
                 logger.info('Succeeded.')
                 sys.exit(RET_NORMAL_END)
             if args.zdump:

@@ -365,6 +365,16 @@ Access with your browser or issue HTTP requests.
   - data: `{ msg: <string>, vm: <VmInfo> }`
 
 
+### Get VM Log Path
+
+- request
+  - method: `GET`
+  - header: `{ X-Access-Token: <string> }`
+  - path: `/api/v1/log/:domain/projects/:projectName/bundles/:bundleId/vms/:vmName/logpath`
+- response
+  - data: `{ msg: <string>, vmlog: <string> }`
+
+
 ### Get ZDUMP List
 
 - request
