@@ -6,8 +6,8 @@
 from __future__ import print_function
 
 __all__     = []
-__author__  = 'aume'
-__version   = '0.1.0'
+__author__  = 'aumezawa'
+__version__ = '0.1.1'
 
 
 ################################################################################
@@ -36,6 +36,8 @@ RET_NO_DIRECTORY= -4
 try:
     sys.path.append('lib/debug')
     import debuglib
+    sys.path.append('lib/cache')
+    import cachelib
     sys.path.append('lib/vmlog')
     import vmlogtool
 except Exception as e:
@@ -51,6 +53,13 @@ try:
 except Exception as e:
     print(e)
     sys.exit(RET_SYS_ERROR)
+
+
+################################################################################
+### Setup Cache Module
+################################################################################
+cachelib.setupCacheName('vmtools.cache')
+cachelib.setupLogger(logger)
 
 
 ################################################################################
@@ -94,6 +103,11 @@ def GetArgs():
         required=False,
         help='set directory path of log bundle',
         metavar='<DIRPATH>'
+    )
+    group_get.add_argument('-c', '--caching',
+        action='store_true',
+        required=False,
+        help='use cache for getting information',
     )
     group_get.add_argument('-e', '--esx',
         action='store',
@@ -162,7 +176,18 @@ if __name__ == '__main__':
                 if args.esx == 'LIST':
                     printResult(vmlogtool.GetHostList(args.bundle))
                 else:
-                    printResult(vmlogtool.GetHostInfo(args.bundle, args.esx))
+                    if args.caching:
+                        cacheDir = os.path.dirname(args.bundle)
+                        cacheKey = os.path.basename(args.bundle) + '_' + args.esx
+                        cacheData = cachelib.readCache(cacheDir, cacheKey, vmlogtool.__version__)
+                        if cacheData:
+                            printResult(cacheData)
+                        else:
+                            result = vmlogtool.GetHostInfo(args.bundle, args.esx)
+                            cachelib.writeCache(cacheDir, cacheKey, result)
+                            printResult(result)
+                    else:
+                        printResult(vmlogtool.GetHostInfo(args.bundle, args.esx))
                 logger.info('Succeeded.')
                 sys.exit(RET_NORMAL_END)
             if args.vm:
@@ -170,7 +195,18 @@ if __name__ == '__main__':
                 if args.vm == 'LIST':
                     printResult(vmlogtool.GetVmList(args.bundle))
                 else:
-                    printResult(vmlogtool.GetVmInfo(args.bundle, args.vm))
+                    if args.caching:
+                        cacheDir = os.path.dirname(args.bundle)
+                        cacheKey = os.path.basename(args.bundle) + '_' + args.vm
+                        cacheData = cachelib.readCache(cacheDir, cacheKey, vmlogtool.__version__)
+                        if cacheData:
+                            printResult(cacheData)
+                        else:
+                            result = vmlogtool.GetVmInfo(args.bundle, args.vm)
+                            cachelib.writeCache(cacheDir, cacheKey, result)
+                            printResult(result)
+                    else:
+                        printResult(vmlogtool.GetVmInfo(args.bundle, args.vm))
                 logger.info('Succeeded.')
                 sys.exit(RET_NORMAL_END)
             if args.vmlog:

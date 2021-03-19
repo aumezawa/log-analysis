@@ -24,6 +24,7 @@ function execVmtoolsSync(node: string, mode: string, type?: string, target?: str
                 : null
     options[4]  = (target === "LIST") ? "LIST"
                 : target
+    options[5]  = "-c"
   }
 
   if (options.includes(null)) {
