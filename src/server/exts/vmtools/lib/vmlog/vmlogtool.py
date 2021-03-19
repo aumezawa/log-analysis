@@ -6,8 +6,8 @@
 from __future__ import print_function
 
 __all__     = ['DecompressBundle', 'GetHostList', 'GetHostInfo', 'GetVmList', 'GetVmInfo', 'GetVmLogPath', 'GetZdumpList' 'GetZdumpInfo']
-__author__  = 'aume'
-__version   = '0.1.1'
+__author__  = 'aumezawa'
+__version__ = '0.1.1'
 
 
 ################################################################################
@@ -75,7 +75,7 @@ def GetHostInfo(dirPath, esxName):
     #
     try:
         return {
-            'format'        : __version,
+            'format'        : __version__,
             'hostname'      : GetHostName(dirPath),
             'version'       : GetEsxiVersion(dirPath),
             'build'         : GetEsxiBuildNumber(dirPath),
@@ -132,7 +132,7 @@ def GetVmInfo(dirPath, vmName):
     vmxDict = GetVmxDict(vmxPath)
     try:
         return {
-            'format'    : __version,
+            'format'    : __version__,
             'name'      : vmName,
             'version'   : int(vmxDict['virtualHW.version']),
             'cpus'      : int(vmxDict['numvcpus']),
@@ -601,13 +601,13 @@ def GetEsxiBuildNumber(dirPath):
 def GetHostProfile(dirPath):
     filePath = os.path.join(dirPath, 'commands', 'localcli_software-profile-get.txt')
     keyword  = r"^\s*Name: (\S+)$"
-    return SearchInText(filePath, keyword, 'Unknown')
+    return SearchInText(filePath, keyword, default='Unknown')
 
 
 def GetHostUptime(dirPath):
     filePath = os.path.join(dirPath, 'commands', 'localcli_system-stats-uptime-get.txt')
     keyword  = r"^([0-9]+)$"
-    uptime   = SearchInText(filePath, keyword, 0)
+    uptime   = SearchInText(filePath, keyword, default=0)
     return _int(uptime, calc=lambda x: x // 1000 // 1000 // 3600 // 24)
 
 
@@ -659,13 +659,13 @@ def GetLogConfig(dirPath):
         },
         #{
         #    'name'      : 'fdm',
-        #    'level'     : SearchInText(filePath3, keyword2, 'Unknown'),
+        #    'level'     : SearchInText(filePath3, keyword2, default='Unknown'),
         #    'size'      : GetVimDictOption(filePath1, 'Syslog.loggers.fdm.size'),
         #    'rotate'    : GetVimDictOption(filePath1, 'Syslog.loggers.fdm.rotate')
         #},
         {
             'name'      : 'vpxa',
-            'level'     : SearchInText(filePath2, keyword2, 'Unknown'),
+            'level'     : SearchInText(filePath2, keyword2, default='Unknown'),
             'size'      : GetVimDictOption(filePath1, 'Syslog.loggers.vpxa.size'),
             'rotate'    : GetVimDictOption(filePath1, 'Syslog.loggers.vpxa.rotate')
         },
@@ -728,7 +728,7 @@ def GetBiosVersion(dirPath):
     xpath    = './hardware-info/value[@name="bios-version"]'
     smbiosPath = os.path.join(dirPath, 'commands', 'smbiosDump.txt')
     keyword  = r"^.*System BIOS release: (.*)$"
-    return SearchInXml(filePath, xpath) + ' ' + SearchInText(smbiosPath, keyword, '')
+    return SearchInXml(filePath, xpath) + ' ' + SearchInText(smbiosPath, keyword, default='')
 
 
 def GetBmcVersion(dirPath):

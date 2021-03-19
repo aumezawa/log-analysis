@@ -7,7 +7,7 @@ from __future__ import print_function
 
 __all__     = ['SetupLogger']
 __author__  = 'aumezawa'
-__version   = '1.0.0'
+__version__ = '1.0.0'
 
 
 ################################################################################
