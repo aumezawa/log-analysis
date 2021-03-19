@@ -34,6 +34,15 @@ const TextForm = React.memo(React.forwardRef<HTMLInputElement, TextFormProps>(({
     }
   }, [onChange])
 
+  const handleKeyPress = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault()
+      if (valid && onSubmit) {
+        onSubmit()
+      }
+    }
+  }, [valid, onSubmit])
+
   const handleClick = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
     if (onSubmit) {
       onSubmit()
@@ -60,6 +69,7 @@ const TextForm = React.memo(React.forwardRef<HTMLInputElement, TextFormProps>(({
           size={ size }
           disabled={ disabled }
           onChange={ handleChange }
+          onKeyPress={ handleKeyPress }
         />
         { button &&
           <div className="input-group-append">

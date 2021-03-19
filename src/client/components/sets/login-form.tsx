@@ -109,6 +109,7 @@ const LoginForm = React.memo<LoginFormProps>(({
         type="password"
         disabled={ disabled || useAnonymous }
         onChange={ handleChangePassword }
+        onSubmit={ handleSubmit }
       />
       {
         anonymous &&
