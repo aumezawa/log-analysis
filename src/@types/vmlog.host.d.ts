@@ -6,6 +6,7 @@ type HostInfo = {
   profile   : string,
   uptime    : number,
   system    : HostSystemInfo,
+  log       : HostLogInfo,
   date      : HostDateInfo,
   hardware  : HostHardwareInfo,
   network   : HostNetworkInfo,
@@ -15,8 +16,25 @@ type HostInfo = {
 
 type HostSystemInfo = {
   powerPolicy                 : string,
+  scratchPartition            : string,
+  coreDumpPartition           : string,
+  nmiAction                   : number,
+  hardwareAcceleratedInit     : number,
+  hardwareAcceleratedMove     : number,
   pcipDisablePciErrReporting  : string,
   enableACPIPCIeHotplug       : string
+}
+
+type HostLogInfo = {
+  server    : string,
+  config    : Array<HostLogConfigInfo>
+}
+
+type HostLogConfigInfo = {
+  name      : string,
+  level     : string,
+  size      : number,
+  rotate    : number
 }
 
 type HostDateInfo = {
@@ -74,7 +92,10 @@ type HostNicInfo = {
 type VirtualSwitchInfo = {
   name      : string,
   uplinks   : Array<string>,
-  mtu       : number
+  mtu       : number,
+  balance   : string,
+  detection : string,
+  failback  : boolean
 }
 
 type PortgroupInfo = {
@@ -114,7 +135,8 @@ type HostDiskInfo = {
   nmp_psp   : string,
   nmp_satp  : string,
   bootbank  : boolean,
-  vmfs      : string
+  vmfsName  : string,
+  vmfsPath  : string
 }
 
 type HostPackageInfo = {

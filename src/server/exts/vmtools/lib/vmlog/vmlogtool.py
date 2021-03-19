@@ -7,7 +7,7 @@ from __future__ import print_function
 
 __all__     = ['DecompressBundle', 'GetHostList', 'GetHostInfo', 'GetVmList', 'GetVmInfo', 'GetVmLogPath', 'GetZdumpList' 'GetZdumpInfo']
 __author__  = 'aume'
-__version   = '0.1.0'
+__version   = '0.1.1'
 
 
 ################################################################################
@@ -15,6 +15,7 @@ __version   = '0.1.0'
 ################################################################################
 from datetime import datetime as dt
 import gzip
+import json
 import logging
 import os
 import re
@@ -81,6 +82,7 @@ def GetHostInfo(dirPath, esxName):
             'profile'       : GetHostProfile(dirPath),
             'uptime'        : GetHostUptime(dirPath),
             'system'        : GetEsxiSystem(dirPath),
+            'log'           : GetLogConfig(dirPath),
             'date'          : GetDateStatus(dirPath),
             'hardware'  : {
                 'machine'   : GetMachineModel(dirPath),
@@ -507,6 +509,71 @@ def GetXmlNode(filePath, xpath, multi=False):
         return root.find(xpath)
 
 
+VimDictCache = {}
+def GetVimDict(filePath, target='HostSystem'):
+    global VimDictCache
+    if target in VimDictCache:
+        return VimDictCache[target]
+    #
+    repattern_sep = re.compile(r"^=============== [0-9]+. vim.(.+)::\S+ ===============")
+    repattern_ext = re.compile(r"\([^()]+\)")
+    repattern_st1 = re.compile(r"^(.*)\"(.+)\"(.*)$")
+    repattern_st2 = re.compile(r"^(.*)\'(.*)\'(.*)$")
+    repattern_st3 = re.compile(r"^\s*(\S+)\s+=\s+(.+)$")
+    try:
+        with open(filePath, 'r') as fp:
+            buffer = ''
+            flag = False
+            for line in fp:
+                if flag:
+                    match = repattern_sep.match(line)
+                    if match:
+                        flag = False
+                        break
+                    line = line.replace('<unset>', 'null')
+                    line = repattern_ext.sub('', line)
+                    match = repattern_st1.match(line)
+                    if match:
+                        line = '%s"%s"%s' % (match.groups()[0], match.groups()[1].replace('\'', ''), match.groups()[2])
+                    match = repattern_st2.match(line)
+                    if match:
+                        line = '%s"%s"%s' % (match.groups()[0], match.groups()[1].replace('\"', '\''), match.groups()[2])
+                    match = repattern_st3.match(line)
+                    if match:
+                        if match.groups()[1][-2:] == '=,' or match.groups()[1][-2:] == 'Z,':
+                            line = '"%s": "%s",' % (match.groups()[0], match.groups()[1][0:-1])
+                        elif match.groups()[1][-1:] == '=' or match.groups()[1][-1:] == 'Z':
+                            line = '"%s": "%s"' % (match.groups()[0], match.groups()[1])
+                        else:
+                            line = '"%s": %s' % (match.groups()[0], match.groups()[1])
+                    buffer = buffer + line
+                else:
+                    match = repattern_sep.match(line)
+                    if match and match.groups()[0] == target:
+                        flag = True
+                        continue
+        dict = json.loads(buffer)[0]
+        VimDictCache[target] = dict
+    except Exception as e:
+        logger.error(e)
+        return {}
+    return dict
+
+
+def GetVimDictOption(filePath, param, target='HostSystem', default='Unknown'):
+    vimDict  = GetVimDict(filePath, target=target)
+    try:
+        for prop in vimDict['propSet']:
+            if prop['name'] == 'config':
+                for option in prop['val']['option']:
+                    if option['key'] == param:
+                        return option['value']
+    except Exception as e:
+        logger.error(e)
+        return default
+    return default
+
+
 ################################################################################
 ### Internal Functions - Get Host Information
 ################################################################################
@@ -534,7 +601,7 @@ def GetEsxiBuildNumber(dirPath):
 def GetHostProfile(dirPath):
     filePath = os.path.join(dirPath, 'commands', 'localcli_software-profile-get.txt')
     keyword  = r"^\s*Name: (\S+)$"
-    return SearchInText(filePath, keyword, "Unknown")
+    return SearchInText(filePath, keyword, 'Unknown')
 
 
 def GetHostUptime(dirPath):
@@ -556,10 +623,62 @@ def GetEsxiSystem(dirPath):
     filePath2 = os.path.join(dirPath, 'commands', 'localcli_system-settings-kernel-list--d.txt')
     keyword1  = r"^pcipDisablePciErrReporting\s+Bool\s+[A-Z]+\s+(TRUE|FALSE)\s+.*$"
     keyword2  = r"^enableACPIPCIeHotplug\s+Bool\s+[A-Z]+\s+(TRUE|FALSE)\s+.*$"
+    #
+    filePath3 = os.path.join(dirPath, 'commands', 'localcli_system-coredump-partition-get.txt')
+    keyword3  = r"^.*Active: (.*)$"
+    #
+    filePath4 = os.path.join(dirPath, 'commands', 'vmware-vimdump_-o----U-dcui.txt')
     return {
         'powerPolicy'               : SearchInXml(filePath1, './hardware-info/cpu-power-management-info/value[@name="current-policy"]'),
-        'pcipDisablePciErrReporting': SearchInText(filePath2, keyword1, default="TRUE"),
-        'enableACPIPCIeHotplug'     : SearchInText(filePath2, keyword2, default="FALSE")
+        'scratchPartition'          : GetVimDictOption(filePath4, 'ScratchConfig.CurrentScratchLocation'),
+        'coreDumpPartition'         : SearchInText(filePath3, keyword3, default='Unknown'),
+        'nmiAction'                 : GetVimDictOption(filePath4, 'VMkernel.Boot.nmiAction'),
+        'hardwareAcceleratedInit'   : GetVimDictOption(filePath4, 'DataMover.HardwareAcceleratedInit'),
+        'hardwareAcceleratedMove'   : GetVimDictOption(filePath4, 'DataMover.HardwareAcceleratedMove'),
+        'pcipDisablePciErrReporting': SearchInText(filePath2, keyword1, default='TRUE'),
+        'enableACPIPCIeHotplug'     : SearchInText(filePath2, keyword2, default='FALSE')
+    }
+
+
+def GetLogConfig(dirPath):
+    filePath1 = os.path.join(dirPath, 'commands', 'vmware-vimdump_-o----U-dcui.txt')
+    #
+    filePath2 = os.path.join(dirPath, 'etc', 'vmware', 'vpxa', 'vpxa.cfg')
+    filePath3 = os.path.join(dirPath, 'etc', 'vmware', 'fdm', 'fdm.cfg')
+    keyword2  = r"^.*<level>(.*)</level>.*$"
+    #
+    filePath4 = os.path.join(dirPath, 'etc', 'vmsyslog.conf')
+    keyword4  = r"^logdir = (.*)$"
+    #
+    config = [
+        {
+            'name'      : 'hostd',
+            'level'     : GetVimDictOption(filePath1, 'Config.HostAgent.log.level'),
+            'size'      : GetVimDictOption(filePath1, 'Syslog.loggers.hostd.size'),
+            'rotate'    : GetVimDictOption(filePath1, 'Syslog.loggers.hostd.rotate')
+        },
+        #{
+        #    'name'      : 'fdm',
+        #    'level'     : SearchInText(filePath3, keyword2, 'Unknown'),
+        #    'size'      : GetVimDictOption(filePath1, 'Syslog.loggers.fdm.size'),
+        #    'rotate'    : GetVimDictOption(filePath1, 'Syslog.loggers.fdm.rotate')
+        #},
+        {
+            'name'      : 'vpxa',
+            'level'     : SearchInText(filePath2, keyword2, 'Unknown'),
+            'size'      : GetVimDictOption(filePath1, 'Syslog.loggers.vpxa.size'),
+            'rotate'    : GetVimDictOption(filePath1, 'Syslog.loggers.vpxa.rotate')
+        },
+        {
+            'name'      : 'vmkernel',
+            'level'     : 'Unknown',
+            'size'      : GetVimDictOption(filePath1, 'Syslog.loggers.vmkernel.size'),
+            'rotate'    : GetVimDictOption(filePath1, 'Syslog.loggers.vmkernel.rotate')
+        }
+    ]
+    return {
+        'server'    : SearchInText(filePath4, keyword4, default='Unknown'),
+        'config'    : config
     }
 
 
@@ -621,7 +740,7 @@ def GetBmcVersion(dirPath):
 def GetCpuInfo(dirPath):
     filePath = os.path.join(dirPath, 'commands', 'smbiosDump.txt')
     keyword  = r"^.*\"(Intel\(R\) Xeon\(R\).*)\"$"
-    model    = SearchInText(filePath, keyword, default="Unknown")
+    model    = SearchInText(filePath, keyword, default='Unknown')
     #
     filePath = os.path.join(dirPath, 'commands', 'esxcfg-info_-a--F-xml.txt')
     return {
@@ -696,10 +815,16 @@ def GetNics(dirPath):
                 'mac'       : node.findtext('./value[@name="mac-address"]'),
                 'driver'    : node.findtext('./value[@name="driver"]')
             })
-    nics.sort(key=lambda x: x['name'])
+    nics.sort(key=lambda x: int(re.search(r"[0-9]+", x['name']).group()))
     return nics
 
 
+LoadBalancingPolicies = {
+    'lb_srcid'      : 'Route based on the originating portID',
+    'lb_srcmac'     : 'Route based on source MAC hash',
+    'lp_ip'         : 'Route based on IP hash',
+    'fo_explicit'   : 'Use explicit failover order'
+}
 def GetVswitches(dirPath):
     filePath = os.path.join(dirPath, 'commands', 'esxcfg-info_-a--F-xml.txt')
     xpath    = './network-info/virtual-switch-info/virtual-switches/virtual-switch'
@@ -711,8 +836,11 @@ def GetVswitches(dirPath):
     for node in nodes:
         switches.append({
             'name'      : node.findtext('./value[@name="name"]'),
-            'uplinks'   : sorted(node.findtext('./value[@name="uplinks"]', default='').split(',')),
-            'mtu'       : _int(node.findtext('./value[@name="mtu"]'))
+            'uplinks'   : sorted(node.findtext('./value[@name="uplinks"]', default='').split(','), key=lambda x: int(re.search(r"[0-9]+", x).group())),
+            'mtu'       : _int(node.findtext('./value[@name="mtu"]')),
+            'balance'   : LoadBalancingPolicies[node.findtext('./effective-teaming-policy/value[@name="teaming-policy"]')],
+            'detection' : 'beacon' if node.findtext('./value[@name="beacon-enabled"]') == 'true' else 'link-down',
+            'failback'  : node.findtext('./effective-teaming-policy/value[@name="rolling-restoration"]') == 'false'
         })
     switches.sort(key=lambda x: x['name'])
     return switches
@@ -779,7 +907,7 @@ def GetHbas(dirPath):
                 'wwn'       : node.findtext('./value[@name="uid"]')[-16:],
                 'driver'    : node.findtext('./value[@name="driver"]')
             })
-    hbas.sort(key=lambda x: x['name'])
+    hbas.sort(key=lambda x: int(re.search(r"[0-9]+", x['name']).group()))
     return hbas
 
 
@@ -812,14 +940,18 @@ def GetDisks(dirPath):
                 node.findtext('./disk-lun/lun/value[@name="model"]').replace(' ', ''), \
                 node.findtext('./disk-lun/lun/value[@name="revision"]').replace(' ', '') \
             ])
+            #
             bbFilePath = os.path.join(dirPath, 'commands', 'vmkfstools_-P--v-10-bootbank.txt')
             bbKeyword  = r"^Logical device: (naa.[0-9a-f]+):[0-9]+$"
-            vmfs = 'n/a'
+            #
+            vmfsName = 'n/a'
+            vmfsPath = 'n/a'
             vmfsNodes = GetXmlNode(filePath, './storage-info/vmfs-filesystems/vm-filesystem', multi=True)
             for vmfsNode in vmfsNodes:
                 for partNode in vmfsNode.findall('./extents/disk-lun-partition'):
                     if name in partNode.findtext('./value[@name="name"]'):
-                        vmfs = vmfsNode.findtext('./value[@name="volume-name"]')
+                        vmfsName = vmfsNode.findtext('./value[@name="volume-name"]')
+                        vmfsPath = vmfsNode.findtext('./value[@name="console-path"]')
                         break
             #
             disks.append({
@@ -830,8 +962,9 @@ def GetDisks(dirPath):
                 'adapters'  : [adapter],
                 'nmp_psp'   : node.findtext('./disk-lun/lun/nmp-device-configuration/value[@name="path-selection-policy"]'),
                 'nmp_satp'  : node.findtext('./disk-lun/lun/nmp-device-configuration/value[@name="storage-array-type"]'),
-                'bootbank'  : SearchInText(bbFilePath, bbKeyword, default="Unknown") == name,
-                'vmfs'      : vmfs
+                'bootbank'  : SearchInText(bbFilePath, bbKeyword, default='Unknown') == name,
+                'vmfsName'  : vmfsName,
+                'vmfsPath'  : vmfsPath
             })
     disks.sort(key=lambda x: x['name'])
     return disks

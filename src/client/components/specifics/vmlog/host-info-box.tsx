@@ -1,7 +1,7 @@
 import * as React from "react"
 import { useEffect, useRef, useReducer } from "react"
 
-import { Clock, Cpu, Diagram3, Gear, Grid3x3Gap, HddStack, JournalCheck, Server, Tags } from "react-bootstrap-icons"
+import { Clock, Cpu, Diagram3, Diagram3Fill, FileEarmarkText, Gear, Grid3x3Gap, HddStack, JournalCheck, Server, Tag, Tags } from "react-bootstrap-icons"
 
 import Axios from "axios"
 import { AxiosResponse, AxiosError } from "axios"
@@ -156,11 +156,30 @@ const HostInfoBox = React.memo<HostInfoBoxProps>(({
         compare={ true }
         content={ [
           ["power policy"                             ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.system.powerPolicy }`)),
+          ["scratch partition"                        ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.system.scratchPartition }`)),
+          ["core dump partition"                      ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.system.coreDumpPartition }`)),
+          ["kernel param - nmiAction"                 ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.system.nmiAction }`)),
+          ["kernel param - HardwareAcceleratedInit"   ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.system.hardwareAcceleratedInit }`)),
+          ["kernel param - HardwareAcceleratedMove"   ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.system.hardwareAcceleratedMove }`)),
           ["kernel param - pcipDisablePciErrReporting"].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.system.pcipDisablePciErrReporting }`)),
-          ["kernel param - enableACPIPCIeHotplug"     ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.system.enableACPIPCIeHotplug }`))
+          ["kernel param - enableACPIPCIeHotplug"     ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.system.enableACPIPCIeHotplug }`)),
+          ["syslog server"                            ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.log.server }`))
         ] }
       />
     )
+
+    TableLayout(data.current.hosts.map((hostInfo: HostInfo) => hostInfo.log.config), "name", null, {size: "KB"})
+    .forEach((content: Array<Array<string>>, index: number) => {
+      tables.push(
+        <Table
+          key={ `log-${ index }` }
+          title={ `Logger Configuration - ${ index }` }
+          LIcon={ FileEarmarkText }
+          compare={ true }
+          content={ content }
+        />
+      )
+    })
 
     TableLayout(data.current.hosts.map((hostInfo: HostInfo) => hostInfo.date.ntp), "remote")
     .forEach((content: Array<Array<string>>, index: number) => {
@@ -215,7 +234,7 @@ const HostInfoBox = React.memo<HostInfoBoxProps>(({
         <Table
           key={ `nic-${ index }` }
           title={ `NIC Information - ${ index }` }
-          LIcon={ Diagram3 }
+          LIcon={ Tag }
           compare={ true }
           content={ content }
         />
@@ -241,7 +260,7 @@ const HostInfoBox = React.memo<HostInfoBoxProps>(({
         <Table
           key={ `portgroup-${ index }` }
           title={ `PortGroup Information - ${ index }` }
-          LIcon={ Diagram3 }
+          LIcon={ Diagram3Fill }
           compare={ true }
           content={ content }
         />
@@ -267,7 +286,7 @@ const HostInfoBox = React.memo<HostInfoBoxProps>(({
         <Table
           key={ `hba-${ index }` }
           title={ `HBA Information - ${ index }` }
-          LIcon={ Server }
+          LIcon={ Tag }
           compare={ true }
           content={ content }
         />
