@@ -14,7 +14,8 @@
     "certificate-path": "./local/cert/server-cert.pem",
     "log-path": "./local/log",
     "storage-path": "../data",
-    "date-format": "([0-9]{4}-[0-9]{2}-[0-9]{2}[T ][0-9]{2}:[0-9]{2}:[0-9]{2}.?[0-9]{0,3}Z?):?[ |]"
+    "max-view-size-mb": "1",
+    "date-format": "([0-9]{4}-[0-9]{2}-[0-9]{2}[T ][0-9]{2}:[0-9]{2}:[0-9]{2}.?[0-9]{0,6}Z?):?[ |]"
   },
   "scripts": {
     "add:user": "node ./bin/add-localuser.js",

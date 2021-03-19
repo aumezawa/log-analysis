@@ -118,7 +118,7 @@ router.route("/:domain/projects/:projectName/bundles/:bundleId/files/*")
           })
           .send(Project.getFileResourceAsBytesSync(req.token.usr, req.domain, req.project, req.bundleId, file, filter, sensitive, date_from, date_to))
       } else if (req.query.mode && req.query.mode === "json") {
-        if (fileInfo.size >= 104857600) {
+        if (fileInfo.size >= (req.app.get("max-view-size") * 1024 * 1024)) {
           // Service Unavailable
           return res.status(503).json({
             msg: "This file's size is too large. Please use legacy view."
