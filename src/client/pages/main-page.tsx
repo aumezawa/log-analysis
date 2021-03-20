@@ -88,6 +88,14 @@ const MainPage: React.FC<MainPageProps> = ({
     action    : "delete"
   })
 
+  const updateTitle = () => {
+    let append: string
+    append = (data.current.filename) ? ` - ${ data.current.filename }`            : ""
+    append = (data.current.bundle)   ? `${ append } - ${ data.current.bundle }`   : append
+    append = (data.current.project)  ? `${ append } - ${ data.current.project }`  : append
+    Environment.updateTitle(project + append)
+  }
+
   const updateAddressBar = () => {
     Environment.updateAddressBar("/main/" + ProjectPath.encode(
       data.current.domain,
@@ -137,15 +145,18 @@ const MainPage: React.FC<MainPageProps> = ({
           ref.current.viewer.current.click()
         }
         forceUpdate()
+        updateTitle()
         updateAddressBar()
         return
       })
       .catch((err: AxiosError) => {
         alert(`No resource: ${ uri }`)
+        updateTitle()
         updateAddressBar()
         return
       })
     } else {
+      updateTitle()
       updateAddressBar()
     }
 
@@ -170,6 +181,7 @@ const MainPage: React.FC<MainPageProps> = ({
     data.current.date_from = null
     data.current.date_to = null
     forceUpdate()
+    updateTitle()
     updateAddressBar()
   }, [true])
 
@@ -184,6 +196,7 @@ const MainPage: React.FC<MainPageProps> = ({
     data.current.date_from = null
     data.current.date_to = null
     forceUpdate()
+    updateTitle()
     updateAddressBar()
   }, [true])
 
@@ -197,6 +210,7 @@ const MainPage: React.FC<MainPageProps> = ({
     data.current.date_from = null
     data.current.date_to = null
     forceUpdate()
+    updateTitle()
     updateAddressBar()
   }, [true])
 
@@ -216,6 +230,7 @@ const MainPage: React.FC<MainPageProps> = ({
       data.current.terminal = false
       forceUpdate()
     }
+    updateTitle()
     updateAddressBar()
   }, [true])
 

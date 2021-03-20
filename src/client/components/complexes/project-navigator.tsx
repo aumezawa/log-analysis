@@ -144,6 +144,7 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
       />
       <ProjectSelectModal
         id={ id.current.projectSelect }
+        privilege={ privilege }
         domain={ domain }
         action={ data.current.action }
         reload={ reloadProject }
@@ -170,6 +171,7 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
             label={ domain || "Select Domain" }
             LIcon={ House }
             color={ domain ? (domain !== "private" ? "success" : "warning") : "secondary" }
+            disabled={ privilege === "none" }
             toggle="modal"
             target={ id.current.domainSelect }
           />
@@ -182,7 +184,7 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
                 label="New Project"
                 LIcon={ FolderPlus }
                 color="info"
-                disabled={ !domain }
+                disabled={ !domain || privilege === "none" }
                 toggle="modal"
                 target={ id.current.projectCreate }
               />
@@ -193,7 +195,7 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
             label={ project || "Select Project" }
             LIcon={ project ? FolderCheck : Folder }
             color={ project ? "success" : "secondary" }
-            disabled={ !domain }
+            disabled={ !domain || privilege === "none" }
             toggle="modal"
             target={ id.current.projectSelect }
             onClick={ handleClickOpenProject }
@@ -251,7 +253,7 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
                 key="create-project"
                 label="Create New"
                 LIcon={ FolderPlus }
-                disabled={ !domain }
+                disabled={ !domain || privilege === "none" }
                 toggle="modal"
                 target={ id.current.projectCreate }
               />,
@@ -259,7 +261,7 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
                 key="close-project"
                 label="Close"
                 LIcon={ Folder }
-                disabled={ !domain }
+                disabled={ !domain || privilege === "none" }
                 toggle="modal"
                 target={ id.current.projectSelect }
                 onClick={ handleClickCloseProject }
@@ -268,7 +270,7 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
                 key="reopen-project"
                 label="Reopen"
                 LIcon={ Folder2Open }
-                disabled={ !domain }
+                disabled={ !domain || privilege === "none" }
                 toggle="modal"
                 target={ id.current.projectSelect }
                 onClick={ handleClickReopenProject }
@@ -277,7 +279,7 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
                 key="delete-project"
                 label="Delete"
                 LIcon={ FolderX }
-                disabled={ !domain || (!["public", "private"].includes(domain) && privilege !== "root") }
+                disabled={ !domain || privilege === "none" || (!["public", "private"].includes(domain) && privilege !== "root") }
                 toggle="modal"
                 target={ id.current.projectSelect }
                 onClick={ handleClickDeleteProject }

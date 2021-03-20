@@ -1,0 +1,223 @@
+name:                   api-v1-log
+version:                1.0.0
+main:
+  username:             root
+  password:             password
+
+  protocol:             http
+  host:                 localhost
+  port:                 3000
+
+  request:
+  - method:             GET
+    path:               /api/v1/log/public
+    response:
+      msg:              "domain: public is available."
+
+  - method:             GET
+    path:               /api/v1/log/public/projects
+    response:
+      msg:              "You get a project list."
+      projects:         []
+
+  - method:             POST
+    path:               /api/v1/log/public/projects
+    body:
+      name:             Regression Test
+      description:      Automatic Web API Test
+    response:
+      msg:              "project: Regression Test was created successfully."
+
+  - method:             GET
+    path:               /api/v1/log/public/projects/Regression Test
+    response:
+      msg:              "You get a project status and description."
+      status:           open
+      description:      Automatic Web API Test
+
+  - method:             PUT
+    path:               /api/v1/log/public/projects/Regression Test
+    body:
+      description:      Modified Description for Automatic Web API Test
+    response:
+      msg:              "project: Regression Test description was updated successfully."
+
+  - method:             GET
+    path:               /api/v1/log/public/projects/Regression Test
+    response:
+      msg:              "You get a project status and description."
+      status:           open
+      description:      Modified Description for Automatic Web API Test
+
+  - method:             PUT
+    path:               /api/v1/log/public/projects/Regression Test
+    body:
+      status:           close
+    response:
+      msg:              "project: Regression Test status was updated successfully."
+
+  - method:             GET
+    path:               /api/v1/log/public/projects/Regression Test
+    response:
+      msg:              "You get a project status and description."
+      status:           close
+      description:      Modified Description for Automatic Web API Test
+
+  - method:             PUT
+    path:               /api/v1/log/public/projects/Regression Test
+    body:
+      status:           open
+    response:
+      msg:              "project: Regression Test status was updated successfully."
+
+  - method:             GET
+    path:               /api/v1/log/public/projects/Regression Test
+    response:
+      msg:              "You get a project status and description."
+      status:           open
+      description:      Modified Description for Automatic Web API Test
+
+  - method:             GET
+    path:               /api/v1/log/public/projects/Regression Test/bundles
+    response:
+      msg:              "You get a bundle list of project Regression Test."
+      bundles:          []
+
+  - method:             POST
+    path:               /api/v1/log/public/projects/Regression Test/bundles
+    file:
+      name:             bundle
+      path:             ./data/log-bundle-test-0001.tgz
+      description:      Automatic Web API Test Bundle
+    response:
+      msg:              "bundle: log-bundle-test-0001.tgz was uploaded and was decompressed successfully."
+
+  - method:             GET
+    path:               /api/v1/log/public/projects/Regression Test/bundles
+    response:
+      msg:              "You get a bundle list of project Regression Test."
+      bundles:
+      - id:             0
+        name:           log-bundle-test-0001
+        description:    Automatic Web API Test Bundle
+        available:      true
+
+  - method:             GET
+    path:               /api/v1/log/public/projects/Regression Test/bundles/0
+    response:
+      msg:              "You get a bundle name and description of bundle ID = 0."
+      name:             log-bundle-test-0001
+      description:      Automatic Web API Test Bundle
+
+  - method:             PUT
+    path:               /api/v1/log/public/projects/Regression Test/bundles/0
+    body:
+      description:      Modified Description for Automatic Web API Test Bundle
+    response:
+      msg:              "bundle: bundle ID=0 description was updated successfully."
+
+  - method:             GET
+    path:               /api/v1/log/public/projects/Regression Test/bundles/0
+    response:
+      msg:              "You get a bundle name and description of bundle ID = 0."
+      name:             log-bundle-test-0001
+      description:      Modified Description for Automatic Web API Test Bundle
+
+  - method:             GET
+    path:               /api/v1/log/public/projects/Regression Test/bundles/0/files
+    response:
+      msg:              "You get a file list of project Regression Test bundle ID = 0."
+      files:
+        name:           log-bundle-test-0001
+        file:           false
+        children:
+        - name:         AAA
+          file:         false
+          children:
+          - name:       BBB
+            file:       false
+            children:
+            - name:     CCC
+              file:     false
+              children:
+              - name:   ddd.txt
+                file:   true
+          - name:       bbb.txt
+            file:       true
+        - name:         readme.txt
+          file:         true
+
+  - method:             GET
+    path:               /api/v1/log/public/projects/Regression Test/bundles/0/files/readme.txt
+    response:
+      msg:              "You get a file info of path /readme.txt of project Regression Test bundle ID = 0."
+      content:          This is test log bundle for regression test.
+      size:             44
+      modifiedAt:       2020-12-06T02:40:00.000Z
+
+  - method:             GET
+    path:               /api/v1/log/public/projects/Regression Test/bundles/0/files/AAA/bbb.txt?mode=json
+    response:
+      msg:              "You get a file content of path /AAA/bbb.txt of project Regression Test bundle ID = 0."
+      content:
+        format:
+          title:        bbb.txt
+          label:
+            Content:    text
+          hasHeader:    true
+          hasIndex:     true
+          contentKey:   Content
+        data:
+        - Content:      Test Message 1
+        - Content:      Test Message 2
+        - Content:      Test Message 3
+        - Content:      Test Message 4
+        - Content:      Test Message 5
+        - Content:      Test Message 6
+        - Content:      Test Message 7
+        - Content:      ""
+      size:             112
+      modifiedAt:       2020-12-06T02:39:26.000Z
+
+  - method:             GET
+    path:               /api/v1/log/public/projects/Regression Test/bundles/0/files/AAA/BBB/CCC/ddd.txt?mode=json
+    response:
+      msg:              "You get a file content of path /AAA/BBB/CCC/ddd.txt of project Regression Test bundle ID = 0."
+      content:
+        format:
+          title:        ddd.txt
+          label:
+            Date:       date
+            Content:    text
+          hasHeader:    true
+          hasIndex:     true
+          contentKey:   Content
+        data:
+        - Date:         2020-10-29T19:43:10.613Z
+          Content:      Test Message 1
+        - Date:         2020-10-29T19:43:10.613Z
+          Content:      Test Message 2
+        - Date:         2020-10-29T19:44:10.613Z
+          Content:      Test Message 3
+        - Date:         2020-10-29T20:43:10.613Z
+          Content:      Test Message 4
+        - Date:         2020-10-30T19:43:10.613Z
+          Content:      Test Message 5
+        - Date:         2020-11-30T19:43:10.613Z
+          Content:      Test Message 6
+        - Date:         2021-11-30T19:43:10.613Z
+          Content:      Test Message 7
+        - Date:         ""
+          Content:      ""
+      size:             287
+      modifiedAt:       2020-12-06T02:39:02.000Z
+
+  - method:             DELETE
+    path:               /api/v1/log/public/projects/Regression Test/bundles/0
+    response:
+      msg:              "bundle: bundle ID = 0 was deleted successfully."
+
+  - method:             DELETE
+    path:               /api/v1/log/public/projects/Regression Test
+    response:
+      msg:              "project: Regression Test was deleted successfully."

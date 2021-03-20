@@ -3,6 +3,7 @@ import * as path from "path"
 
 import logger = require("../lib/logger")
 
+import * as Atomic from "../lib/atomic"
 import * as FSTool from "../lib/fs-tool"
 import * as LocalDate from "../lib/local-date"
 
@@ -105,7 +106,7 @@ function getChildResourceList(path: string): Promise<Array<string>> {
 
 function getResourceNodeSync(path: string, search?: string): NodeType {
   try {
-    return FSTool.lsRecursiveSync(path, search)
+    return FSTool.lsRecursiveCacheSync(path, search)
   } catch (err) {
     (err instanceof Error) && logger.error(`${ err.name }: ${ err.message }`)
     return null
@@ -281,8 +282,8 @@ function getFileContent(file: string): Promise<string> {
 function getFileContentHeadSync(file: string): string {
   try {
     const fd = fs.openSync(file, "r")
-    const buffer = Buffer.alloc(40)
-    fs.readSync(fd, buffer, 0, 40, 0)
+    const buffer = Buffer.alloc(30)
+    fs.readSync(fd, buffer, 0, 30, 0)
     fs.closeSync(fd)
     return buffer.toString("utf8")
   } catch (err) {
@@ -498,16 +499,25 @@ export function createProjectResource(user: string, domain: string, project: str
 export function updateProjectDescription(user: string, domain: string, project: string, description: string): Promise<void> {
   return new Promise<void>((resolve: () => void, reject: (err?: any) => void) => {
     return setImmediate(() => {
-      return getProjectInfo(user, domain, project)
+      return Atomic.lock(getProjectInfoPathSync(user, domain, project))
+      .then(() => {
+        return getProjectInfo(user, domain, project)
+      })
       .then((projectInfo: ProjectInfo) => {
         projectInfo.description = description
         return updateProjectInfo(user, domain, project, projectInfo)
       })
       .then(() => {
+        return Atomic.unlock(getProjectInfoPathSync(user, domain, project))
+      })
+      .then(() => {
         return resolve()
       })
       .catch((err: any) => {
-        return reject(err)
+        return Atomic.unlock(getProjectInfoPathSync(user, domain, project))
+        .then(() => {
+          return reject(err)
+        })
       })
     })
   })
@@ -523,7 +533,10 @@ export function updateProjectStatus(user: string, domain: string, project: strin
       }
 
       let bundles: Array<BundleInfo>
-      return getProjectInfo(user, domain, project)
+      return Atomic.lock(getProjectInfoPathSync(user, domain, project))
+      .then(() => {
+        return getProjectInfo(user, domain, project)
+      })
       .then((projectInfo: ProjectInfo) => {
         bundles = projectInfo.bundles
         projectInfo.status = status
@@ -531,11 +544,17 @@ export function updateProjectStatus(user: string, domain: string, project: strin
         return updateProjectInfo(user, domain, project, projectInfo)
       })
       .then(() => {
+        return Atomic.unlock(getProjectInfoPathSync(user, domain, project))
+      })
+      .then(() => {
         setImmediate(() => {
           return Promise.all(bundles.map((bundleInfo: BundleInfo) => {
             const bundle = joinResourcePathSync(getProjectResourcePathSync(user, domain, project), bundleInfo.name)
             return (status === "open") ? decompressBundle(bundle + ".tgz") : compressBundle(bundle)
           }))
+          .then(() => {
+            return Atomic.lock(getProjectInfoPathSync(user, domain, project))
+          })
           .then(() => {
             return getProjectInfo(user, domain, project)
           })
@@ -547,10 +566,13 @@ export function updateProjectStatus(user: string, domain: string, project: strin
             return updateProjectInfo(user, domain, project, projectInfo)
           })
           .then(() => {
+            return Atomic.unlock(getProjectInfoPathSync(user, domain, project))
+          })
+          .then(() => {
             return
           })
           .catch(() => {
-            return
+            return Atomic.unlock(getProjectInfoPathSync(user, domain, project))
           })
         })
         return
@@ -559,7 +581,10 @@ export function updateProjectStatus(user: string, domain: string, project: strin
         return resolve()
       })
       .catch((err: any) => {
-        return reject(err)
+        return Atomic.unlock(getProjectInfoPathSync(user, domain, project))
+        .then(() => {
+          return reject(err)
+        })
       })
     })
   })
@@ -658,6 +683,9 @@ export function registerBundleResource(user: string, domain: string, project: st
         return existsBundleName(user, domain, project, bundleName)
       })
       .then(() => {
+        return Atomic.lock(getProjectInfoPathSync(user, domain, project))
+      })
+      .then(() => {
         return getProjectInfo(user, domain, project)
       })
       .then((projectInfo: ProjectInfo) => {
@@ -671,7 +699,13 @@ export function registerBundleResource(user: string, domain: string, project: st
         return updateProjectInfo(user, domain, project, projectInfo)
       })
       .then(() => {
+        return Atomic.unlock(getProjectInfoPathSync(user, domain, project))
+      })
+      .then(() => {
         return decompressBundle(bundlePath)
+      })
+      .then(() => {
+        return Atomic.lock(getProjectInfoPathSync(user, domain, project))
       })
       .then(() => {
         return getProjectInfo(user, domain, project)
@@ -686,10 +720,16 @@ export function registerBundleResource(user: string, domain: string, project: st
         return updateProjectInfo(user, domain, project, projectInfo)
       })
       .then(() => {
+        return Atomic.unlock(getProjectInfoPathSync(user, domain, project))
+      })
+      .then(() => {
         return resolve()
       })
       .catch((err: any) => {
-        return reject(err)
+        return Atomic.unlock(getProjectInfoPathSync(user, domain, project))
+        .then(() => {
+          return reject(err)
+        })
       })
     })
   })
@@ -698,7 +738,10 @@ export function registerBundleResource(user: string, domain: string, project: st
 export function updateBundleDescription(user: string, domain: string, project: string, bundleId: string, description?: string): Promise<void> {
   return new Promise<void>((resolve: () => void, reject: (err?: any) => void) => {
     return setImmediate(() => {
-      return getProjectInfo(user, domain, project)
+      return Atomic.lock(getProjectInfoPathSync(user, domain, project))
+      .then(() => {
+        return getProjectInfo(user, domain, project)
+      })
       .then((projectInfo: ProjectInfo) => {
         projectInfo.bundles = projectInfo.bundles.map((bundleInfo: BundleInfo) => {
           if (bundleInfo.id === Number(bundleId)) {
@@ -709,10 +752,16 @@ export function updateBundleDescription(user: string, domain: string, project: s
         return updateProjectInfo(user, domain, project, projectInfo)
       })
       .then(() => {
+        return Atomic.unlock(getProjectInfoPathSync(user, domain, project))
+      })
+      .then(() => {
         return resolve()
       })
       .catch((err: any) => {
-        return reject(err)
+        return Atomic.unlock(getProjectInfoPathSync(user, domain, project))
+        .then(() => {
+          return reject(err)
+        })
       })
     })
   })
@@ -723,6 +772,9 @@ export function deleteBundleResource(user: string, domain: string, project: stri
     return setImmediate(() => {
       return deleteResource(getBundleResourcePathSync(user, domain, project, bundleId))
       .then(() => {
+        return Atomic.lock(getProjectInfoPathSync(user, domain, project))
+      })
+      .then(() => {
         return getProjectInfo(user, domain, project)
       })
       .then((projectInfo: ProjectInfo) => {
@@ -730,10 +782,16 @@ export function deleteBundleResource(user: string, domain: string, project: stri
         return updateProjectInfo(user, domain, project, projectInfo)
       })
       .then(() => {
+        return Atomic.unlock(getProjectInfoPathSync(user, domain, project))
+      })
+      .then(() => {
         return resolve()
       })
       .catch((err: any) => {
-        return reject(err)
+        return Atomic.unlock(getProjectInfoPathSync(user, domain, project))
+        .then(() => {
+          return reject(err)
+        })
       })
     })
   })
