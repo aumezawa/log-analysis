@@ -1,3 +1,7 @@
+.btn[disabled] {
+  cursor: not-allowed !important;
+}
+
 .btn-no-action {
   cursor: default !important;
 }

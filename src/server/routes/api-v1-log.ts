@@ -15,6 +15,11 @@ const router: Router = express.Router()
 router.param("domain", (req: Request, res: Response, next: NextFunction, domain: string) => {
   req.domain = decodeURIComponent(domain)
 
+  if (req.token.usr === "anonymous" && req.domain !== "public") {
+    // Forbidden
+    return res.status(403).json({ msg: "Not be permitted to access." })
+  }
+
   return Project.createDomainResource(req.token.usr, req.domain)
   .catch(() => {
     return
@@ -352,7 +357,7 @@ router.route("/:domain/projects/:projectName/bundles/:bundleId/files/*")
           })
           .send(Project.getFileResourceAsBytesSync(req.token.usr, req.domain, req.project, req.bundleId, file, filter, sensitive, date_from, date_to))
       } else if (req.query.mode && req.query.mode === "json") {
-        if (fileInfo.size >= 104857600) {
+        if (fileInfo.size >= (req.app.get("max-view-size") * 1024 * 1024)) {
           // Service Unavailable
           return res.status(503).json({
             msg: "This file's size is too large. Please use legacy view."
@@ -473,7 +478,7 @@ router.route("/:domain/projects/:projectName/bundles/:bundleId")
 .delete((req: Request, res: Response, next: NextFunction) => {
   if (!["public", "private"].includes(req.domain) && req.token.prv !== "root") {
     // Bad Request
-    return res.status(400).json({
+    return res.status(403).json({
       msg: `bundle: ${ req.bundleName } is only deleted by an administrator.`
     })
   }
@@ -588,6 +593,11 @@ router.route("/:domain/projects/:projectName")
   const projectDescription = req.body.description
   const projectStatus = req.body.status
 
+  if (req.token.usr === "anonymous") {
+    // Forbidden
+    return res.status(403).json({ msg: "Not be permitted to access." })
+  }
+
   if (projectStatus) {
     return Project.updateProjectStatus(req.token.usr, req.domain, req.project, projectStatus)
     .then(() => {
@@ -628,7 +638,7 @@ router.route("/:domain/projects/:projectName")
 .delete((req: Request, res: Response, next: NextFunction) => {
   if (!["public", "private"].includes(req.domain) && req.token.prv !== "root") {
     // Bad Request
-    return res.status(400).json({
+    return res.status(403).json({
       msg: `project: ${ req.project } is only deleted by an administrator.`
     })
   }
@@ -658,6 +668,11 @@ router.route("/:domain/projects/:projectName")
 
 router.route("/:domain/projects")
 .get((req: Request, res: Response, next: NextFunction) => {
+  if (req.token.usr === "anonymous") {
+    // Forbidden
+    return res.status(403).json({ msg: "Not be permitted to access." })
+  }
+
   return Project.getProjectResourceList(req.token.usr, req.domain)
   .then((list: Array<ProjectInfo>) => {
     // OK
@@ -683,6 +698,11 @@ router.route("/:domain/projects")
     return res.status(400).json({
       msg: "Project name is required. (param name: name)"
     })
+  }
+
+  if (req.token.usr === "anonymous") {
+    // Forbidden
+    return res.status(403).json({ msg: "Not be permitted to access." })
   }
 
   return Project.createProjectResource(req.token.usr, req.domain, projectName, projectDesc)

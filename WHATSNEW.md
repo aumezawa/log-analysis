@@ -1,8 +1,25 @@
+Version: **0.12.0** [2021/03/20]
+
+New Features:
+  - Supported anonymous user
+  - Supported creating PDF document
+
+Enhanced Features:
+  - Supported updating page title
+  - Supported caching for getting a file list
+  - Supported submitting by Enter key in input box
+
+Bug Fixes:
+  - Fell into race condition in updating info file
+  - Vulnerary modules
+
+***
+
 Version: **0.11.0** [2020/11/29]
 
 New Features:
   - Supported downloading filtered contents on viewer
-  - Supported converting date to local time on viewer 
+  - Supported converting date to local time on viewer
 
 Enhanced Features:
   - Supported preserving sensitivity of text filter

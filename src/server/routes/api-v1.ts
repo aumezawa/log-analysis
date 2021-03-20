@@ -9,6 +9,7 @@ import * as path from "path"
 import logger = require("../lib/logger")
 
 import logRouter from "./api-v1-log"
+import testRouter from "./api-v1-test"
 
 const rootPath: string = process.cwd()
 
@@ -55,6 +56,21 @@ router.route("/login")
     // Bad Request
     return res.status(400).json({
       msg: "Username and password are required. (param name: username, password)"
+    })
+  }
+
+  if (req.body.username === "anonymous") {
+    // OK
+    const token = jwt.sign({
+      iss: process.env.npm_package_author_name,
+      sub: "token-" + process.env.npm_package_name,
+      usr: "anonymous",
+      als: "anonymous",
+      prv: "none"
+    }, req.app.get("token-key"), { expiresIn: req.app.get("token-period") })
+    return res.status(200).json({
+      msg: "Authentication successfully.",
+      token: token
     })
   }
 
@@ -176,6 +192,8 @@ router.route("/token")
 })
 
 router.use("/log", logRouter)
+
+router.use("/test", testRouter)
 
 router.route("/whatsnew")
 .get((req: Request, res: Response, next: NextFunction) => {

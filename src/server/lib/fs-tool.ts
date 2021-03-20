@@ -2,6 +2,8 @@ import * as fs from "fs"
 import * as path from "path"
 import * as tar from "tar"
 
+import * as CacheTool from "../lib/cache-tool"
+
 export function isErrnoException(err: any, code: string): boolean {
   return (err instanceof Error) && ((err as NodeJS.ErrnoException).code === code)
 }
@@ -24,21 +26,47 @@ export function lsRecursiveSync(node: string, search?: string): NodeType {
   }
 }
 
-export function lsRecursive(node: string, search: string, callback: (err?: any) => void): void
-export function lsRecursive(node: string, search?: string): Promise<void>
-export function lsRecursive(node: string, search?: string, callback?: (err?: any) => void): void | Promise<void> {
-  const promise = new Promise<void>((resolve: () => void, reject: (err?: any) => void) => {
+export function lsRecursiveCacheSync(node: string, search?: string): NodeType {
+  if (search) {
+    return lsRecursiveSync(node, search)
+  }
+
+  const file = path.join(path.dirname(node), "cache", "fs.ls.cache")
+  const key  = path.basename(node)
+
+  const cache = CacheTool.readCache(file, key)
+  if (cache) {
+    try {
+      return (cache as NodeType)
+    } catch {
+      ;
+    }
+  }
+
+  const result = lsRecursiveSync(node, search)
+  CacheTool.writeCache(file, key, (result as any))
+
+  return result
+}
+
+export function lsRecursive(node: string, search: string, cache: boolean, callback: (err?: any, result?: NodeType) => void): void
+export function lsRecursive(node: string, search?: string, cache?: boolean): Promise<NodeType>
+export function lsRecursive(node: string, search?: string, cache?: boolean, callback?: (err?: any, result?: NodeType) => void): void | Promise<NodeType> {
+  const promise = new Promise<NodeType>((resolve: (result?: NodeType) => void, reject: (err?: any) => void) => {
     return setImmediate(() => {
       try {
-        lsRecursiveSync(node, search)
-        return resolve()
+        return resolve(cache ? lsRecursiveCacheSync(node, search) : lsRecursiveSync(node, search))
       } catch (err) {
         return reject(err)
       }
     })
   })
 
-  return callback ? promise.then(callback, callback) && undefined : promise
+  const resolve = (result?: NodeType): void => {
+    callback(undefined, result)
+  }
+
+  return callback ? promise.then(resolve, callback) && undefined : promise
 }
 
 
@@ -97,7 +125,7 @@ export function extractRootTgz(name: string, cwd: string, callback?: (err?: any,
     })
   })
 
-  const resolve = (root?: string):void => {
+  const resolve = (root?: string): void => {
     callback(undefined, root)
   }
 
@@ -105,7 +133,7 @@ export function extractRootTgz(name: string, cwd: string, callback?: (err?: any,
 }
 
 
-export function compressTgzSync(directory: string, cwd: string, preserve?: boolean):void {
+export function compressTgzSync(directory: string, cwd: string, preserve?: boolean): void {
   tar.create({
     file: path.join(cwd, directory + ".tgz"),
     cwd : cwd,

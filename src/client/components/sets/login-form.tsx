@@ -2,6 +2,7 @@ import * as React from "react"
 import { useState, useEffect, useRef, useCallback } from "react"
 
 import TextForm from "../parts/text-form"
+import CheckForm from "../parts/check-form"
 import ButtonSet from "../sets/button-set"
 
 type LoginFormProps = {
@@ -11,6 +12,7 @@ type LoginFormProps = {
   disabled?   : boolean,
   acceptUser? : RegExp,
   acceptPass? : RegExp,
+  anonymous?  : boolean,
   onSubmit?   : (username: string, password: string) => void,
   onCancel?   : () => void
 }
@@ -22,15 +24,18 @@ const LoginForm = React.memo<LoginFormProps>(({
   disabled    = false,
   acceptUser  = /^[0-9a-zA-Z]{4,16}$/,
   acceptPass  = /^[0-9a-zA-Z]{4,16}$/,
+  anonymous   = false,
   onSubmit    = undefined,
   onCancel    = undefined
 }) => {
   const [validUser, setValidUser] = useState<boolean>(false)
   const [validPass, setValidPass] = useState<boolean>(false)
+  const [useAnonymous, setAnonymous] = useState<boolean>(false)
 
   const refs = useRef({
-    username: React.createRef<HTMLInputElement>(),
-    password: React.createRef<HTMLInputElement>()
+    username  : React.createRef<HTMLInputElement>(),
+    password  : React.createRef<HTMLInputElement>(),
+    anonymous : React.createRef<HTMLInputElement>()
   })
 
   const data = useRef({
@@ -57,11 +62,19 @@ const LoginForm = React.memo<LoginFormProps>(({
     setValidPass(!!value.match(acceptPass))
   }, [acceptPass])
 
+  const handleChangeAnonymous = useCallback((value: boolean) => {
+    setAnonymous(value)
+  }, [true])
+
   const handleSubmit = useCallback(() => {
     if (onSubmit) {
-      onSubmit(data.current.username, data.current.password)
+      if (useAnonymous) {
+        onSubmit("anonymous", "anonymous")
+      } else {
+        onSubmit(data.current.username, data.current.password)
+      }
     }
-  }, [onSubmit])
+  }, [onSubmit, useAnonymous])
 
   const handleCancel = useCallback(() => {
     if (!username) {
@@ -70,6 +83,8 @@ const LoginForm = React.memo<LoginFormProps>(({
     }
     data.current.password = refs.current.password.current.value = ""
     setValidPass(false)
+    refs.current.anonymous.current.checked = false
+    setAnonymous(false)
     if (onCancel) {
       onCancel()
     }
@@ -83,7 +98,7 @@ const LoginForm = React.memo<LoginFormProps>(({
         valid={ validUser }
         label="username"
         auxiliary={ domain }
-        disabled={ disabled || !!username }
+        disabled={ disabled || useAnonymous || !!username }
         onChange={ handleChangeUsername }
       />
       <TextForm
@@ -92,13 +107,25 @@ const LoginForm = React.memo<LoginFormProps>(({
         valid={ validPass }
         label="password"
         type="password"
-        disabled={ disabled }
+        disabled={ disabled || useAnonymous }
         onChange={ handleChangePassword }
+        onSubmit={ handleSubmit }
       />
+      {
+        anonymous &&
+        <CheckForm
+          ref={ refs.current.anonymous }
+          className="mb-3"
+          label="Login as anonymous"
+          disabled={ disabled }
+          defaultChecked={ false }
+          onChange={ handleChangeAnonymous }
+        />
+      }
       <ButtonSet
         submit="Login"
         cancel="Clear"
-        valid={ validUser && validPass }
+        valid={ (validUser && validPass) || useAnonymous }
         disabled={ disabled }
         onSubmit={ handleSubmit }
         onCancel={ handleCancel }
