@@ -78,6 +78,12 @@ def readCahceFile(filePath):
 
 def writeCacheFile(filePath, dict):
     try:
+        dirPath = os.path.dirname(filePath)
+        os.makedirs(dirPath)
+    except:
+        pass
+    #
+    try:
         with open(filePath, 'w') as fp:
             json.dump(dict, fp)
     except Exception as e:

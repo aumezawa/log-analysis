@@ -177,7 +177,7 @@ if __name__ == '__main__':
                     printResult(vmlogtool.GetHostList(args.bundle))
                 else:
                     if args.caching:
-                        cacheDir = os.path.dirname(args.bundle)
+                        cacheDir = os.path.join(os.path.dirname(args.bundle), 'cache')
                         cacheKey = os.path.basename(args.bundle) + '_' + args.esx
                         cacheData = cachelib.readCache(cacheDir, cacheKey, vmlogtool.__version__)
                         if cacheData:
@@ -196,7 +196,7 @@ if __name__ == '__main__':
                     printResult(vmlogtool.GetVmList(args.bundle))
                 else:
                     if args.caching:
-                        cacheDir = os.path.dirname(args.bundle)
+                        cacheDir = os.path.join(os.path.dirname(args.bundle), 'cache')
                         cacheKey = os.path.basename(args.bundle) + '_' + args.vm
                         cacheData = cachelib.readCache(cacheDir, cacheKey, vmlogtool.__version__)
                         if cacheData:
