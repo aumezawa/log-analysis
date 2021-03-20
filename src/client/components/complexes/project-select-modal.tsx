@@ -17,6 +17,7 @@ import ListForm from "../parts/list-form"
 import ButtonSet from "../sets/button-set"
 
 type ProjectSelectModalProps = {
+  privilege?: string,
   id        : string,
   domain?   : string,
   action?   : string,   // NOTE: "open" | "delete" | "reopen" | "close"
@@ -25,6 +26,7 @@ type ProjectSelectModalProps = {
 }
 
 const ProjectSelectModal = React.memo<ProjectSelectModalProps>(({
+  privilege = "none",
   id        = null,
   domain    = null,
   action    = "open",
@@ -49,11 +51,14 @@ const ProjectSelectModal = React.memo<ProjectSelectModalProps>(({
   })
 
   useEffect(() => {
+    if (privilege === "none") {
+      return
+    }
     reloadProject()
     data.current.filter = refs.current.text.current.value = ""
     data.current.project = null
     refs.current.list.current.clear()
-  }, [domain, action, reload])
+  }, [privilege, domain, action, reload])
 
   const reloadProject = useCallback(() => {
     if (domain) {
