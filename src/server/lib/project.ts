@@ -106,7 +106,7 @@ function getChildResourceList(path: string): Promise<Array<string>> {
 
 function getResourceNodeSync(path: string, search?: string): NodeType {
   try {
-    return FSTool.lsRecursiveSync(path, search)
+    return FSTool.lsRecursiveCacheSync(path, search)
   } catch (err) {
     (err instanceof Error) && logger.error(`${ err.name }: ${ err.message }`)
     return null
