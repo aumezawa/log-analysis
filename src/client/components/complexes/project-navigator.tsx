@@ -6,7 +6,7 @@ import { House } from "react-bootstrap-icons"
 import { FolderCheck, FolderPlus, FolderX, Folder, Folder2Open } from "react-bootstrap-icons"
 import { JournalArrowUp, JournalCheck, JournalX, Journal } from "react-bootstrap-icons"
 import { FileEarmarkText } from "react-bootstrap-icons"
-import { Box, HddStack } from "react-bootstrap-icons"
+import { Box, ClipboardCheck, HddStack } from "react-bootstrap-icons"
 
 import UniqueId from "../../lib/unique-id"
 
@@ -16,6 +16,7 @@ import ProjectSelectModal from "../complexes/project-select-modal"
 import BundleUploadModal from "../complexes/bundle-upload-modal"
 import BundleSelectModal from "../complexes/bundle-select-modal"
 import MultiSelectModal from "../specifics/vmlog/multi-select-modal"
+import DownloadReportModal from "../specifics/vmlog/download-report-modal"
 
 import Button from "../parts/button"
 import DropdownButton from "../parts/dropdown-button"
@@ -61,7 +62,8 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
     projectSelect : "modal-" + UniqueId(),
     bundleUpload  : "modal-" + UniqueId(),
     bundleSelect  : "modal-" + UniqueId(),
-    multiSelect   : "modal-" + UniqueId()
+    multiSelect   : "modal-" + UniqueId(),
+    downloadReport: "modal-" + UniqueId()
   })
 
   const data = useRef({
@@ -200,6 +202,12 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
         mode={ data.current.mode }
         reload={ reloadSelect }
         onSubmit={ handleChangeSelect }
+      />
+      <DownloadReportModal
+        id={ id.current.downloadReport }
+        domain={ domain }
+        project={ project }
+        bundle={ bundle }
       />
       <div className="flex-container-row align-items-center">
         <div className="borderable">
@@ -364,6 +372,14 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
                 toggle="modal"
                 target={ id.current.multiSelect }
                 onClick={ handleClickCompareVms }
+              />,
+              <DropdownItem
+                key="download-report"
+                label="Download Report"
+                LIcon={ ClipboardCheck }
+                disabled={ !domain || !project || !bundle }
+                toggle="modal"
+                target={ id.current.downloadReport }
               />
             ] }
           />

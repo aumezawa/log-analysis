@@ -7,7 +7,7 @@ from __future__ import print_function
 
 __all__     = []
 __author__  = 'aumezawa'
-__version__ = '0.1.1'
+__version__ = '0.1.2'
 
 
 ################################################################################
@@ -40,6 +40,7 @@ try:
     import cachelib
     sys.path.append('lib/vmlog')
     import vmlogtool
+    import vmlogreport
 except Exception as e:
     print(e)
     sys.exit(RET_SYS_ERROR)
@@ -63,7 +64,7 @@ cachelib.setupLogger(logger)
 
 
 ################################################################################
-###
+### Options
 ################################################################################
 def GetArgs():
     # Supports the command-line arguments listed below.
@@ -92,6 +93,11 @@ def GetArgs():
         action='store_true',
         required=False,
         help='decompress log bundle ("-f" option will be needed)'
+    )
+    group_common.add_argument('-r', '--report',
+        action='store_true',
+        required=False,
+        help='get report object ("-b" option will be needed)'
     )
     #
     group_get = parser.add_argument_group(
@@ -149,9 +155,40 @@ def GetArgs():
     return (args, parser)
 
 
+################################################################################
+### Internal Functions
+################################################################################
 def printResult(data):
-    print(json.dumps(data, indent=2, sort_keys=True))
+    try:
+        print(json.dumps(data, indent=2, sort_keys=True))
+    except Exception as e:
+        logger.error(e)
+        sys.exit(RET_SYS_ERROR)
     return
+
+
+def GetHostInfoWithCache(bundle, esx):
+    cacheDir = os.path.join(os.path.dirname(bundle), 'cache')
+    cacheKey = os.path.basename(bundle) + '_' + esx
+    cacheData = cachelib.readCache(cacheDir, cacheKey, vmlogtool.__version__)
+    if cacheData:
+        result = cacheData
+    else:
+        result = vmlogtool.GetHostInfo(bundle, esx)
+        cachelib.writeCache(cacheDir, cacheKey, result)
+    return result
+
+
+def GetVmInfoWithCache(bundle, vm):
+    cacheDir = os.path.join(os.path.dirname(bundle), 'cache')
+    cacheKey = os.path.basename(bundle) + '_' + vm
+    cacheData = cachelib.readCache(cacheDir, cacheKey, vmlogtool.__version__)
+    if cacheData:
+        result = cacheData
+    else:
+        result = vmlogtool.GetVmInfo(bundle, vm)
+        cachelib.writeCache(cacheDir, cacheKey, result)
+    return result
 
 
 ################################################################################
@@ -177,15 +214,7 @@ if __name__ == '__main__':
                     printResult(vmlogtool.GetHostList(args.bundle))
                 else:
                     if args.caching:
-                        cacheDir = os.path.join(os.path.dirname(args.bundle), 'cache')
-                        cacheKey = os.path.basename(args.bundle) + '_' + args.esx
-                        cacheData = cachelib.readCache(cacheDir, cacheKey, vmlogtool.__version__)
-                        if cacheData:
-                            printResult(cacheData)
-                        else:
-                            result = vmlogtool.GetHostInfo(args.bundle, args.esx)
-                            cachelib.writeCache(cacheDir, cacheKey, result)
-                            printResult(result)
+                        printResult(GetHostInfoWithCache(args.bundle, args.esx))
                     else:
                         printResult(vmlogtool.GetHostInfo(args.bundle, args.esx))
                 logger.info('Succeeded.')
@@ -196,15 +225,7 @@ if __name__ == '__main__':
                     printResult(vmlogtool.GetVmList(args.bundle))
                 else:
                     if args.caching:
-                        cacheDir = os.path.join(os.path.dirname(args.bundle), 'cache')
-                        cacheKey = os.path.basename(args.bundle) + '_' + args.vm
-                        cacheData = cachelib.readCache(cacheDir, cacheKey, vmlogtool.__version__)
-                        if cacheData:
-                            printResult(cacheData)
-                        else:
-                            result = vmlogtool.GetVmInfo(args.bundle, args.vm)
-                            cachelib.writeCache(cacheDir, cacheKey, result)
-                            printResult(result)
+                        printResult(GetVmInfoWithCache(args.bundle, args.vm))
                     else:
                         printResult(vmlogtool.GetVmInfo(args.bundle, args.vm))
                 logger.info('Succeeded.')
@@ -235,6 +256,24 @@ if __name__ == '__main__':
             logger.info('Decompress log bundle. - %s' % args.file)
             bundlePath = vmlogtool.DecompressBundle(args.file)
             printResult({'msg': 'Succeeded.', 'path': bundlePath})
+            logger.info('Succeeded.')
+            sys.exit(RET_NORMAL_END)
+        # Bad options
+        parser.print_help()
+        sys.exit(RET_BAD_PARAM)
+    #
+    if args.report:
+        if args.bundle:
+            if not os.path.exists(args.bundle):
+                logger.error('No log bundle found. - %s' % args.bundle)
+                sys.exit(RET_NO_DIRECTORY)
+            hostName = vmlogtool.GetHostList(args.bundle)[0]
+            hostInfo = GetHostInfoWithCache(args.bundle, hostName)
+            vmList = vmlogtool.GetVmList(args.bundle)
+            vmInfos = []
+            for vmName in vmList:
+                vmInfos.append(GetVmInfoWithCache(args.bundle, vmName))
+            printResult(vmlogreport.GetReportObject(hostInfo, vmInfos))
             logger.info('Succeeded.')
             sys.exit(RET_NORMAL_END)
         # Bad options

@@ -9,12 +9,15 @@ function execVmtoolsSync(node: string, mode: string, type?: string, target?: str
   const options: Array<string> = []
   options[0]  = (mode === "get")    ? "-g"
               : (mode === "decomp") ? "-d"
+              : (mode === "report") ? "-r"
               : null
   options[1]  = (mode === "get")    ? "-b"
               : (mode === "decomp") ? "-f"
+              : (mode === "report") ? "-b"
               : null
   options[2]  = (mode === "get")    ? node
               : (mode === "decomp") ? node
+              : (mode === "report") ? node
               : null
   if (mode === "get") {
     options[3]  = (type === "esx")    ? "-e"
@@ -25,6 +28,8 @@ function execVmtoolsSync(node: string, mode: string, type?: string, target?: str
     options[4]  = (target === "LIST") ? "LIST"
                 : target
     options[5]  = "-c"
+  } else if (mode === "report") {
+    options[3]  = "-c"
   }
 
   if (options.includes(null)) {
@@ -83,4 +88,8 @@ export function getZdumpListSync(directory: string): Array<string> {
 
 export function getZdumpInfoSync(directory: string, zdump: string): ZdumpInfo {
   return execVmtoolsSync(directory, "get", "zdump", zdump) as ZdumpInfo
+}
+
+export function getReportObjectSync(directory: string): Array<any> {
+  return execVmtoolsSync(directory, "report") as Array<any>
 }

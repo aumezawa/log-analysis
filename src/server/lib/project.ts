@@ -6,6 +6,7 @@ import logger = require("../lib/logger")
 import * as Atomic from "../lib/atomic"
 import * as FSTool from "../lib/fs-tool"
 import * as LocalDate from "../lib/local-date"
+import * as PdfTool from "../lib/pdf-tool"
 import * as Vmtools from "../lib/vmtools"
 
 const rootPath: string = process.cwd()
@@ -1043,6 +1044,31 @@ export function getProjectVmList(user: string, domain: string, project: string):
           alllist = alllist.concat(list ? list : [])
         })
         return resolve(alllist)
+      })
+      .catch((err: any) => {
+        return reject(err)
+      })
+    })
+  })
+}
+
+export function getLogReport(user: string, domain: string, project: string, bundleId: string): Promise<BasicDocument> {
+  return new Promise<BasicDocument>((resolve: (doc: BasicDocument) => void, reject: (err?: any) => void) => {
+    return setImmediate(() => {
+      let bundleName: string
+      return getBundleInfo(user, domain, project, bundleId)
+      .then((bundleInfo: BundleInfo) => {
+        bundleName = bundleInfo.name
+        const contents = Vmtools.getReportObjectSync(getBundleResourcePathSync(user, domain, project, bundleId)) || ["Sorry... A internel error occurred. Please contact an administrator."]
+        return PdfTool.createDocument("VMware ESXi Log Bundle Health Check Report", `Author: ${ process.env.npm_package_author_name }`, contents)
+      })
+      .then((pdfDoc: Buffer) => {
+        return resolve({
+          name    : `report-${ bundleName }.pdf`,
+          type    : "pdf",
+          modified: new Date().toString(),
+          content : pdfDoc
+        })
       })
       .catch((err: any) => {
         return reject(err)
