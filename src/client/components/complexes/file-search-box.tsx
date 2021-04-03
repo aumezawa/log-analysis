@@ -12,6 +12,7 @@ import * as Cookie from "js-cookie"
 import Environment from "../../lib/environment"
 import Escape from "../../lib/escape"
 
+import LayerFrame from "../frames/layer-frame"
 import TextForm from "../parts/text-form"
 import FileTreeRoot from "../sets/file-tree-root"
 import DropdownItem from "../parts/dropdown-item"
@@ -145,45 +146,52 @@ const FileSearchBox = React.memo<FileSearchBoxProps>(({
   }, [path])
 
   return (
-    <div className={ `${ className } text-left text-monospace` }>
-      <TextForm
-        ref={ refs.current.text }
-        className="mb-3"
-        label={ null }
-        button={ <Search /> }
-        valid={ data.current.searchable }
-        disabled={ !path || !data.current.done }
-        onChange={ handleChangeText }
-        onSubmit={ handleClickSubmit }
-      />
-      {  status.current.processing && <Spinner /> }
-      { !status.current.processing &&
-        <FileTreeRoot
-          root={ data.current.files }
-          filter="FILEONLY"
-          actions={ [
-            <DropdownItem
-              key="view"
-              label="view"
-              LIcon={ Display }
-              onClick={ handleClickView }
-            />,
-            <DropdownItem
-              key="terminal"
-              label="legacy view"
-              LIcon={ Terminal }
-              onClick={ handleClickTerminal }
-            />,
-            <DropdownItem
-              key="download"
-              label="download"
-              LIcon={ Download }
-              onClick={ handleClickDownload }
-            />
-          ] }
+    <LayerFrame
+      className={ `${ className } text-left text-monospace` }
+      head={
+        <TextForm
+          ref={ refs.current.text }
+          className="mb-2"
+          label={ null }
+          button={ <Search /> }
+          valid={ data.current.searchable }
+          disabled={ !path || !data.current.done }
+          onChange={ handleChangeText }
+          onSubmit={ handleClickSubmit }
         />
       }
-    </div>
+      body={
+        <>
+          {  status.current.processing && <Spinner /> }
+          { !status.current.processing &&
+            <FileTreeRoot
+              root={ data.current.files }
+              filter="FILEONLY"
+              actions={ [
+                <DropdownItem
+                  key="view"
+                  label="view"
+                  LIcon={ Display }
+                  onClick={ handleClickView }
+                />,
+                <DropdownItem
+                  key="terminal"
+                  label="legacy view"
+                  LIcon={ Terminal }
+                  onClick={ handleClickTerminal }
+                />,
+                <DropdownItem
+                  key="download"
+                  label="download"
+                  LIcon={ Download }
+                  onClick={ handleClickDownload }
+                />
+              ] }
+            />
+          }
+        </>
+      }
+    />
   )
 })
 
