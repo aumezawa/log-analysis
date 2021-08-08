@@ -134,12 +134,12 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
   }, [content, line, textFilter, textSensitive, dateFrom, dateTo, onChangeTextFilter, onChangeDateFilter])
 
   const scrollToLine = (line: number) => {
-    setImmediate(() => {
+    setTimeout(() => {
       const lines = ref.current.table.current.tBodies[0].childNodes
       const toLine = (line - 1) % env.current.maxRow
       const offsetTop = (toLine > 0 && toLine < lines.length) ? (lines[toLine - 1] as HTMLElement).offsetTop : 0
       ref.current.parent.current.scrollTo(0, offsetTop)
-    })
+    }, 0)
   }
 
   const handleClickFilter = useCallback((targetValue: string, parentValue: string) => {
