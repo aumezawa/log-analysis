@@ -95,7 +95,7 @@ const FunctionalTableBox = React.memo<FunctionalTableBoxProps>(({
   }, [onChangeDateFilter])
 
   const handleClickDownload = useCallback((textFilter: string, textSensitive: boolean, dateFrom: string, dateTo: string) => {
-    let uri = `${ Environment.getBaseUrl() }/api/v1/${ Escape.root(path) }?mode=download`
+    let uri = `${ Environment.getBaseUrl() }/api/v1/${ Escape.root(path) }?mode=download&gzip=true`
     uri = (textFilter)              ? `${ uri }&filter=${ encodeURIComponent(textFilter) }`  : uri
     uri = (textSensitive === false) ? `${ uri }&sensitive=false`                             : uri
     uri = (dateFrom)                ? `${ uri }&date_from=${ encodeURIComponent(dateFrom) }` : uri

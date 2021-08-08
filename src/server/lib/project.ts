@@ -1,5 +1,6 @@
 import * as fs from "fs"
 import * as path from "path"
+import * as zlib from "zlib"
 
 import logger = require("../lib/logger")
 
@@ -847,7 +848,7 @@ export function getFileResourceSync(user: string, domain: string, project: strin
   return getFileContentSync(getFilePathSync(user, domain, project, bundleId, file))
 }
 
-export function getFileResourceAsBytesSync(user: string, domain: string, project: string, bundleId: string, file: string, filter?: string, sensitive: boolean = true, date_from?: string, date_to?: string): string {
+export function getFileResourceAsBytesSync(user: string, domain: string, project: string, bundleId: string, file: string, filter?: string, sensitive: boolean = true, date_from?: string, date_to?: string, gzip: boolean = false): Buffer {
   const filePath = getFilePathSync(user, domain, project, bundleId, file)
 
   const regex = new RegExp(`^${ dateFormat }(.*)$`)
@@ -882,7 +883,13 @@ export function getFileResourceAsBytesSync(user: string, domain: string, project
       .join("\n")
   }
 
-  return content
+  let buffer = new Buffer(content, "utf-8")
+
+  if (gzip) {
+    buffer = zlib.gzipSync(buffer)
+  }
+
+  return buffer
 }
 
 export function getFileResourceAsJsonSync(user: string, domain: string, project: string, bundleId: string, file: string): TableContent {

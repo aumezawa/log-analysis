@@ -92,7 +92,7 @@ const FileExplorerBox = React.memo<FileExplorerBoxProps>(({
   }, [onSelect])
 
   const handleClickDownload = useCallback((targetValue: string, parentValue: string) => {
-    const uri = `${ Environment.getBaseUrl() }/api/v1/${ Escape.root(path) }/${ Escape.root(parentValue) }?mode=download`
+    const uri = `${ Environment.getBaseUrl() }/api/v1/${ Escape.root(path) }/${ Escape.root(parentValue) }?mode=download&gzip=true`
     Axios.get(uri, {
       headers : { "X-Access-Token": Cookie.get("token") || "" },
       data    : {},
