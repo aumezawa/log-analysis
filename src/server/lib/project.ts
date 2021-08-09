@@ -883,7 +883,7 @@ export function getFileResourceAsBytesSync(user: string, domain: string, project
       .join("\n")
   }
 
-  let buffer = new Buffer(content, "utf-8")
+  let buffer = Buffer.from(content, "utf8")
 
   if (gzip) {
     buffer = zlib.gzipSync(buffer)
@@ -892,7 +892,7 @@ export function getFileResourceAsBytesSync(user: string, domain: string, project
   return buffer
 }
 
-export function getFileResourceAsJsonSync(user: string, domain: string, project: string, bundleId: string, file: string, format: string = "auto"): TableContent {
+export function getFileResourceAsJsonSync(user: string, domain: string, project: string, bundleId: string, file: string, format: string = "auto", gzip: boolean = false): TableContent | Buffer {
   const filePath = getFilePathSync(user, domain, project, bundleId, file)
 
   const regex = new RegExp(`^${ dateFormat }(.*)$`)
@@ -908,7 +908,7 @@ export function getFileResourceAsJsonSync(user: string, domain: string, project:
     return { Content: line }
   }
 
-  return ({
+  const content = {
     format: {
       title     : path.basename(file),
       label     : hasDate ? { Date: "date", Content: "text" } : { Content: "text" },
@@ -917,7 +917,13 @@ export function getFileResourceAsJsonSync(user: string, domain: string, project:
       contentKey: "Content"
       },
     data: getFileContentSync(filePath).split(/\r\n|\n|\r/).map(hasDate ? withDate : withoutDate)
-  })
+  }
+
+  if (gzip) {
+    return zlib.gzipSync(Buffer.from(JSON.stringify(content), "utf8"))
+  }
+
+  return content
 }
 
 //---
