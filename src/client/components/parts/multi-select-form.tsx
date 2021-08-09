@@ -1,14 +1,14 @@
 import * as React from "react"
 import { useRef, useEffect, useCallback, useReducer, useImperativeHandle } from "react"
 
-type MultiSelectFromProps = {
+type MultiSelectFormProps = {
   className?: string,
   labels?   : Array<string>,
   limit?    : number,
   onChange? : (values: Array<string>) => void
 }
 
-const MultiSelectFrom = React.memo(React.forwardRef<MultiSelectFromReference, MultiSelectFromProps>(({
+const MultiSelectForm = React.memo(React.forwardRef<MultiSelectFormReference, MultiSelectFormProps>(({
   className = "",
   labels    = [],
   limit     = 0,
@@ -82,11 +82,11 @@ const MultiSelectFrom = React.memo(React.forwardRef<MultiSelectFromReference, Mu
       }
     </ul>
   )
-}), (prevProps: MultiSelectFromProps, nextProps: MultiSelectFromProps) => (
+}), (prevProps: MultiSelectFormProps, nextProps: MultiSelectFormProps) => (
   (prevProps.className === nextProps.className)
   && (prevProps.labels.toString() === nextProps.labels.toString())
   && (prevProps.limit === nextProps.limit)
   && (prevProps.onChange === nextProps.onChange)
 ))
 
-export default MultiSelectFrom
+export default MultiSelectForm

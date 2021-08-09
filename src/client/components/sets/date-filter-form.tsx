@@ -8,25 +8,29 @@ import ButtonSet from "../sets/button-set"
 import * as LocalDate from "../../lib/local-date"
 
 type DateFilterFormProps = {
-  className?: string,
-  from?     : string,
-  to?       : string,
-  local?    : boolean,
-  disabled? : boolean,
-  dismiss?  : string,
-  onSubmit? : (from: string, to: string) => void,
-  onCancel? : () => void
+  className?  : string,
+  from?       : string,
+  to?         : string,
+  local?      : boolean,
+  labelSubmit?: string,
+  labelCancel?: string,
+  disabled?   : boolean,
+  dismiss?    : string,
+  onSubmit?   : (from: string, to: string) => void,
+  onCancel?   : () => void
 }
 
 const DateFilterForm = React.memo<DateFilterFormProps>(({
-  className = "",
-  from      = null,
-  to        = null,
-  local     = false,
-  disabled  = false,
-  dismiss   = "",
-  onSubmit  = undefined,
-  onCancel  = undefined
+  className   = "",
+  from        = LocalDate.toInputFormat(new Date(), true),
+  to          = LocalDate.toInputFormat(new Date(), true),
+  local       = false,
+  labelSubmit = "Filter",
+  labelCancel = "Clear",
+  disabled    = false,
+  dismiss     = "",
+  onSubmit    = undefined,
+  onCancel    = undefined
 }) => {
   const [ignored, forceUpdate]  = useReducer(x => x + 1, 0)
 
@@ -114,7 +118,7 @@ const DateFilterForm = React.memo<DateFilterFormProps>(({
     if (onSubmit) {
       onSubmit(from, to)
     }
-  }, [local, onSubmit])
+  }, [onSubmit])
 
   const handleCancel = useCallback(() => {
     if (onCancel) {
@@ -136,7 +140,7 @@ const DateFilterForm = React.memo<DateFilterFormProps>(({
         <DateForm
           ref={ ref.current.from.date }
           className="col-10"
-          label=""
+          label={ null }
           valid={ data.current.from.valid }
           disabled={ disabled || !data.current.from.enable }
           defaultValue={ LocalDate.toInputFormat(data.current.from.date) }
@@ -155,7 +159,7 @@ const DateFilterForm = React.memo<DateFilterFormProps>(({
         <DateForm
           ref={ ref.current.to.date }
           className="col-10"
-          label=""
+          label={ null }
           valid={ data.current.to.valid }
           disabled={ disabled || !data.current.to.enable }
           defaultValue={ LocalDate.toInputFormat(data.current.to.date) }
@@ -163,8 +167,8 @@ const DateFilterForm = React.memo<DateFilterFormProps>(({
         />
       </div>
       <ButtonSet
-        submit="Filter"
-        cancel="Clear"
+        submit={ labelSubmit }
+        cancel={ labelCancel }
         valid={ (!data.current.from.enable || data.current.from.valid) && (!data.current.to.enable || data.current.to.valid) }
         disabled={ disabled || (!data.current.from.enable && !data.current.to.enable) }
         dismiss={ dismiss }

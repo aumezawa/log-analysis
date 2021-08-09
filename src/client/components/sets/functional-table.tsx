@@ -399,10 +399,13 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
 
       case "date":
         const at = LocalDate.isDate(datum[label]) ? new Date(datum[label]) : null
-        if (at && env.current.filters[label].from && env.current.filters[label].from > at) {
+        if (!at) {
           return false
         }
-        if (at && env.current.filters[label].to   && env.current.filters[label].to   < at) {
+        if (env.current.filters[label].from && env.current.filters[label].from > at) {
+          return false
+        }
+        if (env.current.filters[label].to   && env.current.filters[label].to   < at) {
           return false
         }
         return true
@@ -478,8 +481,8 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
           message="Input a condition, or press [Clear] to reset."
           body={
             <DateFilterForm
-              from={ env.current.filters["Date"] ? env.current.filters["Date"].from.toISOString() : (content && content.data.length > 0 && content.data[0]["Date"]) || null }
-              to={ env.current.filters["Date"] ? env.current.filters["Date"].to.toISOString() : (content && content.data.length > 2 && content.data.slice(-2)[0]["Date"]) || null }
+              from={ env.current.filters["Date"] ? (env.current.filters["Date"].from && env.current.filters["Date"].from.toISOString()) : (content && content.data.length > 0 && content.data[0]["Date"]) || null }
+              to={ env.current.filters["Date"] ? (env.current.filters["Date"].to && env.current.filters["Date"].to.toISOString()) : (content && content.data.length > 2 && content.data.slice(-2)[0]["Date"]) || null }
               local={ env.current.localtime }
               dismiss="modal"
               onSubmit={ handleSubmitDateFilter }

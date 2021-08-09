@@ -166,8 +166,10 @@ router.route("/:domain/projects/:projectName/bundles/:bundleId/files/*")
 
 router.route("/:domain/projects/:projectName/bundles/:bundleId/files")
 .get((req: Request, res: Response, next: NextFunction) => {
-  const search = (typeof(req.query.search) === "string") ? decodeURIComponent(req.query.search) : undefined
-  return Project.getFileResourceList(req.token.usr, req.domain, req.project, req.bundleId, search)
+  const search    = (typeof(req.query.search)    === "string") ? decodeURIComponent(req.query.search)    : null
+  const date_from = (typeof(req.query.date_from) === "string") ? decodeURIComponent(req.query.date_from) : null
+  const date_to   = (typeof(req.query.date_to)   === "string") ? decodeURIComponent(req.query.date_to)   : null
+  return Project.getFileResourceList(req.token.usr, req.domain, req.project, req.bundleId, search, date_from, date_to)
   .then((node: NodeType) => {
     // OK
     return res.status(200).json({

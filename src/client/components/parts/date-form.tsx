@@ -5,7 +5,7 @@ import * as LocalDate from "../../lib/local-date"
 
 type DateFormProps = {
   className?    : string,
-  label?        : string,
+  label?        : string | JSX.Element,
   valid         : boolean,
   disabled?     : boolean,
   defaultValue? : string,

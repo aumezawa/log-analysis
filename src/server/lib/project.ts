@@ -105,9 +105,9 @@ function getChildResourceList(path: string): Promise<Array<string>> {
   })
 }
 
-function getResourceNodeSync(path: string, search?: string): NodeType {
+function getResourceNodeSync(path: string, search?: string, date_from?: string, date_to?: string): NodeType {
   try {
-    return FSTool.lsRecursiveCacheSync(path, search)
+    return FSTool.lsRecursiveCacheSync(path, search, date_from, date_to)
   } catch (err) {
     (err instanceof Error) && logger.error(`${ err.name }: ${ err.message }`)
     return null
@@ -800,16 +800,16 @@ export function deleteBundleResource(user: string, domain: string, project: stri
 
 //--- File Functions
 
-function getFileResourceListSync(user: string, domain: string, project: string, bundleId: string, search?: string): NodeType {
-  return getResourceNodeSync(getBundleResourcePathSync(user, domain, project, bundleId), search)
+function getFileResourceListSync(user: string, domain: string, project: string, bundleId: string, search?: string, date_from?: string, date_to?: string): NodeType {
+  return getResourceNodeSync(getBundleResourcePathSync(user, domain, project, bundleId), search, date_from, date_to)
 }
 
-export function getFileResourceList(user: string, domain: string, project: string, bundleId: string, search?: string): Promise<NodeType> {
+export function getFileResourceList(user: string, domain: string, project: string, bundleId: string, search?: string, date_from?: string, date_to?: string): Promise<NodeType> {
   return new Promise<NodeType>((resolve: (node: NodeType) => void, reject: (err?: any) => void) => {
     return setImmediate(() => {
       let err = new Error(`file: bundle ID = ${ bundleId } is invalid resource.`)
       err.name = "External"
-      const node = getFileResourceListSync(user, domain, project, bundleId, search)
+      const node = getFileResourceListSync(user, domain, project, bundleId, search, date_from, date_to)
       return node ? resolve(node) : reject(err)
     })
   })
@@ -871,7 +871,7 @@ export function getFileResourceAsBytesSync(user: string, domain: string, project
           return false
         }
 
-        const at = new Date(match[1])
+        const at = new Date(match[1] + (match[1].slice(-1) === "Z" ? "" : "Z"))
         if (date_from && new Date(date_from) > at) {
           return false
         }
@@ -901,7 +901,7 @@ export function getFileResourceAsJsonSync(user: string, domain: string, project:
 
   const withDate    = (line: string) => {
     const match = line.match(regex)
-    return (!!match) ? { Date: match[1], Content: match[2] } : { Date: "", Content: line }
+    return (!!match) ? { Date: match[1] + (match[1].slice(-1) === "Z" ? "" : "Z"), Content: match[2] } : { Date: "", Content: line }
   }
 
   const withoutDate = (line: string) => {
