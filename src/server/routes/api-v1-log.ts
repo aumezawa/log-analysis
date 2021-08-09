@@ -121,9 +121,10 @@ router.route("/:domain/projects/:projectName/bundles/:bundleId/files/*")
           })
         } else {
           // OK
+          const format = (typeof(req.query.format) === "string") ? decodeURIComponent(req.query.format) : "auto"
           return res.status(200).json({
             msg: `You get a file content of path /${ file } of project ${ req.project } bundle ID = ${ req.bundleId }.`,
-            content: Project.getFileResourceAsJsonSync(req.token.usr, req.domain, req.project, req.bundleId, file),
+            content: Project.getFileResourceAsJsonSync(req.token.usr, req.domain, req.project, req.bundleId, file, format),
             size: fileInfo.size,
             modifiedAt: fileInfo.modifiedAt
           })

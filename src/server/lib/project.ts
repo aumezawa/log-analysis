@@ -892,12 +892,12 @@ export function getFileResourceAsBytesSync(user: string, domain: string, project
   return buffer
 }
 
-export function getFileResourceAsJsonSync(user: string, domain: string, project: string, bundleId: string, file: string): TableContent {
+export function getFileResourceAsJsonSync(user: string, domain: string, project: string, bundleId: string, file: string, format: string = "auto"): TableContent {
   const filePath = getFilePathSync(user, domain, project, bundleId, file)
 
   const regex = new RegExp(`^${ dateFormat }(.*)$`)
 
-  const hasDate = (dateFormat !== "") && !!getFileContentHeadSync(filePath).match(regex)
+  const hasDate = (format === "date") || ((format === "auto") && (dateFormat !== "") && !!getFileContentHeadSync(filePath).match(regex))
 
   const withDate    = (line: string) => {
     const match = line.match(regex)
