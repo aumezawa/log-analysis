@@ -7,7 +7,7 @@ from __future__ import print_function
 
 __all__     = []
 __author__  = 'aumezawa'
-__version__ = '0.1.2'
+__version__ = '0.1.3'
 
 
 ################################################################################
@@ -40,7 +40,6 @@ try:
     import cachelib
     sys.path.append('lib/vmlog')
     import vmlogtool
-    import vmlogreport
 except Exception as e:
     print(e)
     sys.exit(RET_SYS_ERROR)
@@ -263,6 +262,12 @@ if __name__ == '__main__':
         sys.exit(RET_BAD_PARAM)
     #
     if args.report:
+        try:
+            import vmlogreport
+        except Exception as e:
+            logger.error(e)
+            sys.exit(RET_SYS_ERROR)
+        #
         if args.bundle:
             if not os.path.exists(args.bundle):
                 logger.error('No log bundle found. - %s' % args.bundle)

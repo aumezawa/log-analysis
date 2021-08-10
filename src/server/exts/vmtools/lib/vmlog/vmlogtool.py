@@ -7,7 +7,7 @@ from __future__ import print_function
 
 __all__     = ['DecompressBundle', 'GetHostList', 'GetHostInfo', 'GetVmList', 'GetVmInfo', 'GetVmLogPath', 'GetZdumpList' 'GetZdumpInfo']
 __author__  = 'aumezawa'
-__version__ = '0.1.1'
+__version__ = '0.1.2'
 
 
 ################################################################################
@@ -728,7 +728,7 @@ def GetBiosVersion(dirPath):
     xpath    = './hardware-info/value[@name="bios-version"]'
     smbiosPath = os.path.join(dirPath, 'commands', 'smbiosDump.txt')
     keyword  = r"^.*System BIOS release: (.*)$"
-    return SearchInXml(filePath, xpath) + ' ' + SearchInText(smbiosPath, keyword, default='')
+    return SearchInXml(filePath, xpath, default='Unknown') + ' ' + SearchInText(smbiosPath, keyword, default='')
 
 
 def GetBmcVersion(dirPath):
@@ -747,7 +747,7 @@ def GetCpuInfo(dirPath):
         'model'     : model,
         'sockets'   : _int(SearchInXml(filePath, './hardware-info/cpu-info/value[@name="num-packages"]')),
         'cores'     : _int(SearchInXml(filePath, './hardware-info/cpu-info/value[@name="num-cores"]')),
-        'htEnable'  : SearchInXml(filePath, './hardware-info/cpu-info/value[@name="hyperthreading-enabled"]') == 'true'
+        'htEnable'  : SearchInXml(filePath, './hardware-info/cpu-info/value[@name="hyperthreading-active"]') == 'true'
     }
 
 
@@ -822,7 +822,7 @@ def GetNics(dirPath):
 LoadBalancingPolicies = {
     'lb_srcid'      : 'Route based on the originating portID',
     'lb_srcmac'     : 'Route based on source MAC hash',
-    'lp_ip'         : 'Route based on IP hash',
+    'lb_ip'         : 'Route based on IP hash',
     'fo_explicit'   : 'Use explicit failover order'
 }
 def GetVswitches(dirPath):
@@ -836,7 +836,7 @@ def GetVswitches(dirPath):
     for node in nodes:
         switches.append({
             'name'      : node.findtext('./value[@name="name"]'),
-            'uplinks'   : sorted(node.findtext('./value[@name="uplinks"]', default='').split(','), key=lambda x: int(re.search(r"[0-9]+", x).group())),
+            'uplinks'   : sorted(node.findtext('./value[@name="uplinks"]', default='').split(','), key=lambda x: int(re.search(r"[0-9]+", x).group()) if x != '' else 0),
             'mtu'       : _int(node.findtext('./value[@name="mtu"]')),
             'balance'   : LoadBalancingPolicies[node.findtext('./effective-teaming-policy/value[@name="teaming-policy"]')],
             'detection' : 'beacon' if node.findtext('./value[@name="beacon-enabled"]') == 'true' else 'link-down',
