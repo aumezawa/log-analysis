@@ -5,7 +5,6 @@ import Axios from "axios"
 import { AxiosResponse, AxiosError } from "axios"
 
 import * as Cookie from "js-cookie"
-import * as Socketio from "socket.io-client"
 import { Terminal } from "xterm"
 import { FitAddon } from "xterm-addon-fit"
 import "xterm/css/xterm.css"
@@ -42,7 +41,7 @@ const TerminalBox = React.memo<TerminalBoxProps>(({
         terminal.open(ref.current)
         fitAddon.fit()
 
-        socket = Socketio(`?cmd=${ encodeURIComponent(res.data.cmd) }&cols=${ terminal.cols }&rows=${ terminal.rows }`, { path: "/terminal" })
+        socket = require("socket.io-client")(`?cmd=${ encodeURIComponent(res.data.cmd) }&cols=${ terminal.cols }&rows=${ terminal.rows }`, { path: "/terminal" })
 
         terminal.onData((data: string) => {
           socket.emit("request", data)
@@ -56,8 +55,9 @@ const TerminalBox = React.memo<TerminalBoxProps>(({
         })
         return
       })
-      .catch((err: AxiosError) => {
-        alert(err.response.data.msg)
+      .catch((err: any) => {
+        //alert(err.response.data.msg)
+        console.log(err)
         return
       })
     }

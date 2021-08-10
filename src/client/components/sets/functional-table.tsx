@@ -1,7 +1,7 @@
 import * as React from "react"
 import { useEffect, useRef, useCallback, useReducer } from "react"
 
-import { Download, Hash, ListOl, Reply, Search } from "react-bootstrap-icons"
+import { Clock, Download, Hash, ListOl, Reply, Search } from "react-bootstrap-icons"
 
 import ModalFrame from "../frames/modal-frame"
 import TextFilterForm from "../sets/text-filter-form"
@@ -29,6 +29,7 @@ type FunctionalTableProps = {
   onChangeLine?       : (line: number) => void,
   onChangeTextFilter? : (textFilter: string, textSensitive: boolean) => void,
   onChangeDateFilter? : (dateFrom: string, dateTo: string) => void,
+  onClickReload?      : (format: string) => void,
   onClickDownload?    : (textFilter: string, textSensitive: boolean, dateFrom: string, dateTo: string) => void
 }
 
@@ -47,6 +48,7 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
   onChangeLine        = undefined,
   onChangeTextFilter  = undefined,
   onChangeDateFilter  = undefined,
+  onClickReload       = undefined,
   onClickDownload     = undefined
 }) => {
   const [ignored, forceUpdate]  = useReducer(x => x + 1, 0)
@@ -64,6 +66,7 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
   })
 
   const env = useRef({
+    format    : "plain",
     page      : 1,
     maxRow    : DEFAULT_ROW,
     rows      : 0,
@@ -81,6 +84,7 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
   useEffect(() => {
     let scrollLine: number
     if (content) {
+      env.current.format = Object.keys(content.format.label).includes("Date") ? "date" : "plain"
       env.current.line = (line > 0) ? line : 1
       env.current.maxRow = DEFAULT_ROW
       env.current.label = null
@@ -134,12 +138,12 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
   }, [content, line, textFilter, textSensitive, dateFrom, dateTo, onChangeTextFilter, onChangeDateFilter])
 
   const scrollToLine = (line: number) => {
-    setImmediate(() => {
+    setTimeout(() => {
       const lines = ref.current.table.current.tBodies[0].childNodes
       const toLine = (line - 1) % env.current.maxRow
       const offsetTop = (toLine > 0 && toLine < lines.length) ? (lines[toLine - 1] as HTMLElement).offsetTop : 0
       ref.current.parent.current.scrollTo(0, offsetTop)
-    })
+    }, 0)
   }
 
   const handleClickFilter = useCallback((targetValue: string, parentValue: string) => {
@@ -261,6 +265,12 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
       onChangeLine(env.current.line)
     }
   }, [onChangeLine])
+
+  const handleClickReload = useCallback(() => {
+    if (onClickReload) {
+      onClickReload(env.current.format === "date" ? "plain" : "date")
+    }
+  }, [onClickReload])
 
   const handleClickDownload = useCallback(() => {
     const textFilter  = env.current.filters["Content"]
@@ -389,10 +399,13 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
 
       case "date":
         const at = LocalDate.isDate(datum[label]) ? new Date(datum[label]) : null
-        if (at && env.current.filters[label].from && env.current.filters[label].from > at) {
+        if (!at) {
           return false
         }
-        if (at && env.current.filters[label].to   && env.current.filters[label].to   < at) {
+        if (env.current.filters[label].from && env.current.filters[label].from > at) {
+          return false
+        }
+        if (env.current.filters[label].to   && env.current.filters[label].to   < at) {
           return false
         }
         return true
@@ -468,8 +481,8 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
           message="Input a condition, or press [Clear] to reset."
           body={
             <DateFilterForm
-              from={ env.current.filters["Date"] ? env.current.filters["Date"].from.toISOString() : (content && content.data.length > 0 && content.data[0]["Date"]) || null }
-              to={ env.current.filters["Date"] ? env.current.filters["Date"].to.toISOString() : (content && content.data.length > 2 && content.data.slice(-2)[0]["Date"]) || null }
+              from={ env.current.filters["Date"] ? (env.current.filters["Date"].from && env.current.filters["Date"].from.toISOString()) : (content && content.data.length > 0 && content.data[0]["Date"]) || null }
+              to={ env.current.filters["Date"] ? (env.current.filters["Date"].to && env.current.filters["Date"].to.toISOString()) : (content && content.data.length > 2 && content.data.slice(-2)[0]["Date"]) || null }
               local={ env.current.localtime }
               dismiss="modal"
               onSubmit={ handleSubmitDateFilter }
@@ -484,9 +497,17 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
         </table>
       </div>
       <div className="flex-area-bottom-0 flex-container-row justify-content-center">
+        <Button
+          className="flex-area-left"
+          label={ env.current.format === "date" ? "OFF" : "ON" }
+          LIcon={ Clock }
+          type="btn-outline"
+          color="secondary"
+          onClick={ handleClickReload }
+        />
         <SelectForm
           ref={ ref.current.select }
-          className="flex-area-left"
+          className="flex-area-center"
           label={ <ListOl /> }
           options={ ROWS }
           onChange={ handleChangeMaxRow }
@@ -499,7 +520,7 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
         />
         <TextForm
           ref={ ref.current.text }
-          className="flex-area-right"
+          className="flex-area-center"
           label={ <Hash /> }
           button={ <Reply /> }
           size={ 4 }
@@ -510,6 +531,7 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
           onSubmit={ handleClickGoToLine }
         />
         <Button
+          className="flex-area-right"
           label="download"
           LIcon={ Download }
           type="btn-outline"

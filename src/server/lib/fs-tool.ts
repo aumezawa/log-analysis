@@ -4,20 +4,53 @@ import * as tar from "tar"
 
 import * as CacheTool from "../lib/cache-tool"
 
+const dateFormat = process.env.npm_package_config_date_format || ""
+
 export function isErrnoException(err: any, code: string): boolean {
   return (err instanceof Error) && ((err as NodeJS.ErrnoException).code === code)
 }
 
 
-export function lsRecursiveSync(node: string, search?: string): NodeType {
+function isSearchInFileSync(node: string, search?: string, date_from?:string, date_to?: string): boolean {
+  if (fs.statSync(node).isDirectory()) {
+    return false
+  }
+
+  const regex = new RegExp(`^${ dateFormat }(.*)$`)
+  const from  = date_from && new Date(date_from)
+  const to    = date_to   && new Date(date_to)
+  for (let line of fs.readFileSync(node, "utf8").split(/\r\n|\n|\r/)) {
+    if (search && line.includes(search)) {
+      return true
+    }
+    if ((dateFormat !== "") && (date_from || date_to)) {
+      const match = line.match(regex)
+      if (!match) {
+        continue
+      }
+
+      const at = new Date(match[1] + (match[1].slice(-1) === "Z" ? "" : "Z"))
+      if (date_from && from > at) {
+        continue
+      }
+      if (date_to   && to   < at) {
+        continue
+      }
+      return true
+    }
+  }
+  return false
+}
+
+export function lsRecursiveSync(node: string, search?: string, date_from?:string, date_to?: string): NodeType {
   if (fs.statSync(node).isDirectory()) {
     return ({
       name: path.basename(node),
       file: false,
-      children: fs.readdirSync(node).map((name: string) => lsRecursiveSync(path.join(node, name), search)).filter((node: NodeType) => (!!node))
+      children: fs.readdirSync(node).map((name: string) => lsRecursiveSync(path.join(node, name), search, date_from, date_to)).filter((node: NodeType) => (!!node))
     })
   } else {
-    return (search && !fs.readFileSync(node, "utf8").includes(search))
+    return ((search || date_from || date_to) && !isSearchInFileSync(node, search, date_from, date_to))
     ? null
     : ({
       name: path.basename(node),
@@ -26,9 +59,9 @@ export function lsRecursiveSync(node: string, search?: string): NodeType {
   }
 }
 
-export function lsRecursiveCacheSync(node: string, search?: string): NodeType {
-  if (search) {
-    return lsRecursiveSync(node, search)
+export function lsRecursiveCacheSync(node: string, search?: string, date_from?:string, date_to?: string): NodeType {
+  if (search || date_from || date_to) {
+    return lsRecursiveSync(node, search, date_from, date_to)
   }
 
   const file = path.join(path.dirname(node), "cache", "fs.ls.cache")
@@ -43,19 +76,19 @@ export function lsRecursiveCacheSync(node: string, search?: string): NodeType {
     }
   }
 
-  const result = lsRecursiveSync(node, search)
+  const result = lsRecursiveSync(node)
   CacheTool.writeCache(file, key, (result as any))
 
   return result
 }
 
-export function lsRecursive(node: string, search: string, cache: boolean, callback: (err?: any, result?: NodeType) => void): void
-export function lsRecursive(node: string, search?: string, cache?: boolean): Promise<NodeType>
-export function lsRecursive(node: string, search?: string, cache?: boolean, callback?: (err?: any, result?: NodeType) => void): void | Promise<NodeType> {
+export function lsRecursive(node: string, search: string, date_from: string, date_to: string, cache: boolean, callback: (err?: any, result?: NodeType) => void): void
+export function lsRecursive(node: string, search?: string, date_from?: string, date_to?: string, cache?: boolean): Promise<NodeType>
+export function lsRecursive(node: string, search?: string, date_from?: string, date_to?: string, cache?: boolean, callback?: (err?: any, result?: NodeType) => void): void | Promise<NodeType> {
   const promise = new Promise<NodeType>((resolve: (result?: NodeType) => void, reject: (err?: any) => void) => {
     return setImmediate(() => {
       try {
-        return resolve(cache ? lsRecursiveCacheSync(node, search) : lsRecursiveSync(node, search))
+        return resolve(cache ? lsRecursiveCacheSync(node, search, date_from, date_to) : lsRecursiveSync(node, search, date_from, date_to))
       } catch (err) {
         return reject(err)
       }

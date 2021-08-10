@@ -360,32 +360,23 @@ router.route("/:domain/projects/:projectName/bundles/:bundleId/files/*")
       if (req.query.mode && req.query.mode === "plain") {
         // OK
         return res.status(200).sendFile(fileInfo.path)
-        /*
-        return res.status(200)
-          .set({
-            "Accept-Ranges"       : "bytes",
-            "Cache-Control"       : "public, max-age=0",
-            "Last-Modified"       : `${ fileInfo.modifiedAt.toString() }`,
-            "Content-Type"        : "application/octet-stream"
-          })
-          .send(Project.getFileResourceAsBytesSync(req.token.usr, req.domain, req.project, req.bundleId, file))
-        */
       } else if (req.query.mode && req.query.mode === "download") {
         const filter    = (typeof(req.query.filter)    === "string") ? decodeURIComponent(req.query.filter)              : null
         const sensitive = (typeof(req.query.sensitive) === "string") ? (req.query.sensitive === "false" ? false : true ) : true
         const date_from = (typeof(req.query.date_from) === "string") ? decodeURIComponent(req.query.date_from)           : null
         const date_to   = (typeof(req.query.date_to)   === "string") ? decodeURIComponent(req.query.date_to)             : null
+        const gzip      = (typeof(req.query.gzip)      === "string") ? (req.query.gzip === "true" ? true : false)        : false
         // OK
-        //return res.status(200).download(fileInfo.path, fileInfo.name)
+        const filename  = gzip ? fileInfo.name + ".gz" : fileInfo.name
         return res.status(200)
           .set({
-            "Content-Disposition" : `attachment; filename="${ fileInfo.name }"`,
+            "Content-Disposition" : `attachment; filename="${ filename }"`,
             "Accept-Ranges"       : "bytes",
             "Cache-Control"       : "public, max-age=0",
             "Last-Modified"       : `${ fileInfo.modifiedAt.toString() }`,
             "Content-Type"        : "application/octet-stream"
           })
-          .send(Project.getFileResourceAsBytesSync(req.token.usr, req.domain, req.project, req.bundleId, file, filter, sensitive, date_from, date_to))
+          .send(Project.getFileResourceAsBytesSync(req.token.usr, req.domain, req.project, req.bundleId, file, filter, sensitive, date_from, date_to, gzip))
       } else if (req.query.mode && req.query.mode === "json") {
         if (fileInfo.size >= (req.app.get("max-view-size") * 1024 * 1024)) {
           // Service Unavailable
@@ -394,11 +385,14 @@ router.route("/:domain/projects/:projectName/bundles/:bundleId/files/*")
           })
         } else {
           // OK
+          const format = (typeof(req.query.format) === "string") ? decodeURIComponent(req.query.format)       : "auto"
+          const gzip   = (typeof(req.query.gzip)   === "string") ? (req.query.gzip === "true" ? true : false) : false
           return res.status(200).json({
             msg: `You get a file content of path /${ file } of project ${ req.project } bundle ID = ${ req.bundleId }.`,
-            content: Project.getFileResourceAsJsonSync(req.token.usr, req.domain, req.project, req.bundleId, file),
+            content: Project.getFileResourceAsJsonSync(req.token.usr, req.domain, req.project, req.bundleId, file, format, gzip),
             size: fileInfo.size,
-            modifiedAt: fileInfo.modifiedAt
+            modifiedAt: fileInfo.modifiedAt,
+            compression: `${ gzip ? "gzip" : "none" }`
           })
         }
       } else if (req.query.mode && req.query.mode === "term") {
@@ -436,8 +430,10 @@ router.route("/:domain/projects/:projectName/bundles/:bundleId/files/*")
 
 router.route("/:domain/projects/:projectName/bundles/:bundleId/files")
 .get((req: Request, res: Response, next: NextFunction) => {
-  const search = (typeof(req.query.search) === "string") ? decodeURIComponent(req.query.search) : undefined
-  return Project.getFileResourceList(req.token.usr, req.domain, req.project, req.bundleId, search)
+  const search    = (typeof(req.query.search)    === "string") ? decodeURIComponent(req.query.search)    : null
+  const date_from = (typeof(req.query.date_from) === "string") ? decodeURIComponent(req.query.date_from) : null
+  const date_to   = (typeof(req.query.date_to)   === "string") ? decodeURIComponent(req.query.date_to)   : null
+  return Project.getFileResourceList(req.token.usr, req.domain, req.project, req.bundleId, search, date_from, date_to)
   .then((node: NodeType) => {
     // OK
     return res.status(200).json({

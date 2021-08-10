@@ -1,3 +1,18 @@
+Version: **0.13.0** [2021/08/10]
+
+New Features:
+  - Supported file search by date
+
+Enhanced Features:
+  - Supported compressed data transmission
+  - Supported reloading on viewer to switch date column
+
+Bug Fixes:
+  - Unexpected lines displayed on viewer with date filter
+  - Vulnerary modules
+
+***
+
 Version: **0.12.0** [2021/03/20]
 
 New Features:

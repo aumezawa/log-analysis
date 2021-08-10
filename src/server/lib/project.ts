@@ -1,5 +1,6 @@
 import * as fs from "fs"
 import * as path from "path"
+import * as zlib from "zlib"
 
 import logger = require("../lib/logger")
 
@@ -106,9 +107,9 @@ function getChildResourceList(path: string): Promise<Array<string>> {
   })
 }
 
-function getResourceNodeSync(path: string, search?: string): NodeType {
+function getResourceNodeSync(path: string, search?: string, date_from?: string, date_to?: string): NodeType {
   try {
-    return FSTool.lsRecursiveCacheSync(path, search)
+    return FSTool.lsRecursiveCacheSync(path, search, date_from, date_to)
   } catch (err) {
     (err instanceof Error) && logger.error(`${ err.name }: ${ err.message }`)
     return null
@@ -809,16 +810,16 @@ export function deleteBundleResource(user: string, domain: string, project: stri
 
 //--- File Functions
 
-function getFileResourceListSync(user: string, domain: string, project: string, bundleId: string, search?: string): NodeType {
-  return getResourceNodeSync(getBundleResourcePathSync(user, domain, project, bundleId), search)
+function getFileResourceListSync(user: string, domain: string, project: string, bundleId: string, search?: string, date_from?: string, date_to?: string): NodeType {
+  return getResourceNodeSync(getBundleResourcePathSync(user, domain, project, bundleId), search, date_from, date_to)
 }
 
-export function getFileResourceList(user: string, domain: string, project: string, bundleId: string, search?: string): Promise<NodeType> {
+export function getFileResourceList(user: string, domain: string, project: string, bundleId: string, search?: string, date_from?: string, date_to?: string): Promise<NodeType> {
   return new Promise<NodeType>((resolve: (node: NodeType) => void, reject: (err?: any) => void) => {
     return setImmediate(() => {
       let err = new Error(`file: bundle ID = ${ bundleId } is invalid resource.`)
       err.name = "External"
-      const node = getFileResourceListSync(user, domain, project, bundleId, search)
+      const node = getFileResourceListSync(user, domain, project, bundleId, search, date_from, date_to)
       return node ? resolve(node) : reject(err)
     })
   })
@@ -857,7 +858,7 @@ export function getFileResourceSync(user: string, domain: string, project: strin
   return getFileContentSync(getFilePathSync(user, domain, project, bundleId, file))
 }
 
-export function getFileResourceAsBytesSync(user: string, domain: string, project: string, bundleId: string, file: string, filter?: string, sensitive: boolean = true, date_from?: string, date_to?: string): string {
+export function getFileResourceAsBytesSync(user: string, domain: string, project: string, bundleId: string, file: string, filter?: string, sensitive: boolean = true, date_from?: string, date_to?: string, gzip: boolean = false): Buffer {
   const filePath = getFilePathSync(user, domain, project, bundleId, file)
 
   const regex = new RegExp(`^${ dateFormat }(.*)$`)
@@ -880,7 +881,7 @@ export function getFileResourceAsBytesSync(user: string, domain: string, project
           return false
         }
 
-        const at = new Date(match[1])
+        const at = new Date(match[1] + (match[1].slice(-1) === "Z" ? "" : "Z"))
         if (date_from && new Date(date_from) > at) {
           return false
         }
@@ -892,26 +893,32 @@ export function getFileResourceAsBytesSync(user: string, domain: string, project
       .join("\n")
   }
 
-  return content
+  let buffer = Buffer.from(content, "utf8")
+
+  if (gzip) {
+    buffer = zlib.gzipSync(buffer)
+  }
+
+  return buffer
 }
 
-export function getFileResourceAsJsonSync(user: string, domain: string, project: string, bundleId: string, file: string): TableContent {
+export function getFileResourceAsJsonSync(user: string, domain: string, project: string, bundleId: string, file: string, format: string = "auto", gzip: boolean = false): TableContent | Buffer {
   const filePath = getFilePathSync(user, domain, project, bundleId, file)
 
   const regex = new RegExp(`^${ dateFormat }(.*)$`)
 
-  const hasDate = (dateFormat !== "") && !!getFileContentHeadSync(filePath).match(regex)
+  const hasDate = (format === "date") || ((format === "auto") && (dateFormat !== "") && !!getFileContentHeadSync(filePath).match(regex))
 
   const withDate    = (line: string) => {
     const match = line.match(regex)
-    return (!!match) ? { Date: match[1], Content: match[2] } : { Date: "", Content: line }
+    return (!!match) ? { Date: match[1] + (match[1].slice(-1) === "Z" ? "" : "Z"), Content: match[2] } : { Date: "", Content: line }
   }
 
   const withoutDate = (line: string) => {
     return { Content: line }
   }
 
-  return ({
+  const content = {
     format: {
       title     : path.basename(file),
       label     : hasDate ? { Date: "date", Content: "text" } : { Content: "text" },
@@ -920,7 +927,13 @@ export function getFileResourceAsJsonSync(user: string, domain: string, project:
       contentKey: "Content"
       },
     data: getFileContentSync(filePath).split(/\r\n|\n|\r/).map(hasDate ? withDate : withoutDate)
-  })
+  }
+
+  if (gzip) {
+    return zlib.gzipSync(Buffer.from(JSON.stringify(content), "utf8"))
+  }
+
+  return content
 }
 
 //--- vmtools Functions

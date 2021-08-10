@@ -12,6 +12,7 @@ import * as Cookie from "js-cookie"
 import Environment from "../../lib/environment"
 import Escape from "../../lib/escape"
 
+import LayerFrame from "../frames/layer-frame"
 import TextForm from "../parts/text-form"
 import FileTreeRoot from "../sets/file-tree-root"
 import DropdownItem from "../parts/dropdown-item"
@@ -91,7 +92,7 @@ const FileExplorerBox = React.memo<FileExplorerBoxProps>(({
   }, [onSelect])
 
   const handleClickDownload = useCallback((targetValue: string, parentValue: string) => {
-    const uri = `${ Environment.getBaseUrl() }/api/v1/${ Escape.root(path) }/${ Escape.root(parentValue) }?mode=download`
+    const uri = `${ Environment.getBaseUrl() }/api/v1/${ Escape.root(path) }/${ Escape.root(parentValue) }?mode=download&gzip=true`
     Axios.get(uri, {
       headers : { "X-Access-Token": Cookie.get("token") || "" },
       data    : {},
@@ -125,39 +126,44 @@ const FileExplorerBox = React.memo<FileExplorerBoxProps>(({
   }, [path])
 
   return (
-    <div className={ `${ className } text-left text-monospace` }>
-      <TextForm
-        ref={ refs.current.text }
-        className="mb-3"
-        label={ <Search /> }
-        valid={ true }
-        onChange={ handleChangeFilter }
-      />
-      <FileTreeRoot
-        root={ data.current.files }
-        filter={ data.current.filter }
-        actions={ [
-          <DropdownItem
-            key="view"
-            label="view"
-            LIcon={ Display }
-            onClick={ handleClickView }
-          />,
-          <DropdownItem
-            key="terminal"
-            label="legacy view"
-            LIcon={ Terminal }
-            onClick={ handleClickTerminal }
-          />,
-          <DropdownItem
-            key="download"
-            label="download"
-            LIcon={ Download }
-            onClick={ handleClickDownload }
-          />
-        ] }
-      />
-    </div>
+    <LayerFrame
+      className={ `${ className } text-left text-monospace` }
+      head={
+        <TextForm
+          ref={ refs.current.text }
+          className="mb-2"
+          label={ <Search /> }
+          valid={ true }
+          onChange={ handleChangeFilter }
+        />
+      }
+      body={
+        <FileTreeRoot
+          root={ data.current.files }
+          filter={ data.current.filter }
+          actions={ [
+            <DropdownItem
+              key="view"
+              label="view"
+              LIcon={ Display }
+              onClick={ handleClickView }
+            />,
+            <DropdownItem
+              key="terminal"
+              label="legacy view"
+              LIcon={ Terminal }
+              onClick={ handleClickTerminal }
+            />,
+            <DropdownItem
+              key="download"
+              label="download"
+              LIcon={ Download }
+              onClick={ handleClickDownload }
+            />
+          ] }
+        />
+      }
+    />
   )
 })
 

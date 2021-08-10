@@ -33,7 +33,7 @@ const MultiSelectModal = React.memo<MultiSelectModalProps>(({
   const [ignored, forceUpdate] = useReducer(x => x + 1, 0)
 
   const refs = useRef({
-    select      : useRef({} as MultiSelectFromReference)
+    select      : useRef({} as MultiSelectFormReference)
   })
 
   const data = useRef({

@@ -1,7 +1,6 @@
 import * as http from "http"
 import * as nodepty from "node-pty"
 import * as os from "os"
-import * as socketio from "socket.io"
 
 import logger = require("../lib/logger")
 
@@ -9,9 +8,9 @@ const shell = os.platform() === "win32" ? "powershell.exe"  : "bash"
 const opt   = os.platform() === "win32" ? []                : ["-c"]
 
 const terminal = (server: http.Server) => {
-  const io = socketio(server, { path: "/terminal" })
+  const io = require("socket.io")(server, { path: "/terminal" })
 
-  io.on("connection", (socket: SocketIO.Socket) => {
+  io.on("connection", (socket: any) => {
     const cmd = socket.handshake.query.cmd ? [...opt, decodeURIComponent(socket.handshake.query.cmd)] : []
     const pty = nodepty.spawn(shell, cmd, {
       name: "xterm-color",

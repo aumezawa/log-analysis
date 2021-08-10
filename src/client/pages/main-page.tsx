@@ -287,8 +287,8 @@ const MainPage: React.FC<MainPageProps> = ({
     data.current.line = null
     data.current.filter = (option && option.search !== "") ? option.search : null
     data.current.sensitive = true
-    data.current.date_from = null
-    data.current.date_to = null
+    data.current.date_from = (option && option.data_from) || null
+    data.current.date_to = (option && option.data_to) || null
     if (action === "terminal") {
       data.current.terminal = true
       setTimeout(() => forceUpdate(), 1000)
