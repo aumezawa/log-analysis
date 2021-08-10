@@ -97,13 +97,13 @@ const VmExplorerBox = React.memo<VmExplorerBoxProps>(({
         actions={ [
           <DropdownItem
             key="info"
-            label="open info"
+            label="show information"
             LIcon={ Box }
             onClick={ handleClickSelectVmInfo }
           />,
           <DropdownItem
             key="log"
-            label="open log"
+            label="open vmware.log"
             LIcon={ Display }
             onClick={ handleClickSelectVmLog }
           />,

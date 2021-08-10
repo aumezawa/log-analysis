@@ -53,7 +53,7 @@ def DecompressBundle(filePath, compressLargeFiles=False, preserveOriginalFile=Fa
     MargeFragmentFiles(os.path.join(dirPath, 'var', 'log'))
     MargeCompressedFragmentFiles(os.path.join(dirPath, 'var', 'run', 'log'))
     CleanupFile(os.path.join(dirPath, 'commands', 'esxcfg-info_-a--F-xml.txt'), r"^ResourceGroup:.*$")
-    MargeVmwareLogFiles(dirPath)
+    #MargeVmwareLogFiles(dirPath)
     if compressLargeFiles:
         CompressLargeFiles(os.path.join(dirPath, 'commands'))
         CompressLargeFiles(os.path.join(dirPath, 'var', 'run', 'log'))
