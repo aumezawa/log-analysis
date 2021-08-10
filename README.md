@@ -273,9 +273,9 @@ Access with your browser or issue HTTP requests.
   - method: `GET`
   - header: `{ X-Access-Token: <string> }`
   - path: `/api/v1/log/:domain/projects/:projectName/bundles/:bundleId/files/:filepath`
-  - query: `{ mode: json }`
+  - query: `{ mode: json, gzip: true | false }`
 - response
-  - data: `{ msg: <string>, content: <JSON Table>, size: <number>, modifiedAt: <string> }`
+  - data: `{ msg: <string>, content: <JSON Table>, size: <number>, modifiedAt: <string>, compression: <boolean> }`
 
 **Note: definition**
 
@@ -292,6 +292,6 @@ Access with your browser or issue HTTP requests.
   - method: `GET`
   - header: `{ X-Access-Token: <string> }`
   - path: `/api/v1/log/:domain/projects/:projectName/bundles/:bundleId/files/:filepath`
-  - query: `{ mode: download }`
+  - query: `{ mode: download, gzip: true | false }`
 - response
   - data: `<object>`

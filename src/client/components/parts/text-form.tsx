@@ -12,7 +12,8 @@ type TextFormProps = {
   validation? : boolean,
   disabled?   : boolean,
   onChange?   : (value: string) => void,
-  onSubmit?   : () => void
+  onSubmit?   : () => void,
+  onSubChange?: () => void
 }
 
 const TextForm = React.memo(React.forwardRef<HTMLInputElement, TextFormProps>(({
@@ -26,7 +27,8 @@ const TextForm = React.memo(React.forwardRef<HTMLInputElement, TextFormProps>(({
   validation  = true,
   disabled    = false,
   onChange    = undefined,
-  onSubmit    = undefined
+  onSubmit    = undefined,
+  onSubChange = undefined
 }, ref) => {
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     if (onChange) {
@@ -43,18 +45,37 @@ const TextForm = React.memo(React.forwardRef<HTMLInputElement, TextFormProps>(({
     }
   }, [valid, onSubmit])
 
-  const handleClick = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleClickButton = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
     if (onSubmit) {
       onSubmit()
     }
   }, [onSubmit])
+
+  const handleClickLabel = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
+    if (onSubChange) {
+      onSubChange()
+    }
+  }, [onSubChange])
 
   return (
     <div className={ className }>
       <div className="input-group">
         { label &&
           <div className="input-group-prepend">
-            <span className="input-group-text">{ label }</span>
+            { !onSubChange &&
+              <span className="input-group-text">
+                { label }
+              </span>
+            }
+            { onSubChange &&
+              <button
+                className="btn btn-outline-success"
+                disabled={ disabled }
+                onClick={ handleClickLabel }
+              >
+                { label }
+              </button>
+            }
           </div>
         }
         { auxiliary &&
@@ -77,7 +98,7 @@ const TextForm = React.memo(React.forwardRef<HTMLInputElement, TextFormProps>(({
               className="btn btn-outline-secondary"
               type="button"
               disabled={ !valid || disabled }
-              onClick={ handleClick }
+              onClick={ handleClickButton }
             >
               { button }
             </button>

@@ -5,6 +5,7 @@ import Axios from "axios"
 import { AxiosResponse, AxiosError } from "axios"
 
 import * as Cookie from "js-cookie"
+import * as Zlib from "zlib"
 
 import Environment from "../../lib/environment"
 import Escape from "../../lib/escape"
@@ -50,7 +51,7 @@ const FunctionalTableBox = React.memo<FunctionalTableBoxProps>(({
 
   useEffect(() => {
     if (path) {
-      const uri = `${ Environment.getBaseUrl() }/api/v1/${ Escape.root(path) }?mode=json`
+      const uri = `${ Environment.getBaseUrl() }/api/v1/${ Escape.root(path) }?mode=json&format=auto&gzip=true`
       status.current.processing = true
       forceUpdate()
       Axios.get(uri, {
@@ -58,16 +59,21 @@ const FunctionalTableBox = React.memo<FunctionalTableBoxProps>(({
         data    : {}
       })
       .then((res: AxiosResponse) => {
-        data.current.content = res.data.content
+        if (res.data.compression === "gzip" && res.data.content.type === "Buffer") {
+          data.current.content = JSON.parse(Zlib.gunzipSync(Buffer.from(res.data.content.data)).toString("utf8"))
+        } else {
+          data.current.content = res.data.content
+        }
         status.current.processing = false
         forceUpdate()
         return
       })
-      .catch((err: AxiosError) => {
+      .catch((err: any) => {
         data.current.content = null
         status.current.processing = false
         forceUpdate()
-        alert(err.response.data.msg)
+        //alert(err.response.data.msg)
+        console.log(err)
         return
       })
     } else {
@@ -94,8 +100,36 @@ const FunctionalTableBox = React.memo<FunctionalTableBoxProps>(({
     }
   }, [onChangeDateFilter])
 
+  const handleClickReload = useCallback((format: string) => {
+    const uri = `${ Environment.getBaseUrl() }/api/v1/${ Escape.root(path) }?mode=json&format=${ format }&gzip=true`
+    status.current.processing = true
+    forceUpdate()
+    Axios.get(uri, {
+      headers : { "X-Access-Token": Cookie.get("token") || "" },
+      data    : {}
+    })
+    .then((res: AxiosResponse) => {
+      if (res.data.compression === "gzip" && res.data.content.type === "Buffer") {
+        data.current.content = JSON.parse(Zlib.gunzipSync(Buffer.from(res.data.content.data)).toString("utf8"))
+      } else {
+        data.current.content = res.data.content
+      }
+      status.current.processing = false
+      forceUpdate()
+      return
+    })
+    .catch((err: any) => {
+      data.current.content = null
+      status.current.processing = false
+      forceUpdate()
+      //alert(err.response.data.msg)
+      console.log(err)
+      return
+    })
+  }, [path])
+
   const handleClickDownload = useCallback((textFilter: string, textSensitive: boolean, dateFrom: string, dateTo: string) => {
-    let uri = `${ Environment.getBaseUrl() }/api/v1/${ Escape.root(path) }?mode=download`
+    let uri = `${ Environment.getBaseUrl() }/api/v1/${ Escape.root(path) }?mode=download&gzip=true`
     uri = (textFilter)              ? `${ uri }&filter=${ encodeURIComponent(textFilter) }`  : uri
     uri = (textSensitive === false) ? `${ uri }&sensitive=false`                             : uri
     uri = (dateFrom)                ? `${ uri }&date_from=${ encodeURIComponent(dateFrom) }` : uri
@@ -148,6 +182,7 @@ const FunctionalTableBox = React.memo<FunctionalTableBoxProps>(({
           onChangeLine={ handleChangeLine }
           onChangeTextFilter={ handleChangeTextFilter }
           onChangeDateFilter={ handleChangeDateFilter }
+          onClickReload={ handleClickReload }
           onClickDownload={ handleClickDownload }
         />
       }
