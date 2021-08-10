@@ -7,7 +7,7 @@ from __future__ import print_function
 
 __all__     = ['DecompressBundle', 'GetHostList', 'GetHostInfo', 'GetVmList', 'GetVmInfo', 'GetVmLogPath', 'GetZdumpList' 'GetZdumpInfo']
 __author__  = 'aumezawa'
-__version__ = '0.1.2'
+__version__ = '0.1.3'
 
 
 ################################################################################
@@ -102,7 +102,8 @@ def GetHostInfo(dirPath, esxName):
             },
             'storage'   : {
                 'hbas'      : GetHbas(dirPath),
-                'disks'     : GetDisks(dirPath)
+                'disks'     : GetDisks(dirPath),
+                'devices'   : GetScsiDevices(dirPath)
             },
             'packages'      : GetPackages(dirPath)
         }
@@ -920,7 +921,8 @@ def GetDisks(dirPath):
     #
     disks = []
     for node in nodes:
-        if node.find('./disk-lun/lun') is None:
+        lunNode = node.find('./disk-lun/lun')
+        if lunNode is None:
             continue
         #
         name    = node.findtext('./value[@name="device-identifier"]')
@@ -932,13 +934,13 @@ def GetDisks(dirPath):
                 break
         else:
             vml = 'Unknown'
-            for uid in node.findall('./disk-lun/lun/device-uids/device-uid'):
+            for uid in lunNode.findall('./device-uids/device-uid'):
                 if uid.findtext('./value[@name="uid"]').startswith('vml.'):
                     vml = uid.findtext('./value[@name="uid"]')
             storage = ' '.join([ \
-                node.findtext('./disk-lun/lun/value[@name="vendor"]').replace(' ', ''), \
-                node.findtext('./disk-lun/lun/value[@name="model"]').replace(' ', ''), \
-                node.findtext('./disk-lun/lun/value[@name="revision"]').replace(' ', '') \
+                lunNode.findtext('./value[@name="vendor"]').replace(' ', ''), \
+                lunNode.findtext('./value[@name="model"]').replace(' ', ''), \
+                lunNode.findtext('./value[@name="revision"]').replace(' ', '') \
             ])
             #
             bbFilePath = os.path.join(dirPath, 'commands', 'vmkfstools_-P--v-10-bootbank.txt')
@@ -958,16 +960,60 @@ def GetDisks(dirPath):
                 'name'      : name,
                 'vml'       : vml,
                 'storage'   : storage,
-                'size'      : _int(node.findtext('./disk-lun/value[@name="size"]'), calc=lambda x: x // 1024 // 1024 // 1024),
+                'size'      : _int(lunNode.findtext('./value[@name="size"]'), calc=lambda x: x // 1024 // 1024 // 1024),
                 'adapters'  : [adapter],
-                'nmp_psp'   : node.findtext('./disk-lun/lun/nmp-device-configuration/value[@name="path-selection-policy"]'),
-                'nmp_satp'  : node.findtext('./disk-lun/lun/nmp-device-configuration/value[@name="storage-array-type"]'),
+                'nmp_psp'   : lunNode.findtext('./nmp-device-configuration/value[@name="path-selection-policy"]'),
+                'nmp_satp'  : lunNode.findtext('./nmp-device-configuration/value[@name="storage-array-type"]'),
                 'bootbank'  : SearchInText(bbFilePath, bbKeyword, default='Unknown') == name,
                 'vmfsName'  : vmfsName,
                 'vmfsPath'  : vmfsPath
             })
     disks.sort(key=lambda x: x['name'])
     return disks
+
+
+def GetScsiDevices(dirPath):
+    filePath = os.path.join(dirPath, 'commands', 'esxcfg-info_-a--F-xml.txt')
+    xpath    = './storage-info/all-scsi-iface/*/scsi-interface/paths/scsi-path'
+    nodes    = GetXmlNode(filePath, xpath, multi=True)
+    if nodes is None:
+        return []
+    #
+    devices = []
+    for node in nodes:
+        lunNode = node.find('./lun')
+        if lunNode is None:
+            continue
+        #
+        name    = node.findtext('./value[@name="device-identifier"]')
+        adapter = node.findtext('./value[@name="adapter-name"]')
+        for device in devices:
+            if name == device['name']:
+                device['adapters'].append(adapter)
+                device['adapters'].sort()
+                break
+        else:
+            vml = 'Unknown'
+            for uid in lunNode.findall('./device-uids/device-uid'):
+                if uid.findtext('./value[@name="uid"]').startswith('vml.'):
+                    vml = uid.findtext('./value[@name="uid"]')
+            storage = ' '.join([ \
+                lunNode.findtext('./value[@name="vendor"]').replace(' ', ''), \
+                lunNode.findtext('./value[@name="model"]').replace(' ', ''), \
+                lunNode.findtext('./value[@name="revision"]').replace(' ', '') \
+            ])
+            #
+            devices.append({
+                'name'      : name,
+                'vml'       : vml,
+                'storage'   : storage,
+                'size'      : _int(lunNode.findtext('./value[@name="size"]'), calc=lambda x: x // 1024 // 1024 // 1024),
+                'adapters'  : [adapter],
+                'nmp_psp'   : lunNode.findtext('./nmp-device-configuration/value[@name="path-selection-policy"]'),
+                'nmp_satp'  : lunNode.findtext('./nmp-device-configuration/value[@name="storage-array-type"]')
+            })
+    devices.sort(key=lambda x: x['name'])
+    return devices
 
 
 def GetPackages(dirPath):

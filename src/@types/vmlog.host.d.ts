@@ -114,7 +114,8 @@ type VMKernelNicInfo = {
 
 type HostStorageInfo = {
   hbas      : Array<HostHbaInfo>,
-  disks     : Array<HostDiskInfo>
+  disks     : Array<HostDiskInfo>,
+  devices   : Array<HostDeviceInfo>
 }
 
 type HostHbaInfo = {
@@ -137,6 +138,16 @@ type HostDiskInfo = {
   bootbank  : boolean,
   vmfsName  : string,
   vmfsPath  : string
+}
+
+type HostDeviceInfo = {
+  name      : string,
+  vml       : string,
+  storage   : string,
+  size      : number,
+  adapters  : Array<string>,
+  nmp_psp   : string,
+  nmp_satp  : string
 }
 
 type HostPackageInfo = {

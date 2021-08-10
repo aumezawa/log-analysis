@@ -1,7 +1,7 @@
 import * as React from "react"
 import { useEffect, useRef, useReducer } from "react"
 
-import { Clock, Cpu, Diagram3, Diagram3Fill, FileEarmarkText, Gear, Grid3x3Gap, HddStack, JournalCheck, Server, Tag, Tags } from "react-bootstrap-icons"
+import { Clock, Cpu, Diagram3, Diagram3Fill, FileEarmarkText, Gear, Grid3x3Gap, HddNetwork, HddStack, JournalCheck, Server, Tag, Tags } from "react-bootstrap-icons"
 
 import Axios from "axios"
 import { AxiosResponse, AxiosError } from "axios"
@@ -300,6 +300,19 @@ const HostInfoBox = React.memo<HostInfoBoxProps>(({
           key={ `disk-${ index }` }
           title={ `Disk Information - ${ index }` }
           LIcon={ Server }
+          compare={ true }
+          content={ content }
+        />
+      )
+    })
+
+    TableLayout(data.current.hosts.map((hostInfo: HostInfo) => hostInfo.storage.devices), "name", null, {size: "GB"})
+    .forEach((content: Array<Array<string>>, index: number) => {
+      tables.push(
+        <Table
+          key={ `device-${ index }` }
+          title={ `Other SCSI Device Information - ${ index }` }
+          LIcon={ HddNetwork }
           compare={ true }
           content={ content }
         />
