@@ -109,7 +109,7 @@ router.route("/:domain/projects/:projectName/bundles/:bundleId/files/*")
             "Content-Disposition" : `attachment; filename="${ filename }"`,
             "Accept-Ranges"       : "bytes",
             "Cache-Control"       : "public, max-age=0",
-            "Last-Modified"       : `${ fileInfo.modifiedAt.toString() }`,
+            "Last-Modified"       : `${ fileInfo.mtime }`,
             "Content-Type"        : "application/octet-stream"
           })
           .send(Project.getFileResourceAsBytesSync(req.token.usr, req.domain, req.project, req.bundleId, file, filter, sensitive, date_from, date_to, gzip))
@@ -127,7 +127,7 @@ router.route("/:domain/projects/:projectName/bundles/:bundleId/files/*")
             msg: `You get a file content of path /${ file } of project ${ req.project } bundle ID = ${ req.bundleId }.`,
             content: Project.getFileResourceAsJsonSync(req.token.usr, req.domain, req.project, req.bundleId, file, format, gzip),
             size: fileInfo.size,
-            modifiedAt: fileInfo.modifiedAt,
+            mtime: fileInfo.mtime,
             compression: `${ gzip ? "gzip" : "none" }`
           })
         }
@@ -143,7 +143,7 @@ router.route("/:domain/projects/:projectName/bundles/:bundleId/files/*")
           msg: `You get a file info of path /${ file } of project ${ req.project } bundle ID = ${ req.bundleId }.`,
           content: Project.getFileResourceSync(req.token.usr, req.domain, req.project, req.bundleId, file),
           size: fileInfo.size,
-          modifiedAt: fileInfo.modifiedAt
+          mtime: fileInfo.mtime
         })
       }
     }
@@ -201,7 +201,8 @@ router.route("/:domain/projects/:projectName/bundles/:bundleId")
     return res.status(200).json({
       msg: `You get a bundle name and description of bundle ID = ${ req.bundleId }.`,
       name: bundleInfo.name,
-      description: bundleInfo.description
+      description: bundleInfo.description,
+      date: bundleInfo.date
     })
   })
   .catch((err: any) => {

@@ -130,8 +130,16 @@ export function rmRecursive(node: string, callback?: (err?: any) => void): void 
 }
 
 
-export function extractRootTgzSync(name: string, cwd: string): string {
-  let root: string = null
+export function extractRootTgzSync(name: string, cwd: string): FileInfo {
+  let fileInfo: FileInfo = {
+    name        : null,
+    directory   : null,
+    path        : null,
+    isDirectory : null,
+    children    : null,
+    size        : null,
+    mtime       : null
+  }
   let first: boolean = true
   tar.list({
     file: path.join(cwd, name),
@@ -139,16 +147,18 @@ export function extractRootTgzSync(name: string, cwd: string): string {
     filter: (path: string, entry: tar.FileStat) => (first && !(first = false)),
     onentry: (entry: tar.FileStat) => {
       const match = entry.header.path.match(/^([^/]+)[/].*$/)
-      root = (match ? match[1] : null)
+      fileInfo.name         = (match ? match[1] : null)
+      fileInfo.isDirectory  = false
+      fileInfo.mtime        = new Date(entry.mtime).toISOString()
     }
   })
-  return root
+  return fileInfo
 }
 
-export function extractRootTgz(name: string, cwd: string, callback: (err?: any, root?: string) => void): void
-export function extractRootTgz(name: string, cwd: string): Promise<string>
-export function extractRootTgz(name: string, cwd: string, callback?: (err?: any, root?: string) => void): void | Promise<string> {
-  const promise = new Promise<string>((resolve: (root?: string) => void, reject: (err?: any) => void) => {
+export function extractRootTgz(name: string, cwd: string, callback: (err?: any, fileInfo?: FileInfo) => void): void
+export function extractRootTgz(name: string, cwd: string): Promise<FileInfo>
+export function extractRootTgz(name: string, cwd: string, callback?: (err?: any, fileInfo?: FileInfo) => void): void | Promise<FileInfo> {
+  const promise = new Promise<FileInfo>((resolve: (fileInfo?: FileInfo) => void, reject: (err?: any) => void) => {
     return setImmediate(() => {
       try {
         return resolve(extractRootTgzSync(name, cwd))
@@ -158,8 +168,8 @@ export function extractRootTgz(name: string, cwd: string, callback?: (err?: any,
     })
   })
 
-  const resolve = (root?: string): void => {
-    callback(undefined, root)
+  const resolve = (fileInfo?: FileInfo): void => {
+    callback(undefined, fileInfo)
   }
 
   return callback ? promise.then(resolve, callback) && undefined : promise
