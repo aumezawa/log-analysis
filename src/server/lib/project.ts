@@ -169,7 +169,7 @@ function writeObjectData(path: string, data: Object): Promise<void> {
   })
 }
 
-function extractBundleNameSync(file: string): string {
+function extractBundleInfoSync(file: string): FileInfo {
   try {
     return FSTool.extractRootTgzSync(path.basename(file), path.dirname(file))
   } catch (err) {
@@ -178,13 +178,13 @@ function extractBundleNameSync(file: string): string {
   }
 }
 
-function extractBundleName(file: string): Promise<string> {
-  return new Promise<string>((resolve: (name: string) => void, reject: (err? :any) => void) => {
+function extractBundleInfo(file: string): Promise<FileInfo> {
+  return new Promise<FileInfo>((resolve: (fileInfo: FileInfo) => void, reject: (err? :any) => void) => {
     return setImmediate(() => {
       let err = new Error(`Resource: ${ file } is invalid bundle.`)
       err.name = "Internal"
-      const name = extractBundleNameSync(file)
-      return (name !== null) ? resolve(name) : reject(err)
+      const fileInfo = extractBundleInfoSync(file)
+      return (fileInfo !== null) ? resolve(fileInfo) : reject(err)
     })
   })
 }
@@ -241,7 +241,7 @@ function getFileStatSync(file: string): FileInfo {
       isDirectory : fstat.isDirectory(),
       children    : fstat.isDirectory() ? getChildResourceListSync(file) : null,
       size        : fstat.size,
-      modifiedAt  : fstat.mtime
+      mtime       : fstat.mtime.toISOString()
     })
   } catch (err) {
     (err instanceof Error) && logger.error(`${ err.name }: ${ err.message }`)
@@ -400,6 +400,10 @@ function getProjectInfoSync(user: string, domain: string, project: string): Proj
   try {
     const projectInfo = readObjectDataSync(getProjectInfoPathSync(user, domain, project)) as ProjectInfo
     (projectInfo.status === undefined) && (projectInfo.status = "open")
+    projectInfo.bundles = projectInfo.bundles.map((bundleInfo: BundleInfo) => {
+      (bundleInfo.date === undefined) && (bundleInfo.date = new Date().toISOString())
+      return bundleInfo
+    })
     return projectInfo
   } catch {
     return null
@@ -677,10 +681,12 @@ export function registerBundleResource(user: string, domain: string, project: st
       const bundlePath: string = joinResourcePathSync(getProjectResourcePathSync(user, domain, project), bundleTgz)
       let bundleId: string
       let bundleName: string
+      let bundleMTime: string
 
-      return extractBundleName(bundlePath)
-      .then((name: string) => {
-        bundleName = name
+      return extractBundleInfo(bundlePath)
+      .then((fileInfo: FileInfo) => {
+        bundleName = fileInfo.name
+        bundleMTime = fileInfo.mtime
         return existsBundleName(user, domain, project, bundleName)
       })
       .then(() => {
@@ -695,6 +701,7 @@ export function registerBundleResource(user: string, domain: string, project: st
           id          : Number(bundleId),
           name        : bundleName,
           description : description || "",
+          date        : bundleMTime,
           available   : false
         })
         return updateProjectInfo(user, domain, project, projectInfo)

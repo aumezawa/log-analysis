@@ -14,35 +14,43 @@ export function isDate(date: string | Date): boolean {
   }
 }
 
+export function shiftDate(date: string | Date, future: boolean, day: number = 0, hour: number = 0, minute: number = 0, second: number = 0): string {
+  if (!isDate(date)) {
+    return null
+  }
+
+  const at = new Date(date)
+  const direction = (future) ? 1 : -1
+  if (day > 0) {
+    at.setDate(at.getDate() + direction * day)
+  }
+  if (hour > 0 && hour < 24) {
+    at.setHours(at.getHours() + direction * hour)
+  }
+  if (minute > 0 && minute < 60) {
+    at.setMinutes(at.getMinutes() + direction * minute)
+  }
+  if (second > 0 && second < 60) {
+    at.setSeconds(at.getSeconds() + direction * second)
+  }
+
+  return at.toISOString()
+}
+
 export function localize(date: string | Date, offset: number = getOffset()): string {
   if (!isDate(date)) {
     return null
   }
 
-  if (typeof(date) === "string") {
-    if (offset === 0) {
-      return new Date(date).toISOString()
-    } else {
-      const at = new Date(date)
-      const sign   = (offset > 0) ? "+"    : "-"
-      const scalar = (offset > 0) ? offset : -offset
-      at.setHours(at.getHours() + offset)
-      return at.toISOString().replace("Z", sign) + scalar.toString().padStart(2, '0') + ":00"
-    }
-  } else if (date instanceof Date) {
-    if (offset === 0) {
-      return date.toISOString()
-    } else {
-      const sign   = (offset > 0) ? "+"    : "-"
-      const scalar = (offset > 0) ? offset : -offset
-      date.setHours(date.getHours() + offset)
-      return date.toISOString().replace("Z", sign) + scalar.toString().padStart(2, '0') + ":00"
-    }
+  if (offset === 0) {
+    return new Date(date).toISOString()
   }
-}
 
-export function nowDate(): Date {
-  return new Date()
+  const direction = (offset > 0)
+  const sign   = direction ? "+"    : "-"
+  const scalar = direction ? offset : -offset
+  return shiftDate(date, direction, 0, scalar).replace("Z", sign) + scalar.toString().padStart(2, '0') + ":00"
+
 }
 
 export function now(local: boolean = false, offset: number = getOffset()): string {

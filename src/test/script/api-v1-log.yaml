@@ -100,6 +100,7 @@ main:
       - id:             0
         name:           log-bundle-test-0001
         description:    Automatic Web API Test Bundle
+        date:           2020-12-06T02:36:29.000Z
         available:      true
 
   - method:             GET
@@ -108,6 +109,7 @@ main:
       msg:              "You get a bundle name and description of bundle ID = 0."
       name:             log-bundle-test-0001
       description:      Automatic Web API Test Bundle
+      date:             2020-12-06T02:36:29.000Z
 
   - method:             PUT
     path:               /api/v1/log/public/projects/Regression Test/bundles/0
@@ -122,6 +124,7 @@ main:
       msg:              "You get a bundle name and description of bundle ID = 0."
       name:             log-bundle-test-0001
       description:      Modified Description for Automatic Web API Test Bundle
+      date:             2020-12-06T02:36:29.000Z
 
   - method:             GET
     path:               /api/v1/log/public/projects/Regression Test/bundles/0/files
@@ -153,7 +156,7 @@ main:
       msg:              "You get a file info of path /readme.txt of project Regression Test bundle ID = 0."
       content:          This is test log bundle for regression test.
       size:             44
-      modifiedAt:       2020-12-06T02:40:00.000Z
+      mtime:            2020-12-06T02:40:00.000Z
 
   - method:             GET
     path:               /api/v1/log/public/projects/Regression Test/bundles/0/files/AAA/bbb.txt?mode=json
@@ -177,7 +180,8 @@ main:
         - Content:      Test Message 7
         - Content:      ""
       size:             112
-      modifiedAt:       2020-12-06T02:39:26.000Z
+      mtime:            2020-12-06T02:39:26.000Z
+      compression:      none
 
   - method:             GET
     path:               /api/v1/log/public/projects/Regression Test/bundles/0/files/AAA/BBB/CCC/ddd.txt?mode=json
@@ -210,7 +214,8 @@ main:
         - Date:         ""
           Content:      ""
       size:             287
-      modifiedAt:       2020-12-06T02:39:02.000Z
+      mtime:            2020-12-06T02:39:02.000Z
+      compression:      none
 
   - method:             DELETE
     path:               /api/v1/log/public/projects/Regression Test/bundles/0

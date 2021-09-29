@@ -72,10 +72,14 @@ const ProjectSelectModal = React.memo<ProjectSelectModalProps>(({
         forceUpdate()
         return
       })
-      .catch((err: AxiosError) => {
+      .catch((err: Error | AxiosError) => {
         data.current.projects = []
         forceUpdate()
-        alert(err.response.data.msg)
+        if (Axios.isAxiosError(err)) {
+          alert(err.response.data.msg)
+        } else {
+          console.log(err)
+        }
         return
       })
     } else {
@@ -122,10 +126,14 @@ const ProjectSelectModal = React.memo<ProjectSelectModalProps>(({
         reloadProject()
         return
       })
-      .catch((err: AxiosError) => {
+      .catch((err: Error | AxiosError) => {
         status.current.processing = false
         forceUpdate()
-        alert(err.response.data.msg)
+        if (Axios.isAxiosError(err)) {
+          alert(err.response.data.msg)
+        } else {
+          console.log(err)
+        }
         return
       })
     }
@@ -146,10 +154,14 @@ const ProjectSelectModal = React.memo<ProjectSelectModalProps>(({
         reloadProject()
         return
       })
-      .catch((err: AxiosError) => {
+      .catch((err: Error | AxiosError) => {
         status.current.processing = false
         forceUpdate()
-        alert(err.response.data.msg)
+        if (Axios.isAxiosError(err)) {
+          alert(err.response.data.msg)
+        } else {
+          console.log(err)
+        }
         return
       })
     }

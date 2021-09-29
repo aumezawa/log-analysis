@@ -87,11 +87,17 @@ const LoginBox = React.memo<LoginBoxProps>(({
         }
       }, 3000)
     })
-    .catch((err: AxiosError) => {
-      data.current.message = err.response.data.msg
+    .catch((err: Error | AxiosError) => {
+      if (Axios.isAxiosError(err)) {
+        data.current.message = err.response.data.msg
+      } else {
+        data.current.message = "An error on the client occurred."
+        console.log(err)
+      }
       status.current.done = true
       status.current.success = false
       forceUpdate()
+      return
     })
   }, [redirect, onDone])
 

@@ -59,8 +59,13 @@ const ProjectCreateModal = React.memo<ProjectCreateModalProps>(({
       status.current.success = true
       clearFrom()
     })
-    .catch((err: AxiosError) => {
-      data.current.message = err.response.data.msg
+    .catch((err: Error | AxiosError) => {
+      if (Axios.isAxiosError(err)) {
+        data.current.message = err.response.data.msg
+      } else {
+        data.current.message = "An error on the client occurred."
+        console.log(err)
+      }
       status.current.done = true
       status.current.success = false
       forceUpdate()

@@ -204,7 +204,7 @@ Access with your browser or issue HTTP requests.
   - header: `{ X-Access-Token: <string> }`
   - path: `/api/v1/log/:domain/projects/:projectName/bundles/:bundleId`
 - response
-  - data: `{ msg: <string>, name:<string>, description: <string> }`
+  - data: `{ msg: <string>, name:<string>, description: <string>, date: <string> }`
 
 
 ### Update a Bundle Description
@@ -253,7 +253,7 @@ Access with your browser or issue HTTP requests.
   - header: `{ X-Access-Token: <string> }`
   - path: `/api/v1/log/:domain/projects/:projectName/bundles/:bundleId/files/:filepath`
 - response
-  - data: `{ msg: <string>, content: <string>, size: <number>, modifiedAt: <string> }`
+  - data: `{ msg: <string>, content: <string>, size: <number>, mtime: <string> }`
 
 
 ### Get a File as plain
@@ -264,7 +264,7 @@ Access with your browser or issue HTTP requests.
   - path: `/api/v1/log/:domain/projects/:projectName/bundles/:bundleId/files/:filepath`
   - query: `{ mode: plain }`
 - response
-  - data: `{ msg: <string>, content: <string>, size: <number>, modifiedAt: <string> }`
+  - data: `{ msg: <string>, content: <string>, size: <number>, mtime: <string> }`
 
 
 ### Get a File as json format
@@ -275,7 +275,7 @@ Access with your browser or issue HTTP requests.
   - path: `/api/v1/log/:domain/projects/:projectName/bundles/:bundleId/files/:filepath`
   - query: `{ mode: json, gzip: true | false }`
 - response
-  - data: `{ msg: <string>, content: <JSON Table>, size: <number>, modifiedAt: <string>, compression: <boolean> }`
+  - data: `{ msg: <string>, content: <JSON Table>, size: <number>, mtime: <string>, compression: <string> }`
 
 **Note: definition**
 
