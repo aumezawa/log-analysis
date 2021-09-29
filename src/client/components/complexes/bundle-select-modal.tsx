@@ -74,8 +74,13 @@ const BundleSelectModal = React.memo<BundleSelectModalProps>(({
         onUpdate(res.data.name)
         return
       })
-      .catch((err: AxiosError) => {
+      .catch((err: Error | AxiosError) => {
         onSubmit(null, null)
+        if (Axios.isAxiosError(err)) {
+          // nop
+        } else {
+          console.log(err)
+        }
         return
       })
     }
@@ -93,10 +98,14 @@ const BundleSelectModal = React.memo<BundleSelectModalProps>(({
         forceUpdate()
         return
       })
-      .catch((err: AxiosError) => {
+      .catch((err: Error | AxiosError) => {
         data.current.bundles = []
         forceUpdate()
-        alert(err.response.data.msg)
+        if (Axios.isAxiosError(err)) {
+          alert(err.response.data.msg)
+        } else {
+          console.log(err)
+        }
         return
       })
     } else {
@@ -145,10 +154,14 @@ const BundleSelectModal = React.memo<BundleSelectModalProps>(({
         reloadBundle()
         return
       })
-      .catch((err: AxiosError) => {
+      .catch((err: Error | AxiosError) => {
         status.current.processing = false
         forceUpdate()
-        alert(err.response.data.msg)
+        if (Axios.isAxiosError(err)) {
+          alert(err.response.data.msg)
+        } else {
+          console.log(err)
+        }
         return
       })
     }

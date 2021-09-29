@@ -62,9 +62,13 @@ const FileExplorerBox = React.memo<FileExplorerBoxProps>(({
         forceUpdate()
         return
       })
-      .catch((err: AxiosError) => {
+      .catch((err: Error | AxiosError) => {
         forceUpdate()
-        alert(err.response.data.msg)
+        if (Axios.isAxiosError(err)) {
+          alert(err.response.data.msg)
+        } else {
+          console.log(err)
+        }
         return
       })
     } else {
@@ -120,7 +124,12 @@ const FileExplorerBox = React.memo<FileExplorerBoxProps>(({
       }
       return
     })
-    .catch((err: AxiosError) => {
+    .catch((err: Error | AxiosError) => {
+      if (Axios.isAxiosError(err)) {
+        alert(err.response.data.msg)
+      } else {
+        console.log(err)
+      }
       return
     })
   }, [path])

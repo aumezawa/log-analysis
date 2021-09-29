@@ -39,7 +39,7 @@ async function execScript(script: TestScript): Promise<void> {
         .then((res: AxiosResponse) => {
           return resolve(res.data.token)
         })
-        .catch((err: AxiosError) => {
+        .catch((err: Error | AxiosError) => {
           return reject(err)
         })
       })

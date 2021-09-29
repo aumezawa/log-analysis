@@ -36,8 +36,12 @@ const WhatsNewModal = React.memo<WhatsNewModalProps>(({
       forceUpdate()
       return
     })
-    .catch((err: AxiosError) => {
-      alert(err.response.data.msg)
+    .catch((err: Error | AxiosError) => {
+      if (Axios.isAxiosError(err)) {
+        alert(err.response.data.msg)
+      } else {
+        console.log(err)
+      }
       return
     })
   }, [true])

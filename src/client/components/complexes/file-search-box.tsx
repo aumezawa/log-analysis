@@ -109,7 +109,7 @@ const FileSearchBox = React.memo<FileSearchBoxProps>(({
         forceUpdate()
         return
       })
-      .catch((err: any) => {
+      .catch((err: Error | AxiosError) => {
         data.current.from.valid = true
         data.current.from.date = LocalDate.shiftDate(LocalDate.now(), false, 3)
         refs.current.from.date.current.value = LocalDate.toInputFormat(data.current.from.date)
@@ -117,7 +117,11 @@ const FileSearchBox = React.memo<FileSearchBoxProps>(({
         data.current.to.date = LocalDate.now()
         refs.current.to.date.current.value = LocalDate.toInputFormat(data.current.to.date)
         forceUpdate()
-        console.log(err)
+        if (Axios.isAxiosError(err)) {
+          // nop
+        } else {
+          console.log(err)
+        }
         return
       })
     } else {
@@ -191,7 +195,7 @@ const FileSearchBox = React.memo<FileSearchBoxProps>(({
       forceUpdate()
       return
     })
-    .catch((err: AxiosError) => {
+    .catch((err: Error | AxiosError) => {
       data.current.files = {
         name    : "",
         file    : false,
@@ -200,7 +204,11 @@ const FileSearchBox = React.memo<FileSearchBoxProps>(({
       status.current.done = true
       status.current.processing = false
       forceUpdate()
-      alert(err.response.data.msg)
+      if (Axios.isAxiosError(err)) {
+        alert(err.response.data.msg)
+      } else {
+        console.log(err)
+      }
       return
     })
   }, [path])
@@ -250,7 +258,12 @@ const FileSearchBox = React.memo<FileSearchBoxProps>(({
       }
       return
     })
-    .catch((err: AxiosError) => {
+    .catch((err: Error | AxiosError) => {
+      if (Axios.isAxiosError(err)) {
+        alert(err.response.data.msg)
+      } else {
+        console.log(err)
+      }
       return
     })
   }, [path])
