@@ -164,7 +164,7 @@ const MainPage: React.FC<MainPageProps> = ({
         updateAddressBar()
         return
       })
-      .catch((err: AxiosError) => {
+      .catch((err: Error | AxiosError) => {
         alert(`No resource: ${ uri }`)
         updateTitle()
         updateAddressBar()

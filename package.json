@@ -1,6 +1,6 @@
 {
   "name": "log-analysis",
-  "version": "0.13.0",
+  "version": "0.14.0",
   "description": "log analysis tools",
   "config": {
     "domains": "public,private",

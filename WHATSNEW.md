@@ -1,3 +1,16 @@
+Version: **0.14.0** [2021/09/29]
+
+New Features:
+  - *None*
+
+Enhanced Features:
+  - Updated file search function
+
+Bug Fixes:
+  - Vulnerary modules
+
+***
+
 Version: **0.13.0** [2021/08/10]
 
 New Features:

@@ -39,10 +39,15 @@ const TokenStatusModal = React.memo<TokenStatusModalProps>(({
       forceUpdate()
       return
     })
-    .catch((err: AxiosError) => {
+    .catch((err: Error | AxiosError) => {
       data.current.iat = null
       data.current.exp = null
       forceUpdate()
+      if (Axios.isAxiosError(err)) {
+        alert(err.response.data.msg)
+      } else {
+        console.log(err)
+      }
       return
     })
   }, [reload])

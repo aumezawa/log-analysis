@@ -32,7 +32,7 @@ const Button = React.memo<ButtonProps>(({
     if (onClick) {
       onClick()
     }
-  }, [true])
+  }, [onClick])
 
   return (
     <button

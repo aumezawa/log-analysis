@@ -68,12 +68,15 @@ const FunctionalTableBox = React.memo<FunctionalTableBoxProps>(({
         forceUpdate()
         return
       })
-      .catch((err: any) => {
+      .catch((err: Error | AxiosError) => {
         data.current.content = null
         status.current.processing = false
         forceUpdate()
-        //alert(err.response.data.msg)
-        console.log(err)
+        if (Axios.isAxiosError(err)) {
+          alert(err.response.data.msg)
+        } else {
+          console.log(err)
+        }
         return
       })
     } else {
@@ -118,12 +121,15 @@ const FunctionalTableBox = React.memo<FunctionalTableBoxProps>(({
       forceUpdate()
       return
     })
-    .catch((err: any) => {
+    .catch((err: Error | AxiosError) => {
       data.current.content = null
       status.current.processing = false
       forceUpdate()
-      //alert(err.response.data.msg)
-      console.log(err)
+      if (Axios.isAxiosError(err)) {
+        alert(err.response.data.msg)
+      } else {
+        console.log(err)
+      }
       return
     })
   }, [path])
@@ -161,7 +167,12 @@ const FunctionalTableBox = React.memo<FunctionalTableBoxProps>(({
       }
       return
     })
-    .catch((err: AxiosError) => {
+    .catch((err: Error | AxiosError) => {
+      if (Axios.isAxiosError(err)) {
+        alert(err.response.data.msg)
+      } else {
+        console.log(err)
+      }
       return
     })
   }, [path])

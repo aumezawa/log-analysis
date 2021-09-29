@@ -2,7 +2,7 @@ import * as React from "react"
 import { useEffect, useRef, useCallback, useReducer } from "react"
 
 import { Search } from "react-bootstrap-icons"
-import { Clock, Display, Download, Fonts, Terminal } from "react-bootstrap-icons"
+import { Display, Download, Terminal } from "react-bootstrap-icons"
 
 import Axios from "axios"
 import { AxiosResponse, AxiosError } from "axios"
@@ -11,10 +11,13 @@ import * as Cookie from "js-cookie"
 
 import Environment from "../../lib/environment"
 import Escape from "../../lib/escape"
+import * as LocalDate from "../../lib/local-date"
 
 import LayerFrame from "../frames/layer-frame"
 import TextForm from "../parts/text-form"
-import MultiDateForm from "../sets/multi-date-form"
+import SwitchForm from "../parts/switch-form"
+import DateForm from "../parts/date-form"
+import Button from "../parts/button"
 import FileTreeRoot from "../sets/file-tree-root"
 import DropdownItem from "../parts/dropdown-item"
 import Spinner from "../parts/spinner"
@@ -33,17 +36,36 @@ const FileSearchBox = React.memo<FileSearchBoxProps>(({
   const [ignored, forceUpdate] = useReducer(x => x + 1, 0)
 
   const refs = useRef({
-    text  : React.createRef<HTMLInputElement>(),
-    date  : useRef({} as MultiDateFormReference)
+    text: {
+      enable: React.createRef<HTMLInputElement>(),
+      input : React.createRef<HTMLInputElement>()
+    },
+    from: {
+      enable: React.createRef<HTMLInputElement>(),
+      date  : React.createRef<HTMLInputElement>()
+    },
+    to: {
+      enable: React.createRef<HTMLInputElement>(),
+      date  : React.createRef<HTMLInputElement>()
+    }
   })
 
   const data = useRef({
-    searchmode: "text",
-    searchable: false,
-    searchtext: "",
-    searchfrom: null,
-    searchto  : null,
-    done      : true,
+    text: {
+      valid   : false,
+      enable  : false,
+      input   : ""
+    },
+    from: {
+      valid   : false,
+      enable  : false,
+      date    : LocalDate.now()
+    },
+    to: {
+      valid   : false,
+      enable  : false,
+      date    : LocalDate.now()
+    },
     files : {
       name    : "",
       file    : false,
@@ -52,65 +74,114 @@ const FileSearchBox = React.memo<FileSearchBoxProps>(({
   })
 
   const status = useRef({
+    done      : true,
     processing: false
   })
 
   useEffect(() => {
-    data.current.searchable = false
-    data.current.searchtext = refs.current.text.current.value = ""
-    data.current.done = true
-    data.current.files = {
-      name    : "",
-      file    : false,
-      children: []
+    data.current.text.valid = false
+    data.current.text.enable = refs.current.text.enable.current.checked = false
+    data.current.text.input = refs.current.text.input.current.value = ""
+    data.current.from.valid = false
+    data.current.from.enable = refs.current.from.enable.current.checked = false
+    data.current.to.valid = false
+    data.current.to.enable = refs.current.to.enable.current.checked = false
+    data.current.files.name = ""
+    data.current.files.file = false
+    data.current.files.children = []
+
+    status.current.done = true
+    status.current.processing = false
+
+    if (path) {
+      const uri = `${ Environment.getBaseUrl() }/api/v1/${ Escape.root(path.split("/").slice(0,-1).join("/")) }`
+      Axios.get(uri, {
+        headers : { "X-Access-Token": Cookie.get("token") || "" },
+        data    : {}
+      })
+      .then((res: AxiosResponse) => {
+        data.current.from.valid = true
+        data.current.from.date = LocalDate.shiftDate(res.data.date, false, 3)
+        refs.current.from.date.current.value = LocalDate.toInputFormat(data.current.from.date)
+        data.current.to.valid = true
+        data.current.to.date = res.data.date
+        refs.current.to.date.current.value = LocalDate.toInputFormat(data.current.to.date)
+        forceUpdate()
+        return
+      })
+      .catch((err: Error | AxiosError) => {
+        data.current.from.valid = true
+        data.current.from.date = LocalDate.shiftDate(LocalDate.now(), false, 3)
+        refs.current.from.date.current.value = LocalDate.toInputFormat(data.current.from.date)
+        data.current.to.valid = true
+        data.current.to.date = LocalDate.now()
+        refs.current.to.date.current.value = LocalDate.toInputFormat(data.current.to.date)
+        forceUpdate()
+        if (Axios.isAxiosError(err)) {
+          // nop
+        } else {
+          console.log(err)
+        }
+        return
+      })
+    } else {
+      data.current.from.date = null
+      refs.current.from.date.current.value = null
+      data.current.to.date = null
+      refs.current.to.date.current.value = null
+      forceUpdate()
     }
-    forceUpdate()
   }, [path])
 
-  const handleChangeMode = useCallback(() => {
-    data.current.searchmode = (data.current.searchmode === "text") ? "date" : "text"
-    data.current.searchable = false
-    data.current.searchtext = ""
-    data.current.searchfrom = null
-    data.current.searchto   = null
-    data.current.files = {
-      name    : "",
-      file    : false,
-      children: []
-    }
+  const handleChangeCheckText = useCallback((value: boolean) => {
+    data.current.text.enable = value
+    forceUpdate()
+  }, [true])
+
+  const handleChangeCheckFrom = useCallback((value: boolean) => {
+    data.current.from.enable = value
+    forceUpdate()
+  }, [true])
+
+  const handleChangeCheckTo = useCallback((value: boolean) => {
+    data.current.to.enable = value
     forceUpdate()
   }, [true])
 
   const handleChangeText = useCallback((value: string) => {
-    data.current.searchable = (value.length >= 2)
-    data.current.searchtext = value
+    data.current.text.valid = (value.length >= 2)
+    data.current.text.input = value
     forceUpdate()
   }, [true])
 
-  const handleChangeDate = useCallback((from: string, to: string) => {
-    data.current.searchable = (!!from || !!to)
-    data.current.searchfrom = from
-    data.current.searchto   = to
+  const handleChangeDateFrom = useCallback((value: string) => {
+    data.current.from.valid = LocalDate.isDate(value)
+    data.current.from.date = LocalDate.fromInputFormat(value)
+    forceUpdate()
+  }, [true])
+
+  const handleChangeDateTo = useCallback((value: string) => {
+    data.current.to.valid = LocalDate.isDate(value)
+    data.current.to.date = LocalDate.fromInputFormat(value)
     forceUpdate()
   }, [true])
 
   const handleClickSubmit = useCallback(() => {
     let uri = `${ Environment.getBaseUrl() }/api/v1/${ Escape.root(path) }`
-    if (data.current.searchmode === "text") {
-      uri = uri + `?search=${ encodeURIComponent(data.current.searchtext) }`
+    let param = "?"
+    if (data.current.text.enable && data.current.text.valid) {
+      uri = uri + `${ param }search=${ encodeURIComponent(data.current.text.input) }`
+      param = "&"
     }
-    if (data.current.searchmode === "date") {
-      let param = "?"
-      if (data.current.searchfrom) {
-        uri = uri + `${ param }date_from=${ encodeURIComponent(data.current.searchfrom) }`
-        param = "&"
-      }
-      if (data.current.searchto) {
-        uri = uri + `${ param }date_to=${ encodeURIComponent(data.current.searchto) }`
-      }
+    if (data.current.from.enable && data.current.from.valid) {
+      uri = uri + `${ param }date_from=${ encodeURIComponent(data.current.from.date) }`
+      param = "&"
+    }
+    if (data.current.to.enable && data.current.to.valid) {
+      uri = uri + `${ param }date_to=${ encodeURIComponent(data.current.to.date) }`
     }
 
-    data.current.done = false
+    status.current.done = false
     status.current.processing = true
     forceUpdate()
     Axios.get(uri, {
@@ -119,21 +190,25 @@ const FileSearchBox = React.memo<FileSearchBoxProps>(({
     })
     .then((res: AxiosResponse) => {
       data.current.files = res.data.files
-      data.current.done = true
+      status.current.done = true
       status.current.processing = false
       forceUpdate()
       return
     })
-    .catch((err: AxiosError) => {
-      data.current.done = true
+    .catch((err: Error | AxiosError) => {
       data.current.files = {
         name    : "",
         file    : false,
         children: []
       }
+      status.current.done = true
       status.current.processing = false
       forceUpdate()
-      alert(err.response.data.msg)
+      if (Axios.isAxiosError(err)) {
+        alert(err.response.data.msg)
+      } else {
+        console.log(err)
+      }
       return
     })
   }, [path])
@@ -141,9 +216,9 @@ const FileSearchBox = React.memo<FileSearchBoxProps>(({
   const handleClickView = useCallback((targetValue: string, parentValue: string) => {
     if (onSelect) {
       onSelect("view", Escape.root(parentValue), {
-        search    : data.current.searchtext,
-        data_from : data.current.searchfrom,
-        data_to   : data.current.searchto
+        search    : (data.current.text.enable) ? data.current.text.input : null,
+        data_from : (data.current.from.enable) ? data.current.from.date  : null,
+        data_to   : (data.current.to.enable)   ? data.current.to.date    : null
       })
     }
   }, [onSelect])
@@ -183,7 +258,12 @@ const FileSearchBox = React.memo<FileSearchBoxProps>(({
       }
       return
     })
-    .catch((err: AxiosError) => {
+    .catch((err: Error | AxiosError) => {
+      if (Axios.isAxiosError(err)) {
+        alert(err.response.data.msg)
+      } else {
+        console.log(err)
+      }
       return
     })
   }, [path])
@@ -193,32 +273,71 @@ const FileSearchBox = React.memo<FileSearchBoxProps>(({
       className={ `${ className } text-left text-monospace` }
       head={
         <>
-          { data.current.searchmode === "text" &&
+          <div className="form-row align-items-center mb-2">
+            <SwitchForm
+              ref={ refs.current.text.enable }
+              className="col-3"
+              label="Text"
+              disabled={ !path || !status.current.done }
+              onChange={ handleChangeCheckText }
+            />
             <TextForm
-              ref={ refs.current.text }
-              className="mb-2"
-              label={ <Fonts /> }
-              button={ <Search /> }
-              valid={ data.current.searchable }
-              disabled={ !path || !data.current.done }
+              ref={ refs.current.text.input }
+              className="col-9"
+              label={ null }
+              valid={ !data.current.text.enable || data.current.text.valid }
+              disabled={ !path || !status.current.done || !data.current.text.enable }
               onChange={ handleChangeText }
-              onSubmit={ handleClickSubmit }
-              onSubChange={ handleChangeMode }
             />
-          }
-          { data.current.searchmode === "date" &&
-            <MultiDateForm
-              ref={ refs.current.date }
-              className="mb-2"
-              label={ <Clock /> }
-              button={ <Search /> }
-              valid={ data.current.searchable }
-              disabled={ !path || !data.current.done }
-              onChange={ handleChangeDate }
-              onSubmit={ handleClickSubmit }
-              onSubChange={ handleChangeMode }
+          </div>
+          <div className="form-row align-items-center mb-2">
+            <SwitchForm
+              ref={ refs.current.from.enable }
+              className="col-3"
+              label="From"
+              disabled={ !path || !status.current.done }
+              onChange={ handleChangeCheckFrom }
             />
-          }
+            <DateForm
+              ref={ refs.current.from.date }
+              className="col-9"
+              label={ null }
+              valid={ !data.current.from.enable || data.current.from.valid }
+              disabled={ !path || !status.current.done || !data.current.from.enable }
+              defaultValue={ LocalDate.toInputFormat(data.current.from.date) }
+              onChange={ handleChangeDateFrom }
+            />
+          </div>
+          <div className="form-row align-items-center mb-2">
+            <SwitchForm
+              ref={ refs.current.to.enable }
+              className="col-3"
+              label="To"
+              disabled={ !path || !status.current.done }
+              onChange={ handleChangeCheckTo }
+            />
+            <DateForm
+              ref={ refs.current.to.date }
+              className="col-9"
+              label={ null }
+              valid={ !data.current.to.enable || data.current.to.valid }
+              disabled={ !path || !status.current.done || !data.current.to.enable }
+              defaultValue={ LocalDate.toInputFormat(data.current.to.date) }
+              onChange={ handleChangeDateTo }
+            />
+          </div>
+          <Button
+            className="mb-2"
+            label="Search"
+            LIcon={ Search }
+            disabled={ !path || !status.current.done
+              || (!data.current.text.enable && !data.current.from.enable && !data.current.to.enable)
+              || (data.current.text.enable && !data.current.text.valid)
+              || (data.current.from.enable && !data.current.from.valid)
+              || (data.current.to.enable && !data.current.to.valid)
+            }
+            onClick={ handleClickSubmit }
+          />
         </>
       }
       body={
