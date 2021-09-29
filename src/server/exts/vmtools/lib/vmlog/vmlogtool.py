@@ -7,7 +7,7 @@ from __future__ import print_function
 
 __all__     = ['DecompressBundle', 'GetHostList', 'GetHostInfo', 'GetVmList', 'GetVmInfo', 'GetVmLogPath', 'GetZdumpList' 'GetZdumpInfo']
 __author__  = 'aumezawa'
-__version__ = '0.1.3'
+__version__ = '0.1.4'
 
 
 ################################################################################
@@ -836,12 +836,14 @@ def GetVswitches(dirPath):
     switches = []
     for node in nodes:
         switches.append({
-            'name'      : node.findtext('./value[@name="name"]'),
-            'uplinks'   : sorted(node.findtext('./value[@name="uplinks"]', default='').split(','), key=lambda x: int(re.search(r"[0-9]+", x).group()) if x != '' else 0),
-            'mtu'       : _int(node.findtext('./value[@name="mtu"]')),
-            'balance'   : LoadBalancingPolicies[node.findtext('./effective-teaming-policy/value[@name="teaming-policy"]')],
-            'detection' : 'beacon' if node.findtext('./value[@name="beacon-enabled"]') == 'true' else 'link-down',
-            'failback'  : node.findtext('./effective-teaming-policy/value[@name="rolling-restoration"]') == 'false'
+            'name'          : node.findtext('./value[@name="name"]'),
+            'uplinks'       : sorted(node.findtext('./value[@name="uplinks"]', default='').split(','), key=lambda x: int(re.search(r"[0-9]+", x).group()) if x != '' else 0),
+            'mtu'           : _int(node.findtext('./value[@name="mtu"]')),
+            'balance'       : LoadBalancingPolicies[node.findtext('./effective-teaming-policy/value[@name="teaming-policy"]')],
+            'detection'     : 'beacon' if node.findtext('./value[@name="beacon-enabled"]') == 'true' else 'link-down',
+            'failback'      : node.findtext('./effective-teaming-policy/value[@name="rolling-restoration"]') == 'false',
+            'uplink_order'  : node.findtext('./effective-teaming-policy/value[@name="uplink-order"]'),
+            'uplink_active' : int(node.findtext('./effective-teaming-policy/value[@name="max-active-uplinks"]'))
         })
     switches.sort(key=lambda x: x['name'])
     return switches
@@ -857,9 +859,13 @@ def GetPortgroups(dirPath):
     portgroups = []
     for node in nodes:
         portgroups.append({
-            'name'      : node.findtext('./value[@name="name"]'),
-            'vswitch'   : node.findtext('./value[@name="virtual-switch"]'),
-            'vlan'      : _int(node.findtext('./value[@name="vlan-id"]'))
+            'name'          : node.findtext('./value[@name="name"]'),
+            'vswitch'       : node.findtext('./value[@name="virtual-switch"]'),
+            'vlan'          : _int(node.findtext('./value[@name="vlan-id"]')),
+            'balance'       : LoadBalancingPolicies[node.findtext('./effective-teaming-policy/value[@name="teaming-policy"]')],
+            'failback'      : node.findtext('./effective-teaming-policy/value[@name="rolling-restoration"]') == 'false',
+            'uplink_order'  : node.findtext('./effective-teaming-policy/value[@name="uplink-order"]'),
+            'uplink_active' : int(node.findtext('./effective-teaming-policy/value[@name="max-active-uplinks"]'))
         })
     portgroups.sort(key=lambda x: x['name'])
     return portgroups
