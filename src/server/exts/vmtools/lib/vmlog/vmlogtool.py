@@ -7,7 +7,7 @@ from __future__ import print_function
 
 __all__     = ['DecompressBundle', 'GetHostList', 'GetHostInfo', 'GetVmList', 'GetVmInfo', 'GetVmLogPath', 'GetZdumpList' 'GetZdumpInfo']
 __author__  = 'aumezawa'
-__version__ = '0.1.4'
+__version__ = '0.1.5'
 
 
 ################################################################################
@@ -837,13 +837,13 @@ def GetVswitches(dirPath):
     for node in nodes:
         switches.append({
             'name'          : node.findtext('./value[@name="name"]'),
-            'uplinks'       : sorted(node.findtext('./value[@name="uplinks"]', default='').split(','), key=lambda x: int(re.search(r"[0-9]+", x).group()) if x != '' else 0),
+            'uplink_active' : node.findtext('./effective-teaming-policy/value[@name="uplink-order"]').split(',')[:int(node.findtext('./effective-teaming-policy/value[@name="max-active-uplinks"]'))],
+            'uplink_standby': node.findtext('./effective-teaming-policy/value[@name="uplink-order"]').split(',')[int(node.findtext('./effective-teaming-policy/value[@name="max-active-uplinks"]')):],
+            'uplink_unused' : list(set(node.findtext('./value[@name="uplinks"]').split(',')) ^ set(node.findtext('./effective-teaming-policy/value[@name="uplink-order"]').split(','))),
             'mtu'           : _int(node.findtext('./value[@name="mtu"]')),
             'balance'       : LoadBalancingPolicies[node.findtext('./effective-teaming-policy/value[@name="teaming-policy"]')],
             'detection'     : 'beacon' if node.findtext('./value[@name="beacon-enabled"]') == 'true' else 'link-down',
-            'failback'      : node.findtext('./effective-teaming-policy/value[@name="rolling-restoration"]') == 'false',
-            'uplink_order'  : node.findtext('./effective-teaming-policy/value[@name="uplink-order"]'),
-            'uplink_active' : int(node.findtext('./effective-teaming-policy/value[@name="max-active-uplinks"]'))
+            'failback'      : node.findtext('./effective-teaming-policy/value[@name="rolling-restoration"]') == 'false'
         })
     switches.sort(key=lambda x: x['name'])
     return switches
@@ -856,16 +856,24 @@ def GetPortgroups(dirPath):
     if nodes is None:
         return []
     #
+    xpath    = './network-info/virtual-switch-info/virtual-switches/virtual-switch'
+    switches = GetXmlNode(filePath, xpath, multi=True)
+    #
     portgroups = []
     for node in nodes:
+        uplinks = 'unknown'
+        for switch in switches:
+            if switch.findtext('./value[@name="name"]') == node.findtext('./value[@name="virtual-switch"]'):
+                uplinks = switch.findtext('./value[@name="uplinks"]')
         portgroups.append({
             'name'          : node.findtext('./value[@name="name"]'),
             'vswitch'       : node.findtext('./value[@name="virtual-switch"]'),
             'vlan'          : _int(node.findtext('./value[@name="vlan-id"]')),
+            'uplink_active' : node.findtext('./effective-teaming-policy/value[@name="uplink-order"]').split(',')[:int(node.findtext('./effective-teaming-policy/value[@name="max-active-uplinks"]'))],
+            'uplink_standby': node.findtext('./effective-teaming-policy/value[@name="uplink-order"]').split(',')[int(node.findtext('./effective-teaming-policy/value[@name="max-active-uplinks"]')):],
+            'uplink_unused' : list(set(uplinks.split(',')) ^ set(node.findtext('./effective-teaming-policy/value[@name="uplink-order"]').split(','))),
             'balance'       : LoadBalancingPolicies[node.findtext('./effective-teaming-policy/value[@name="teaming-policy"]')],
-            'failback'      : node.findtext('./effective-teaming-policy/value[@name="rolling-restoration"]') == 'false',
-            'uplink_order'  : node.findtext('./effective-teaming-policy/value[@name="uplink-order"]'),
-            'uplink_active' : int(node.findtext('./effective-teaming-policy/value[@name="max-active-uplinks"]'))
+            'failback'      : node.findtext('./effective-teaming-policy/value[@name="rolling-restoration"]') == 'false'
         })
     portgroups.sort(key=lambda x: x['name'])
     return portgroups

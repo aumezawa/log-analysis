@@ -91,23 +91,24 @@ type HostNicInfo = {
 
 type VirtualSwitchInfo = {
   name          : string,
-  uplinks       : Array<string>,
+  uplink_active : Array<string>,
+  uplink_standby: Array<string>,
+  uplink_unused : Array<string>,
   mtu           : number,
   balance       : string,
   detection     : string,
-  failback      : boolean,
-  uplink_order  : string,
-  uplink_active : number
+  failback      : boolean
 }
 
 type PortgroupInfo = {
   name          : string,
   vswitch       : string,
   vlan          : number,
+  uplink_active : Array<string>,
+  uplink_standby: Array<string>,
+  uplink_unused : Array<string>,
   balance       : string,
-  failback      : boolean,
-  uplink_order  : string,
-  uplink_active : number
+  failback      : boolean
 }
 
 type VMKernelNicInfo = {
