@@ -14,15 +14,17 @@ import Message from "../parts/message"
 import MultiTextForm from "../sets/multi-text-form"
 
 type ProjectCreateModalProps = {
-  id      : string,
-  domain? : string
+  id        : string,
+  domain?   : string,
+  onSubmit? : (projectName: string) => void
 }
 
 const defaultMessage = `Please input a new project "name" and "description". (characters with [0-9a-zA-Z#@_+-])`
 
 const ProjectCreateModal = React.memo<ProjectCreateModalProps>(({
-  id      = null,
-  domain  = null
+  id        = null,
+  domain    = null,
+  onSubmit  = undefined
 }) => {
   const [ignored, forceUpdate] = useReducer(x => x + 1, 0)
   const [formKey, clearFrom]   = useReducer(x => x + 1, 0)
@@ -57,7 +59,11 @@ const ProjectCreateModal = React.memo<ProjectCreateModalProps>(({
       data.current.message = res.data.msg
       status.current.done = true
       status.current.success = true
+      if (onSubmit) {
+        onSubmit(name)
+      }
       clearFrom()
+      return
     })
     .catch((err: Error | AxiosError) => {
       if (Axios.isAxiosError(err)) {
@@ -69,8 +75,9 @@ const ProjectCreateModal = React.memo<ProjectCreateModalProps>(({
       status.current.done = true
       status.current.success = false
       forceUpdate()
+      return
     })
-  }, [domain])
+  }, [domain, onSubmit])
 
   const handleCancel = useCallback(() => {
     data.current.message = defaultMessage

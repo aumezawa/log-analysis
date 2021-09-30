@@ -310,10 +310,12 @@ router.route("/:domain/projects/:projectName/bundles")
     }
 
     return Project.registerBundleResource(req.token.usr, req.domain, req.project, req.file.originalname, req.body.description || "")
-    .then(() => {
+    .then((bundleInfo: BundleInfo) => {
       // Created
       return res.status(201).location(`${ req.protocol }://${ req.headers.host }${ req.path }/`).json({
-        msg: `bundle: ${ req.file.originalname } was uploaded and was decompressed successfully.`
+        msg : `bundle: ${ req.file.originalname } was uploaded and was decompressed successfully.`,
+        id  : bundleInfo.id,
+        name: bundleInfo.name
       })
     })
     .catch((err: any) => {

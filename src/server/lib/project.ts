@@ -675,13 +675,14 @@ export function existsBundleName(user: string, domain: string, project: string, 
   })
 }
 
-export function registerBundleResource(user: string, domain: string, project: string, bundleTgz: string, description?: string): Promise<void> {
-  return new Promise<void>((resolve: () => void, reject: (err?: any) => void) => {
+export function registerBundleResource(user: string, domain: string, project: string, bundleTgz: string, description?: string): Promise<BundleInfo> {
+  return new Promise<BundleInfo>((resolve: (bundle: BundleInfo) => void, reject: (err?: any) => void) => {
     return setImmediate(() => {
       const bundlePath: string = joinResourcePathSync(getProjectResourcePathSync(user, domain, project), bundleTgz)
       let bundleId: string
       let bundleName: string
       let bundleMTime: string
+      let bundleInfo: BundleInfo
 
       return extractBundleInfo(bundlePath)
       .then((fileInfo: FileInfo) => {
@@ -697,13 +698,14 @@ export function registerBundleResource(user: string, domain: string, project: st
       })
       .then((projectInfo: ProjectInfo) => {
         bundleId = String(projectInfo.index++)
-        projectInfo.bundles.push({
+        bundleInfo = {
           id          : Number(bundleId),
           name        : bundleName,
           description : description || "",
           date        : bundleMTime,
           available   : false
-        })
+        }
+        projectInfo.bundles.push(bundleInfo)
         return updateProjectInfo(user, domain, project, projectInfo)
       })
       .then(() => {
@@ -731,7 +733,7 @@ export function registerBundleResource(user: string, domain: string, project: st
         return Atomic.unlock(getProjectInfoPathSync(user, domain, project))
       })
       .then(() => {
-        return resolve()
+        return resolve(bundleInfo)
       })
       .catch((err: any) => {
         return Atomic.unlock(getProjectInfoPathSync(user, domain, project))
