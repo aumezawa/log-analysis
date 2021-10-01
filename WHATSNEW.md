@@ -1,3 +1,16 @@
+Version: **0.15.0** [2021/10/01]
+
+New Features:
+  - Supported temporary marking and filter on viewer
+
+Enhanced Features:
+  - Supported to automatically open project or log bundle after creating or uploading
+
+Bug Fixes:
+  - Vulnerary modules
+
+***
+
 Version: **0.14.0** [2021/09/29]
 
 New Features:

@@ -171,6 +171,7 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
       <ProjectCreateModal
         id={ id.current.projectCreate }
         domain={ domain }
+        onSubmit={ handleChangeProject }
       />
       <ProjectSelectModal
         id={ id.current.projectSelect }
@@ -184,6 +185,7 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
         id={ id.current.bundleUpload }
         domain={ domain }
         project={ project }
+        onSubmit={ handleChangeBundle }
       />
       <BundleSelectModal
         id={ id.current.bundleSelect }
@@ -256,6 +258,7 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
                 disabled={ !domain || !project }
                 toggle="modal"
                 target={ id.current.bundleUpload }
+                onClick={ handleClickOpenBundle }
               />
             <Dot />
           </>

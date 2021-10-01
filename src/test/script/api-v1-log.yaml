@@ -91,6 +91,8 @@ main:
       description:      Automatic Web API Test Bundle
     response:
       msg:              "bundle: log-bundle-test-0001.tgz was uploaded and was decompressed successfully."
+      id:               0
+      name:             log-bundle-test-0001
 
   - method:             GET
     path:               /api/v1/log/public/projects/Regression Test/bundles
