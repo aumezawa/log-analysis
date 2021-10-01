@@ -191,10 +191,10 @@ Access with your browser or issue HTTP requests.
   - method: `POST`
   - header: `{ X-Access-Token: <string>, Content-Type: multipart/form-data }`
   - path: `/api/v1/log/:domain/projects/:projectName/bundles`
-  - body: `{ bundle: <object>. name: <string>, description?: <string> }`
+  - body: `{ bundle: <object>, description?: <string> }`
 - response
   - header: `{ Location: <URL> }`
-  - data: `{ msg: <string> }`
+  - data: `{ msg: <string>, id: <number>, name: <string> }`
 
 
 ### Get a Bundle Name and Description

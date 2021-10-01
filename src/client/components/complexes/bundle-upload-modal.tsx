@@ -15,17 +15,19 @@ import ProgressBar from "../parts/progress-bar"
 import FileUploadForm from "../sets/file-upload-form"
 
 type BundleUploadBoxProps = {
-  id      : string,
-  domain? : string
-  project?: string,
+  id        : string,
+  domain?   : string
+  project?  : string,
+  onSubmit? : (bundleId: string, bundleName: string) => void
 }
 
 const defaultMessage = `Please select a upload file (.tgz) and input a bundle "description".`
 
 const BundleUploadBox = React.memo<BundleUploadBoxProps>(({
-  id      = null,
-  domain  = null,
-  project = null
+  id        = null,
+  domain    = null,
+  project   = null,
+  onSubmit  = undefined
 }) => {
   const [ignored, forceUpdate]  = useReducer(x => x + 1, 0)
   const [formKey, clearFrom]    = useReducer(x => x + 1, 0)
@@ -77,6 +79,9 @@ const BundleUploadBox = React.memo<BundleUploadBoxProps>(({
       status.current.done = true
       status.current.success = true
       status.current.progress = 0
+      if (onSubmit) {
+        onSubmit(String(res.data.id), res.data.name)
+      }
       clearFrom()
       return
     })
@@ -94,7 +99,7 @@ const BundleUploadBox = React.memo<BundleUploadBoxProps>(({
       clearFrom()
       return
     })
-  }, [domain, project])
+  }, [domain, project, onSubmit])
 
   const handleCancel = useCallback(() => {
     data.current.message = defaultMessage
