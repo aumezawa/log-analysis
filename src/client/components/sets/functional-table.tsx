@@ -1,7 +1,7 @@
 import * as React from "react"
 import { useEffect, useRef, useCallback, useReducer } from "react"
 
-import { Clock, Download, Hash, ListOl, Reply, Search } from "react-bootstrap-icons"
+import { BookmarkCheck, BookmarkX, Clock, Download, Hash, ListOl, Reply, Search } from "react-bootstrap-icons"
 
 import ModalFrame from "../frames/modal-frame"
 import TextFilterForm from "../sets/text-filter-form"
@@ -71,6 +71,7 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
     maxRow    : DEFAULT_ROW,
     rows      : 0,
     line      : 1,
+    mark      : [],
     label     : null,
     filters   : {} as FilterSettings,
     localtime : false,
@@ -87,6 +88,7 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
       env.current.format = Object.keys(content.format.label).includes("Date") ? "date" : "plain"
       env.current.line = (line > 0) ? line : 1
       env.current.maxRow = DEFAULT_ROW
+      env.current.mark = []
       env.current.label = null
       env.current.page = Math.ceil(env.current.line / env.current.maxRow)
       env.current.filters = {} as FilterSettings
@@ -238,6 +240,14 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
     */
   }, [onChangeLine])
 
+  const handleDoubleClickContent = useCallback((e: React.MouseEvent<HTMLTableCellElement>) => {
+    env.current.line = Number((e.currentTarget.parentNode as HTMLElement).title)
+    handleClickMark()
+    if (onChangeLine) {
+      onChangeLine(env.current.line)
+    }
+  }, [onChangeLine])
+
   const handleChangeMaxRow = useCallback((value: string) => {
     env.current.maxRow = Number(value)
     env.current.page = Object.keys(env.current.filters).length ? 1 : Math.ceil(env.current.line / env.current.maxRow)
@@ -271,6 +281,16 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
       onClickReload(env.current.format === "date" ? "plain" : "date")
     }
   }, [onClickReload])
+
+  const handleClickMark = useCallback(() => {
+    if (env.current.mark.includes(env.current.line)) {
+      env.current.mark = env.current.mark.filter((e: number) => (e != env.current.line))
+    } else {
+      env.current.mark.push(env.current.line)
+      env.current.mark.sort()
+    }
+    forceUpdate()
+  }, [true])
 
   const handleClickDownload = useCallback(() => {
     const textFilter  = env.current.filters["Content"]
@@ -346,6 +366,7 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
               title=""
               className={ `${ (label === content.format.contentKey) ? "table-main-content" : "table-sub-content" }` }
               onClick={ handleClickContent }
+              onDoubleClick={ handleDoubleClickContent }
             >
               { (env.current.localtime && label === "Date") ? convertToLocalTime(datum) : highlight(datum, label) }
             </td>
@@ -354,7 +375,10 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
         return (
           <tr
             key={ "row" + index }
-            className={ `${ index + 1 === env.current.line ? "table-success" : "" }` }
+            className={ `${
+              env.current.mark.includes(index + 1) ? "table-warning" :
+              (index + 1 === env.current.line)     ? "table-success" : ""
+            }` }
             title={ `${ index + 1 }` }
           >
             { row }
@@ -529,6 +553,14 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
           disabled={ !!Object.keys(env.current.filters).length }
           onChange={ handleChangeLine }
           onSubmit={ handleClickGoToLine }
+        />
+        <Button
+          className="flex-area-center"
+          label={ env.current.mark.includes(env.current.line) ? "unmark"  : "mark" }
+          LIcon={ env.current.mark.includes(env.current.line) ? BookmarkX : BookmarkCheck }
+          type="btn-outline"
+          color="secondary"
+          onClick={ handleClickMark }
         />
         <Button
           className="flex-area-right"
