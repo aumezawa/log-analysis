@@ -27,5 +27,7 @@ type FilterSetting = {
   sensitive?    : boolean,
   condition?    : string,
   from?         : Date,
-  to?           : Date
+  to?           : Date,
+  head?         : number,
+  tail?         : number
 }

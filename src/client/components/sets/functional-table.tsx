@@ -1,7 +1,7 @@
 import * as React from "react"
 import { useEffect, useRef, useCallback, useReducer } from "react"
 
-import { BookmarkCheck, BookmarkX, Clock, Download, Hash, ListOl, Reply, Search } from "react-bootstrap-icons"
+import { BookmarkCheck, BookmarkX, BookmarksFill, Clock, Download, FunnelFill, Hash, ListOl, Reply } from "react-bootstrap-icons"
 
 import ModalFrame from "../frames/modal-frame"
 import TextFilterForm from "../sets/text-filter-form"
@@ -147,6 +147,20 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
       ref.current.parent.current.scrollTo(0, offsetTop)
     }, 0)
   }
+
+  const handleClickMarkFilter = useCallback(() => {
+    if ("Mark" in env.current.filters) {
+      delete env.current.filters["Mark"]
+    } else {
+      env.current.filters["Mark"] = {
+        type  : "mark",
+        mode  : "head-to-tail",
+        head  : env.current.mark[0],
+        tail  : env.current.mark.slice(-1)[0]
+      }
+    }
+    forceUpdate()
+  }, [true])
 
   const handleClickFilter = useCallback((targetValue: string, parentValue: string) => {
     env.current.label = parentValue
@@ -309,14 +323,24 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
       let header: Array<JSX.Element> = []
       if (content.format.hasHeader) {
         if (content.format.hasIndex) {
-          header.push(<th key="index" scope="col" className="text-right">#</th>)
+          header.push(
+            <th key="index" scope="col" className="text-right">
+              #
+              <EmbeddedIconButton
+                LIcon={ BookmarksFill }
+                color={ ("Mark" in env.current.filters) ? "success" : "light" }
+                disabled={ env.current.mark.length < 2 && !("Mark" in env.current.filters) }
+                onClick={ handleClickMarkFilter }
+              />
+            </th>
+          )
         }
         for (let label in content.format.label) {
           header.push(
             <th key={ label } scope="col" title={ label }>
               { label }
               <EmbeddedIconButton
-                LIcon={ Search }
+                LIcon={ FunnelFill }
                 color={ (label in env.current.filters) ? "success" : "light" }
                 toggle="modal"
                 target={ content.format.label[label] === "text" ? id.current.textFilter : id.current.dateFilter }
@@ -345,7 +369,7 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
       env.current.rows = 0
       return content.data.map((datum: TableData, index: number) => {
         for (let label in content.format.label) {
-          if (!isFiltered(datum, label)) {
+          if (!isFiltered(datum, label) || !isMarkFiltered(index + 1)) {
             return
           }
         }
@@ -388,6 +412,22 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
     } else {
       return <tr><td className="text-center">{ "No content" }</td></tr>
     }
+  }
+
+  const isMarkFiltered = (index: number) => {
+    if (!("Mark" in env.current.filters)) {
+      return true
+    }
+
+    if (index < env.current.filters["Mark"].head) {
+      return false
+    }
+
+    if (index > env.current.filters["Mark"].tail) {
+      return false
+    }
+
+    return true
   }
 
   const isFiltered = (datum: TableData, label: string) => {
