@@ -393,5 +393,6 @@ Access with your browser or issue HTTP requests.
   - method: `GET`
   - header: `{ X-Access-Token: <string> }`
   - path: `/api/v1/log/:domain/projects/:projectName/bundles/:bundleId/zdumps/:dumpName`
+  - query: `{ gzip: true | false }`
 - response
-  - data: `{ msg: <string>, zdump: <ZdumpInfo> }`
+  - data: `{ msg: <string>, zdump: <ZdumpInfo>, compression: <string> }`

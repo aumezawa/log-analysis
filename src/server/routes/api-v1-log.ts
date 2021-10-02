@@ -187,12 +187,14 @@ router.route("/:domain/projects/:projectName/bundles/:bundleId/vms")
 
 router.route("/:domain/projects/:projectName/bundles/:bundleId/zdumps/:dumpName")
 .get((req: Request, res: Response, next: NextFunction) => {
-  return Project.getZdumpInfo(req.token.usr, req.domain, req.project, req.bundleId, req.params.dumpName)
-  .then((zdumpInfo: ZdumpInfo) => {
+  const gzip = (typeof(req.query.gzip) === "string") ? (req.query.gzip === "true" ? true : false) : false
+  return Project.getZdumpInfo(req.token.usr, req.domain, req.project, req.bundleId, req.params.dumpName, gzip)
+  .then((zdumpInfo: ZdumpInfo | Buffer) => {
     // OK
     return res.status(200).json({
       msg: "You get a virtual machine information.",
-      zdump: zdumpInfo
+      zdump: zdumpInfo,
+      compression: `${ gzip ? "gzip" : "none" }`
     })
   })
   .catch((err: any) => {

@@ -7,6 +7,7 @@ import Axios from "axios"
 import { AxiosResponse, AxiosError } from "axios"
 
 import * as Cookie from "js-cookie"
+import * as Zlib from "zlib"
 
 import Environment from "../../../lib/environment"
 import ProjectPath from "../../../lib/project-path"
@@ -39,7 +40,7 @@ const ZdumpInfoBox = React.memo<ZdumpInfoBoxProps>(({
 
   useEffect(() => {
     if (domain && project && bundle && zdump) {
-      const uri = `${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project, bundle) }/zdumps/${ zdump }`
+      const uri = `${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project, bundle) }/zdumps/${ zdump }?gzip=true`
       status.current.progress = true
       zdumpInfo.current = null
       forceUpdate()
@@ -48,8 +49,12 @@ const ZdumpInfoBox = React.memo<ZdumpInfoBoxProps>(({
         data    : {}
       })
       .then((res: AxiosResponse) => {
+        if (res.data.compression === "gzip" && res.data.zdump.type === "Buffer") {
+          zdumpInfo.current = JSON.parse(Zlib.gunzipSync(Buffer.from(res.data.zdump.data)).toString("utf8"))
+        } else {
+          zdumpInfo.current = res.data.zdump
+        }
         status.current.progress = false
-        zdumpInfo.current = res.data.zdump
         forceUpdate()
         return
       })

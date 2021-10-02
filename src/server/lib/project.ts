@@ -1013,13 +1013,17 @@ export function getZdumpList(user: string, domain: string, project: string, bund
   })
 }
 
-export function getZdumpInfo(user: string, domain: string, project: string, bundleId: string, host: string): Promise<ZdumpInfo> {
-  return new Promise<ZdumpInfo>((resolve: (zdumpInfo: ZdumpInfo) => void, reject: (err?: any) => void) => {
+export function getZdumpInfo(user: string, domain: string, project: string, bundleId: string, zdump: string, gzip: boolean = false): Promise<ZdumpInfo | Buffer> {
+  return new Promise<ZdumpInfo | Buffer>((resolve: (zdumpInfo: ZdumpInfo | Buffer) => void, reject: (err?: any) => void) => {
     return setImmediate(() => {
       let err = new Error(`vmtools: An internal error occurred.`)
       err.name = "Internal"
-      const zdumpInfo = Vmtools.getZdumpInfoSync(getBundleResourcePathSync(user, domain, project, bundleId), host)
-      return zdumpInfo ? resolve(zdumpInfo) : reject(err)
+      const zdumpInfo = Vmtools.getZdumpInfoSync(getBundleResourcePathSync(user, domain, project, bundleId), zdump)
+      if (gzip) {
+        return zdumpInfo ? resolve(zlib.gzipSync(Buffer.from(JSON.stringify(zdumpInfo), "utf8"))) : reject(err)
+      } else {
+        return zdumpInfo ? resolve(zdumpInfo) : reject(err)
+      }
     })
   })
 }
