@@ -218,7 +218,10 @@ export function decompressTgzSync(file: string, cwd: string, preserve?: boolean)
     sync: true
   }, undefined)
 
-  if (!preserve) {
+  if (preserve) {
+    const fileInfo = extractRootTgzSync(file, cwd)
+    fs.renameSync(path.join(cwd, file), path.join(cwd, fileInfo.name + ".tgz"))
+  } else {
     rmRecursiveSync(path.join(cwd, file))
   }
 }

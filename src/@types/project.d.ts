@@ -13,7 +13,8 @@ type BundleInfo = {
   name        : string,
   description : string,
   date?       : string,  // collected date
-  available   : boolean
+  available   : boolean,
+  preserved?  : boolean
 }
 
 type FileInfo = {
