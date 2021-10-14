@@ -3,38 +3,43 @@ import { useState, useRef, useCallback, useImperativeHandle } from "react"
 
 import FileForm from "../parts/file-form"
 import TextForm from "../parts/text-form"
+import CheckForm from "../parts/check-form"
 import ButtonSet from "../sets/button-set"
 
 type FileUploadFormProps = {
-  className?: string,
-  auxiliary?: string,
-  disabled? : boolean,
-  button?   : string,
-  accept?   : string,
-  onSubmit? : (name: string, obj: any, description: string) => void,
-  onCancel? : () => void
+  className?  : string,
+  auxiliary?  : string,
+  disabled?   : boolean,
+  button?     : string,
+  accept?     : string,
+  preservable?: boolean,
+  onSubmit?   : (name: string, obj: any, description: string, preserve?: boolean) => void,
+  onCancel?   : () => void
 }
 
 const FileUploadForm = React.memo<FileUploadFormProps>(({
-  className = "",
-  auxiliary = null,
-  disabled  = false,
-  button    = "Upload",
-  accept    = null,
-  onSubmit  = undefined,
-  onCancel  = undefined
+  className   = "",
+  auxiliary   = null,
+  disabled    = false,
+  button      = "Upload",
+  accept      = null,
+  preservable = false,
+  onSubmit    = undefined,
+  onCancel    = undefined
 }) => {
   const [valid, setValid] = useState<boolean>(false)
 
   const refs = useRef({
     file: React.createRef<HTMLInputElement>(),
-    aux : React.createRef<HTMLInputElement>()
+    aux : React.createRef<HTMLInputElement>(),
+    prs : React.createRef<HTMLInputElement>()
   })
 
   const data = useRef({
     name: "",
     obj : null,
-    aux : ""
+    aux : "",
+    prs : false
   })
 
   const handleChangeFile = useCallback((name: string, obj: any) => {
@@ -47,16 +52,21 @@ const FileUploadForm = React.memo<FileUploadFormProps>(({
     data.current.aux = value
   }, [true])
 
+  const handleChangePreserved = useCallback((value: boolean) => {
+    data.current.prs = value
+  }, [true])
+
   const handleSubmit = useCallback(() => {
     if (onSubmit) {
-      onSubmit(data.current.name, data.current.obj, data.current.aux)
+      onSubmit(data.current.name, data.current.obj, data.current.aux, data.current.prs)
     }
   }, [onSubmit])
 
   const handleCancel = useCallback(() => {
-    data.current.name = refs.current.file.current.value = ""
+    data.current.name = refs.current.file.current.value  = ""
     data.current.obj  = null
-    data.current.aux  = refs.current.aux.current.value  = ""
+    data.current.aux  = refs.current.aux.current.value   = ""
+    data.current.prs  = refs.current.prs.current.checked = false
     setValid(false)
     if (onCancel) {
       onCancel()
@@ -82,6 +92,16 @@ const FileUploadForm = React.memo<FileUploadFormProps>(({
           label={ auxiliary }
           disabled={ disabled }
           onChange={ handleChangeDescription }
+        />
+      }
+      {
+        preservable &&
+        <CheckForm
+          ref={ refs.current.prs }
+          className="mb-3"
+          label="Preserve the original file"
+          defaultChecked={ false }
+          onChange={ handleChangePreserved }
         />
       }
       <ButtonSet

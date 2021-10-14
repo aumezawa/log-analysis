@@ -28,6 +28,8 @@ function execVmtoolsSync(node: string, mode: string, type?: string, target?: str
     options[4]  = (target === "LIST") ? "LIST"
                 : target
     options[5]  = "-c"
+  } else if (mode === "decomp" && type === "preserve") {
+    options[3]  = "-p"
   } else if (mode === "report") {
     options[3]  = "-c"
   }
@@ -57,8 +59,8 @@ function execVmtoolsSync(node: string, mode: string, type?: string, target?: str
   }
 }
 
-export function decompressBundleSync(file: string): boolean {
-  const result = execVmtoolsSync(file, "decomp")
+export function decompressBundleSync(file: string, preserve: boolean = false): boolean {
+  const result = execVmtoolsSync(file, "decomp", preserve ? "preserve" : "none")
   return (result !== null) ? true : false
 }
 

@@ -212,16 +212,20 @@ function compressBundle(directory: string): Promise<void> {
   })
 }
 
-function decompressBundleSync(file: string, option?: string): boolean {
+function decompressBundleSync(file: string, option?: string, preserve: boolean = false): boolean {
   if (option === "vmtools") {
-    const result = Vmtools.decompressBundleSync(file)
+    const result = Vmtools.decompressBundleSync(file, preserve)
     if (result) {
       logger.info(`${ file } was decompressed successfully.`)
+    }
+    if (preserve) {
+      const fileInfo = FSTool.extractRootTgzSync(path.basename(file), path.dirname(file))
+      fs.renameSync(file, path.join(path.dirname(file), fileInfo.name + ".tgz"))
     }
     return result
   } else {
     try {
-      FSTool.decompressTgzSync(path.basename(file), path.dirname(file), false)
+      FSTool.decompressTgzSync(path.basename(file), path.dirname(file), preserve)
       logger.info(`${ file } was decompressed successfully.`)
       return true
     } catch (err) {
@@ -231,12 +235,12 @@ function decompressBundleSync(file: string, option?: string): boolean {
   }
 }
 
-function decompressBundle(file: string, option?: string): Promise<void> {
+function decompressBundle(file: string, option?: string, preserve: boolean = false): Promise<void> {
   return new Promise<void>((resolve: () => void, reject: (err? :any) => void) => {
     return setImmediate(() => {
       let err = new Error(`Resource: ${ file } cloudn't be decompressed.`)
       err.name = "Internal"
-      return decompressBundleSync(file, option) ? resolve() : reject(err)
+      return decompressBundleSync(file, option, preserve) ? resolve() : reject(err)
     })
   })
 }
@@ -288,6 +292,15 @@ function getFileContent(file: string): Promise<string> {
       return (content !== null) ? resolve(content) : reject(err)
     })
   })
+}
+
+function getBinaryFileContentSync(file: string): Buffer {
+  try {
+    return fs.readFileSync(file, null)
+  } catch (err) {
+    (err instanceof Error) && logger.error(`${ err.name }: ${ err.message }`)
+    return null
+  }
 }
 
 function getFileContentHeadSync(file: string): string {
@@ -409,9 +422,16 @@ export function validateProjectResource(user: string, domain: string, project: s
 function getProjectInfoSync(user: string, domain: string, project: string): ProjectInfo {
   try {
     const projectInfo = readObjectDataSync(getProjectInfoPathSync(user, domain, project)) as ProjectInfo
-    (projectInfo.status === undefined) && (projectInfo.status = "open")
+    if (projectInfo.status === undefined) {
+      projectInfo.status = "open"
+    }
     projectInfo.bundles = projectInfo.bundles.map((bundleInfo: BundleInfo) => {
-      (bundleInfo.date === undefined) && (bundleInfo.date = new Date().toISOString())
+      if (bundleInfo.date === undefined) {
+        bundleInfo.date = new Date().toISOString()
+      }
+      if (bundleInfo.preserved === undefined) {
+        bundleInfo.preserved = false
+      }
       return bundleInfo
     })
     return projectInfo
@@ -685,7 +705,7 @@ export function existsBundleName(user: string, domain: string, project: string, 
   })
 }
 
-export function registerBundleResource(user: string, domain: string, project: string, bundleTgz: string, description?: string): Promise<BundleInfo> {
+export function registerBundleResource(user: string, domain: string, project: string, bundleTgz: string, description: string = "", preserve: boolean = false): Promise<BundleInfo> {
   return new Promise<BundleInfo>((resolve: (bundle: BundleInfo) => void, reject: (err?: any) => void) => {
     return setImmediate(() => {
       const bundlePath: string = joinResourcePathSync(getProjectResourcePathSync(user, domain, project), bundleTgz)
@@ -711,9 +731,10 @@ export function registerBundleResource(user: string, domain: string, project: st
         bundleInfo = {
           id          : Number(bundleId),
           name        : bundleName,
-          description : description || "",
+          description : description,
           date        : bundleMTime,
-          available   : false
+          available   : false,
+          preserved   : preserve
         }
         projectInfo.bundles.push(bundleInfo)
         return updateProjectInfo(user, domain, project, projectInfo)
@@ -722,7 +743,7 @@ export function registerBundleResource(user: string, domain: string, project: st
         return Atomic.unlock(getProjectInfoPathSync(user, domain, project))
       })
       .then(() => {
-        return decompressBundle(bundlePath, "vmtools")
+        return decompressBundle(bundlePath, "vmtools", preserve)
       })
       .then(() => {
         return Atomic.lock(getProjectInfoPathSync(user, domain, project))
@@ -815,6 +836,33 @@ export function deleteBundleResource(user: string, domain: string, project: stri
       })
     })
   })
+}
+
+export function getOriginalBundleInfo(user: string, domain: string, project: string, bundleId: string): Promise<FileInfo> {
+  return new Promise<FileInfo>((resolve: (fileInfo: FileInfo) => void, reject: (err?: any) => void) => {
+    return setImmediate(() => {
+      return getBundleInfo(user, domain, project, bundleId)
+      .then((bundleInfo: BundleInfo) => {
+        if (bundleInfo.preserved) {
+          let err = new Error(`bundle: The original bundle of ${ bundleInfo.name } is not existed.`)
+          err.name = "External"
+          const fileInfo = getFileStatSync(joinResourcePathSync(getProjectResourcePathSync(user, domain, project), bundleInfo.name + ".tgz"))
+          return (fileInfo !== null) ? resolve(fileInfo) : reject(err)
+        } else {
+          let err = new Error(`bundle: The original bundle of ${ bundleInfo.name } is not preserved.`)
+          err.name = "External"
+          return reject(err)
+        }
+      })
+      .catch((err: any) => {
+        return reject(err)
+      })
+    })
+  })
+}
+
+export function getOriginalBundleContentSync(user: string, domain: string, project: string, bundleName: string): Buffer {
+  return getBinaryFileContentSync(joinResourcePathSync(getProjectResourcePathSync(user, domain, project), bundleName))
 }
 
 //--- File Functions

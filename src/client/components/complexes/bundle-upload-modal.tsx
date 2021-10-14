@@ -52,11 +52,12 @@ const BundleUploadBox = React.memo<BundleUploadBoxProps>(({
     clearFrom()
   }, [true])
 
-  const handleSubmit = useCallback((name: string, obj: any, description: string) => {
+  const handleSubmit = useCallback((name: string, obj: any, description: string, preserve: boolean) => {
     const uri = `${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project) }/bundles`
     const params = new FormData()
     params.append("bundle", obj)
     params.append("description", description)
+    params.append("preserve", String(preserve))
 
     data.current.message = "Please wait for uploading the bundle."
     status.current.processing = true
@@ -134,6 +135,7 @@ const BundleUploadBox = React.memo<BundleUploadBoxProps>(({
             auxiliary="description"
             disabled={ !domain || !project || status.current.processing }
             accept=".tgz"
+            preservable={ true }
             onSubmit={ handleSubmit }
             onCancel={ handleCancel }
           />

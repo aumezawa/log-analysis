@@ -7,7 +7,7 @@ from __future__ import print_function
 
 __all__     = []
 __author__  = 'aumezawa'
-__version__ = '0.1.3'
+__version__ = '0.1.4'
 
 
 ################################################################################
@@ -149,6 +149,11 @@ def GetArgs():
         help='set file path of log bundle (.tgz)',
         metavar='<FILEPATH>'
     )
+    group_decomp.add_argument('-p', '--preserve',
+        action='store_true',
+        default=False,
+        help='preserve the original log bundle (optional)',
+    )
     #
     args = parser.parse_args()
     return (args, parser)
@@ -253,7 +258,7 @@ if __name__ == '__main__':
                 sys.exit(RET_NO_FILE)
             #
             logger.info('Decompress log bundle. - %s' % args.file)
-            bundlePath = vmlogtool.DecompressBundle(args.file)
+            bundlePath = vmlogtool.DecompressBundle(args.file, preserveOriginalFile=args.preserve)
             printResult({'msg': 'Succeeded.', 'path': bundlePath})
             logger.info('Succeeded.')
             sys.exit(RET_NORMAL_END)

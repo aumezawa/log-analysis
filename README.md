@@ -182,7 +182,7 @@ Access with your browser or issue HTTP requests.
   - header: `{ X-Access-Token: <string> }`
   - path: `/api/v1/log/:domain/projects/:projectName/bundles`
 - response
-  - data: `{ msg: <string>, projects: [{ id: <number>, name: <string>, description: <string>, available: <boolean> }] }`
+  - data: `{ msg: <string>, projects: [{ id: <number>, name: <string>, description: <string>, available: <boolean>, preserved: <boolean> }] }`
 
 
 ### Upload a Bundle
@@ -204,7 +204,7 @@ Access with your browser or issue HTTP requests.
   - header: `{ X-Access-Token: <string> }`
   - path: `/api/v1/log/:domain/projects/:projectName/bundles/:bundleId`
 - response
-  - data: `{ msg: <string>, name:<string>, description: <string>, date: <string> }`
+  - data: `{ msg: <string>, name:<string>, description: <string>, date: <string>, preserved: <boolean> }`
 
 
 ### Update a Bundle Description

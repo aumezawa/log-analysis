@@ -461,23 +461,47 @@ router.route("/:domain/projects/:projectName/bundles/:bundleId/files")
 
 router.route("/:domain/projects/:projectName/bundles/:bundleId")
 .get((req: Request, res: Response, next: NextFunction) => {
-  return Project.getBundleInfo(req.token.usr, req.domain, req.project, req.bundleId)
-  .then((bundleInfo: BundleInfo) => {
-    // OK
-    return res.status(200).json({
-      msg: `You get a bundle name and description of bundle ID = ${ req.bundleId }.`,
-      name: bundleInfo.name,
-      description: bundleInfo.description,
-      date: bundleInfo.date
+  if (req.query.mode && req.query.mode === "download") {
+    return Project.getOriginalBundleInfo(req.token.usr, req.domain, req.project, req.bundleId)
+    .then((fileInfo: FileInfo) => {
+      // OK
+      return res.status(200)
+        .set({
+          "Content-Disposition" : `attachment; filename="${ fileInfo.name }"`,
+          "Accept-Ranges"       : "bytes",
+          "Cache-Control"       : "public, max-age=0",
+          "Last-Modified"       : `${ fileInfo.mtime }`,
+          "Content-Type"        : "application/octet-stream"
+        })
+        .send(Project.getOriginalBundleContentSync(req.token.usr, req.domain, req.project, fileInfo.name))
     })
-  })
-  .catch((err: any) => {
-    return ((err instanceof Error) && (err.name === "External"))
-      ? // Bad Request
-        res.status(400).json({ msg: err.message })
-      : // Internal Server Error
-        res.status(500).json({ msg: "Contact an administrator." })
-  })
+    .catch((err: any) => {
+      return ((err instanceof Error) && (err.name === "External"))
+        ? // Bad Request
+          res.status(400).json({ msg: err.message })
+        : // Internal Server Error
+          res.status(500).json({ msg: "Contact an administrator." })
+    })
+  } else {
+    return Project.getBundleInfo(req.token.usr, req.domain, req.project, req.bundleId)
+    .then((bundleInfo: BundleInfo) => {
+      // OK
+      return res.status(200).json({
+        msg: `You get a bundle name and description of bundle ID = ${ req.bundleId }.`,
+        name: bundleInfo.name,
+        description: bundleInfo.description,
+        date: bundleInfo.date,
+        preserved: bundleInfo.preserved
+      })
+    })
+    .catch((err: any) => {
+      return ((err instanceof Error) && (err.name === "External"))
+        ? // Bad Request
+          res.status(400).json({ msg: err.message })
+        : // Internal Server Error
+          res.status(500).json({ msg: "Contact an administrator." })
+    })
+  }
 })
 .put((req: Request, res: Response, next: NextFunction) => {
   const bundelDescription = req.body.description
@@ -575,7 +599,7 @@ router.route("/:domain/projects/:projectName/bundles")
       })
     }
 
-    return Project.registerBundleResource(req.token.usr, req.domain, req.project, req.file.originalname, req.body.description || "")
+    return Project.registerBundleResource(req.token.usr, req.domain, req.project, req.file.originalname, req.body.description || "", req.body.preserve === "true")
     .then((bundleInfo: BundleInfo) => {
       // Created
       return res.status(201).location(`${ req.protocol }://${ req.headers.host }${ req.path }/`).json({
