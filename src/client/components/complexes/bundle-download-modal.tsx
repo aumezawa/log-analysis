@@ -131,6 +131,7 @@ const BundleDownloadBox = React.memo<BundleDownloadBoxProps>(({
           />
           <ButtonSet
             submit="Download"
+            cancel=""
             valid={ status.current.preserved && status.current.done }
             dismiss="modal"
             onSubmit={ handleSubmitDownload }
