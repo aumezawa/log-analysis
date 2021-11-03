@@ -1,3 +1,26 @@
+Version: **0.17.0** [2021/11/03]
+
+New Features:
+  - Supported to invite a guest user
+
+Enhanced Features:
+  - Supported prev/next buttons on functional table with highlight
+
+Bug Fixes:
+  - Unnecessary button is displayed on bundle download window
+
+***
+
+Version: **0.16.0** [2021/10/14]
+
+New Features:
+  - Supported preserving and downloading the original log file
+
+Bug Fixes:
+  - *None*
+
+***
+
 Version: **0.15.0** [2021/10/01]
 
 New Features:

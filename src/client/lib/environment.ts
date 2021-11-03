@@ -19,6 +19,10 @@ export default {
     (new URLSearchParams(decodeURIComponent(location.search))).get(param)
   ),
 
+  getAddressBar: () => (
+    location.href
+  ),
+
   updateTitle: (title: string) => {
     document.title = title
   },
