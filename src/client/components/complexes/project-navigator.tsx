@@ -5,10 +5,12 @@ import { CaretRight, CaretRightFill, Dot, QuestionCircle, Tools } from "react-bo
 import { House } from "react-bootstrap-icons"
 import { FolderCheck, FolderPlus, FolderX, Folder, Folder2Open } from "react-bootstrap-icons"
 import { JournalArrowDown, JournalArrowUp, JournalCheck, JournalX, Journal } from "react-bootstrap-icons"
+import { PersonCheck } from "react-bootstrap-icons"
 import { FileEarmarkText } from "react-bootstrap-icons"
 import { Box, ClipboardCheck, HddStack } from "react-bootstrap-icons"
 
 import UniqueId from "../../lib/unique-id"
+import Environment from "../../lib/environment"
 
 import DomainSelectModal from "../complexes/domain-select-modal"
 import ProjectCreateModal from "../complexes/project-create-modal"
@@ -160,6 +162,17 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
   const handleClickCompareVms = useCallback(() => {
     data.current.mode = "vms"
     updateSelectList()
+  }, [true])
+
+  const handleClickInviteUser = useCallback(() => {
+    const textarea = document.createElement("textarea")
+    const url = Environment.getAddressBar()
+    textarea.value = url.includes("?") ? (url + "&anonymous=true") : (url + "?anonymous=true")
+    document.body.appendChild(textarea)
+    textarea.select()
+    document.execCommand("copy")
+    textarea.remove()
+    alert("Copied an invite URL on your clipboard.")
   }, [true])
 
   return (
@@ -356,7 +369,7 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
                 key="delete-bundle"
                 label="Delete"
                 LIcon={ JournalX }
-                disabled={ !domain || !project || (!["public", "private"].includes(domain) && privilege != "root") }
+                disabled={ !domain || !project || privilege === "none" || (!["public", "private"].includes(domain) && privilege !== "root") }
                 toggle="modal"
                 target={ id.current.bundleSelect }
                 onClick={ handleClickDeleteBundle }
@@ -399,6 +412,13 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
                 disabled={ !domain || !project || !bundle }
                 toggle="modal"
                 target={ id.current.downloadReport }
+              />,
+              <DropdownItem
+                key="invite"
+                label="Invite Guest"
+                LIcon={ PersonCheck }
+                disabled={ !domain || !project || !["public"].includes(domain) || privilege !== "root" }
+                onClick={ handleClickInviteUser }
               />
             ] }
           />

@@ -31,7 +31,7 @@ router.use((req: Request, res: Response, next: NextFunction) => {
   const token = req.query.token || req.body.token || req.header("X-Access-Token") || req.cookies.token
   if (!token) {
     // Unauthorized
-    return res.redirect(`/login?request=${ encodeURIComponent(req.url) }`)
+    return res.redirect(`/login?${ (req.query.anonymous) ? "anonymous=true&" : "" }request=${ encodeURIComponent(req.url.replace("?anonymous=true", "").replace("&anonymous=true", "")) }`)
   }
 
   jwt.verify(token, req.app.get("token-key"), (err: jwt.VerifyErrors, decoded: object) => {
