@@ -25,6 +25,7 @@ type FilterSetting = {
   type?         : string,
   mode?         : string,
   sensitive?    : boolean,
+  display?      : string,
   condition?    : string,
   from?         : Date,
   to?           : Date,

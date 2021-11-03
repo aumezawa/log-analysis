@@ -1,7 +1,7 @@
 import * as React from "react"
 import { useEffect, useRef, useCallback, useReducer } from "react"
 
-import { BookmarkCheck, BookmarkX, BookmarksFill, Clock, Download, FunnelFill, Hash, ListOl, Reply } from "react-bootstrap-icons"
+import { BookmarkCheck, BookmarkX, BookmarksFill, CaretDownFill, CaretUpFill, Clock, Download, FunnelFill, Hash, ListOl, Reply } from "react-bootstrap-icons"
 
 import ModalFrame from "../frames/modal-frame"
 import TextFilterForm from "../sets/text-filter-form"
@@ -72,6 +72,8 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
     rows      : 0,
     line      : 1,
     mark      : [],
+    find      : [],
+    caret     : false,
     label     : null,
     filters   : {} as FilterSettings,
     localtime : false,
@@ -89,6 +91,8 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
       env.current.line = (line > 0) ? line : 1
       env.current.maxRow = DEFAULT_ROW
       env.current.mark = []
+      env.current.find = []
+      env.current.caret = false
       env.current.label = null
       env.current.page = Math.ceil(env.current.line / env.current.maxRow)
       env.current.filters = {} as FilterSettings
@@ -148,31 +152,48 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
     }, 0)
   }
 
+  const displayContentCaret = () => {
+    if ((Object.keys(env.current.filters).length === 1) && ("Content" in env.current.filters) && (env.current.filters["Content"].display === "Highlight")) {
+      env.current.caret = true
+    } else {
+      env.current.caret = false
+    }
+  }
+
   const handleClickMarkFilter = useCallback(() => {
     if ("Mark" in env.current.filters) {
       delete env.current.filters["Mark"]
+      env.current.page = Object.keys(env.current.filters).length ? 1 : Math.ceil(env.current.line / env.current.maxRow)
+      displayContentCaret()
+      forceUpdate()
+      scrollToLine(Object.keys(env.current.filters).length ? 1 : env.current.line)
     } else {
+      env.current.page = 1
       env.current.filters["Mark"] = {
         type  : "mark",
         mode  : "head-to-tail",
         head  : env.current.mark[0],
         tail  : env.current.mark.slice(-1)[0]
       }
+      displayContentCaret()
+      forceUpdate()
+      scrollToLine(1)
     }
-    forceUpdate()
   }, [true])
 
   const handleClickFilter = useCallback((targetValue: string, parentValue: string) => {
     env.current.label = parentValue
   }, [true])
 
-  const handleSubmitTextFilter = useCallback((mode: string, sensitive: boolean, condition: string) => {
+  const handleSubmitTextFilter = useCallback((mode: string, sensitive: boolean, display: string, condition: string) => {
     if (env.current.label) {
-      env.current.page = 1
+      env.current.page = (display !== "Highlight") ? 1 : Math.ceil(env.current.line / env.current.maxRow)
+      env.current.find = []
       env.current.filters[env.current.label] = {
         type      : "text",
         mode      : mode,
         sensitive : sensitive,
+        display   : display,
         condition : condition
       }
       if ((env.current.label === "Content") && (mode === "Be included")) {
@@ -186,8 +207,9 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
           onChangeTextFilter(null, null)
         }
       }
+      displayContentCaret()
       forceUpdate()
-      scrollToLine(1)
+      scrollToLine((display !== "Highlight") ? 1 : env.current.line)
     }
   }, [true])
 
@@ -199,6 +221,7 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
       if (onChangeTextFilter) {
         onChangeTextFilter(null, null)
       }
+      displayContentCaret()
       forceUpdate()
       scrollToLine(Object.keys(env.current.filters).length ? 1 : env.current.line)
     }
@@ -215,6 +238,7 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
       if (onChangeDateFilter) {
         onChangeDateFilter(from, to)
       }
+      displayContentCaret()
       forceUpdate()
       scrollToLine(1)
     }
@@ -227,6 +251,7 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
       if (onChangeDateFilter) {
         onChangeDateFilter(null, null)
       }
+      displayContentCaret()
       forceUpdate()
       scrollToLine(Object.keys(env.current.filters).length ? 1 : env.current.line)
     }
@@ -259,6 +284,36 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
     handleClickMark()
     if (onChangeLine) {
       onChangeLine(env.current.line)
+    }
+  }, [onChangeLine])
+
+  const handleClickCaretUp = useCallback((targetValue: string, parentValue: string) => {
+    for (let line of env.current.find.slice().reverse()) {
+      if (env.current.line > line) {
+        env.current.line = line
+        env.current.page = Math.ceil(env.current.line / env.current.maxRow)
+        forceUpdate()
+        scrollToLine(env.current.line)
+        if (onChangeLine) {
+          onChangeLine(env.current.line)
+        }
+        break
+      }
+    }
+  }, [onChangeLine])
+
+  const handleClickCaretDown = useCallback((targetValue: string, parentValue: string) => {
+    for (let line of env.current.find) {
+      if (env.current.line < line) {
+        env.current.line = line
+        env.current.page = Math.ceil(env.current.line / env.current.maxRow)
+        forceUpdate()
+        scrollToLine(env.current.line)
+        if (onChangeLine) {
+          onChangeLine(env.current.line)
+        }
+        break
+      }
     }
   }, [onChangeLine])
 
@@ -347,6 +402,21 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
                 onClick={ handleClickFilter }
               />
               {
+                (label === "Content" && env.current.caret) &&
+                <>
+                  <EmbeddedIconButton
+                    LIcon={ CaretUpFill }
+                    color="light"
+                    onClick={ handleClickCaretUp }
+                  />
+                  <EmbeddedIconButton
+                    LIcon={ CaretDownFill }
+                    color="light"
+                    onClick={ handleClickCaretDown }
+                  />
+                </>
+              }
+              {
                 (label === "Date") &&
                 <EmbeddedButton
                   label={ LocalDate.getOffset() === 9 ? "JST" : "Local" }
@@ -369,10 +439,23 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
       env.current.rows = 0
       return content.data.map((datum: TableData, index: number) => {
         for (let label in content.format.label) {
-          if (!isFiltered(datum, label) || !isMarkFiltered(index + 1)) {
+          if (!isMarkFiltered(index + 1)) {
             return
           }
+
+          if ((label === "Content") && ("Content" in env.current.filters) && (env.current.filters["Content"].display === "Highlight")) {
+            if (isFiltered(datum, label)) {
+              env.current.find.push(index + 1)
+            }
+          } else {
+            if (!isFiltered(datum, label)) {
+              return
+            }
+          }
         }
+
+          //if (!isFiltered(datum, label) || !isMarkFiltered(index + 1)) {
+          //    return
 
         env.current.rows++
         if (env.current.rows <= (env.current.page - 1) * env.current.maxRow || env.current.rows > env.current.page * env.current.maxRow) {
