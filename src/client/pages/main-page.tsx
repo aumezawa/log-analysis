@@ -1,7 +1,7 @@
 import * as React from "react"
 import { useEffect, useRef, useCallback, useReducer } from "react"
 
-import { ChatRightText, HourglassSplit, HourglassTop, InfoCircle, Person, QuestionCircle, ReplyAllFill } from "react-bootstrap-icons"
+import { ChatRightText, HourglassSplit, HourglassTop, InfoCircle, Key, Person, QuestionCircle, ReplyAllFill } from "react-bootstrap-icons"
 import { Display, FileEarmarkText, Search } from "react-bootstrap-icons"
 
 import Axios from "axios"
@@ -289,6 +289,11 @@ const MainPage: React.FC<MainPageProps> = ({
                   key="user"
                   label={ decodeURIComponent(alias) }
                   LIcon={ Person }
+                />,
+                <DropdownHeader
+                  key="privilege"
+                  label={ privilege }
+                  LIcon={ Key }
                 />,
                 <DropdownDivider key="divider-2" />,
                 <DropdownItem
