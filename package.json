@@ -19,10 +19,11 @@
   },
   "scripts": {
     "preinstall": "npx npm-force-resolutions",
-    "post-install": "npm run build:pdfmake",
+    "postinstall": "npm run build:pdfmake",
     "add:user": "node ./bin/add-localuser.js",
     "init:user": "node ./bin/init-localuser.js",
     "build": "npm run build:server && npm run build:client",
+    "build:all": "npm run build && npm run build:test",
     "build:server": "tsc -p ./tsconfig.server.json && node ./bin/setup.js",
     "build:client": "webpack",
     "build:test": "tsc -p ./tsconfig.test.json && cpx ./src/test/script/* ./dist/test/script && cpx ./src/test/data/* ./dist/test/data",
@@ -32,8 +33,8 @@
     "start": "node ./bin/www-master",
     "debug:single": "cross-env LOGLEVEL=debug LOGOUT=console node ./bin/www",
     "debug:multi": "cross-env LOGLEVEL=debug node ./bin/www-master",
-    "test:web-api": "node ./dist/test/web-api",
-    "test": "npm run test:web-api"
+    "test": "npm run test:web-api",
+    "test:web-api": "node ./dist/test/web-api"
   },
   "resolutions": {
     "braces": "2.3.1",
