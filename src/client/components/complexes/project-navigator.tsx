@@ -5,11 +5,12 @@ import { CaretRight, CaretRightFill, Dot, QuestionCircle, Tools } from "react-bo
 import { House } from "react-bootstrap-icons"
 import { FolderCheck, FolderPlus, FolderX, Folder, Folder2Open } from "react-bootstrap-icons"
 import { JournalArrowDown, JournalArrowUp, JournalCheck, JournalX, Journal } from "react-bootstrap-icons"
-import { PersonCheck } from "react-bootstrap-icons"
+import { PersonPlus } from "react-bootstrap-icons"
 import { FileEarmarkText } from "react-bootstrap-icons"
 
 import UniqueId from "../../lib/unique-id"
 import Environment from "../../lib/environment"
+import Privilege from "../../lib/project-privilege"
 
 import DomainSelectModal from "../complexes/domain-select-modal"
 import ProjectCreateModal from "../complexes/project-create-modal"
@@ -194,7 +195,7 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
             label={ domain || "Select Domain" }
             LIcon={ House }
             color={ domain ? (domain !== "private" ? "success" : "warning") : "secondary" }
-            disabled={ privilege === "none" }
+            disabled={ !Privilege.isDomainSelectable(privilege) }
             toggle="modal"
             target={ id.current.domainSelect }
           />
@@ -207,7 +208,7 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
                 label="New Project"
                 LIcon={ FolderPlus }
                 color="info"
-                disabled={ !domain || privilege === "none" }
+                disabled={ !domain || !Privilege.isProjectCreatable(privilege, domain) }
                 toggle="modal"
                 target={ id.current.projectCreate }
               />
@@ -218,7 +219,7 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
             label={ project || "Select Project" }
             LIcon={ project ? FolderCheck : Folder }
             color={ project ? "success" : "secondary" }
-            disabled={ !domain || privilege === "none" }
+            disabled={ !domain || !Privilege.isProjectOpenable(privilege, domain) }
             toggle="modal"
             target={ id.current.projectSelect }
             onClick={ handleClickOpenProject }
@@ -232,7 +233,7 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
                 label="Upload Bundle"
                 LIcon={ JournalArrowUp }
                 color="info"
-                disabled={ !domain || !project }
+                disabled={ !domain || !project || !Privilege.isBundleUploadable(privilege, domain) }
                 toggle="modal"
                 target={ id.current.bundleUpload }
                 onClick={ handleClickOpenBundle }
@@ -244,7 +245,7 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
             label={ (bundle && data.current.bundleName) || "Select Bundle" }
             LIcon={ (bundle && data.current.bundleName) ? JournalCheck : Journal }
             color={ (bundle && data.current.bundleName) ? "success" : "secondary" }
-            disabled={ !domain || !project }
+            disabled={ !domain || !project || !Privilege.isBundleOpenable(privilege, domain) }
             toggle="modal"
             target={ id.current.bundleSelect }
             onClick={ handleClickOpenBundle }
@@ -277,7 +278,7 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
                 key="create-project"
                 label="Create New"
                 LIcon={ FolderPlus }
-                disabled={ !domain || privilege === "none" }
+                disabled={ !domain || !Privilege.isProjectCreatable(privilege, domain) }
                 toggle="modal"
                 target={ id.current.projectCreate }
               />,
@@ -285,7 +286,7 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
                 key="close-project"
                 label="Close"
                 LIcon={ Folder }
-                disabled={ !domain || privilege === "none" }
+                disabled={ !domain || !Privilege.isProjectClosable(privilege, domain) }
                 toggle="modal"
                 target={ id.current.projectSelect }
                 onClick={ handleClickCloseProject }
@@ -294,7 +295,7 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
                 key="reopen-project"
                 label="Reopen"
                 LIcon={ Folder2Open }
-                disabled={ !domain || privilege === "none" }
+                disabled={ !domain || !Privilege.isProjectReOpenable(privilege, domain) }
                 toggle="modal"
                 target={ id.current.projectSelect }
                 onClick={ handleClickReopenProject }
@@ -303,7 +304,7 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
                 key="delete-project"
                 label="Delete"
                 LIcon={ FolderX }
-                disabled={ !domain || privilege === "none" || (!["public", "private"].includes(domain) && privilege !== "root") }
+                disabled={ !domain || !Privilege.isProjectDeletable(privilege, domain) }
                 toggle="modal"
                 target={ id.current.projectSelect }
                 onClick={ handleClickDeleteProject }
@@ -317,7 +318,7 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
                 key="upload-bundle"
                 label="Upload"
                 LIcon={ JournalArrowUp }
-                disabled={ !domain || !project }
+                disabled={ !domain || !project || !Privilege.isBundleUploadable(privilege, domain) }
                 toggle="modal"
                 target={ id.current.bundleUpload }
               />,
@@ -325,7 +326,7 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
                 key="delete-bundle"
                 label="Delete"
                 LIcon={ JournalX }
-                disabled={ !domain || !project || privilege === "none" || (!["public", "private"].includes(domain) && privilege !== "root") }
+                disabled={ !domain || !project || !Privilege.isBundleDeletable(privilege, domain) }
                 toggle="modal"
                 target={ id.current.bundleSelect }
                 onClick={ handleClickDeleteBundle }
@@ -334,7 +335,7 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
                 key="download-bundle"
                 label="Download"
                 LIcon={ JournalArrowDown }
-                disabled={ !domain || !project || !bundle }
+                disabled={ !domain || !project || !bundle || !Privilege.isBundleDownloadable(privilege, domain) }
                 toggle="modal"
                 target={ id.current.bundleDownload }
               />,
@@ -346,8 +347,8 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
               <DropdownItem
                 key="invite"
                 label="Invite Guest"
-                LIcon={ PersonCheck }
-                disabled={ !domain || !project || !["public"].includes(domain) || privilege !== "root" }
+                LIcon={ PersonPlus }
+                disabled={ !domain || !project || !Privilege.isInvitable(privilege, domain) }
                 onClick={ handleClickInviteUser }
               />
             ] }
