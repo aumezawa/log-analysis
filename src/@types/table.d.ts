@@ -25,10 +25,21 @@ type FilterSetting = {
   type?         : string,
   mode?         : string,
   sensitive?    : boolean,
-  display?      : string,
   condition?    : string,
   from?         : Date,
   to?           : Date,
   head?         : number,
   tail?         : number
+}
+
+type SearchSettings = {
+  [label: string]: SearchSetting
+}
+
+type SearchSetting = {
+  type?         : string,
+  mode?         : string,
+  sensitive?    : boolean,
+  condition?    : string,
+  founds?       : Array<number>
 }

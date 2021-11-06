@@ -1,3 +1,16 @@
+Version: **0.18.0** [2021/11/06]
+
+New Features:
+  - *None*
+
+Enhanced Features:
+  - Modified layout of functional table
+
+Bug Fixes:
+  - Vulnerary modules
+
+***
+
 Version: **0.17.0** [2021/11/03]
 
 New Features:
