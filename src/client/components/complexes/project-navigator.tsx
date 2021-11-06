@@ -17,7 +17,6 @@ import ProjectCreateModal from "../complexes/project-create-modal"
 import ProjectSelectModal from "../complexes/project-select-modal"
 import BundleUploadModal from "../complexes/bundle-upload-modal"
 import BundleSelectModal from "../complexes/bundle-select-modal"
-import BundleDownloadBox from "../complexes/bundle-download-modal"
 
 import Button from "../parts/button"
 import DropdownButton from "../parts/dropdown-button"
@@ -57,8 +56,7 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
     projectCreate : "modal-" + UniqueId(),
     projectSelect : "modal-" + UniqueId(),
     bundleUpload  : "modal-" + UniqueId(),
-    bundleSelect  : "modal-" + UniqueId(),
-    bundleDownload: "modal-" + UniqueId()
+    bundleSelect  : "modal-" + UniqueId()
   })
 
   const data = useRef({
@@ -135,6 +133,11 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
     updateBundleList()
   }, [true])
 
+  const handleClickDownloadBundle = useCallback(() => {
+    data.current.action = "download"
+    updateBundleList()
+  }, [true])
+
   const handleClickInviteUser = useCallback(() => {
     const textarea = document.createElement("textarea")
     const url = Environment.getAddressBar()
@@ -182,12 +185,6 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
         reload={ reloadBundle }
         onSubmit={ handleChangeBundle }
         onUpdate={ handleUpdateBundleName }
-      />
-      <BundleDownloadBox
-        id={ id.current.bundleDownload }
-        domain={ domain }
-        project={ project }
-        bundle={ bundle }
       />
       <div className="flex-container-row align-items-center">
         <div className="borderable">
@@ -335,9 +332,10 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
                 key="download-bundle"
                 label="Download"
                 LIcon={ JournalArrowDown }
-                disabled={ !domain || !project || !bundle || !Privilege.isBundleDownloadable(privilege, domain) }
+                disabled={ !domain || !project || !Privilege.isBundleDownloadable(privilege, domain) }
                 toggle="modal"
-                target={ id.current.bundleDownload }
+                target={ id.current.bundleSelect }
+                onClick={ handleClickDownloadBundle }
               />,
               <DropdownDivider key="divider-2" />,
               <DropdownHeader

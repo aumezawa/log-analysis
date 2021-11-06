@@ -21,7 +21,7 @@ type BundleSelectModalProps = {
   domain?   : string,
   project?  : string,
   bundle?   : string,
-  action?   : string,   // NOTE: "open" | "delete"
+  action?   : string,   // NOTE: "open" | "delete" | "download"
   reload?   : number,
   onSubmit? : (bundleId: string, bundleName: string) => void,
   onUpdate? : (bundleName: string) => void
@@ -135,7 +135,7 @@ const BundleSelectModal = React.memo<BundleSelectModalProps>(({
       return
     }
 
-    const uri = `${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project, data.current.bundleId) }`
+    let uri = `${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project, data.current.bundleId) }`
     status.current.processing = true
     forceUpdate()
 
@@ -155,22 +155,68 @@ const BundleSelectModal = React.memo<BundleSelectModalProps>(({
         return
       })
       .catch((err: Error | AxiosError) => {
-        status.current.processing = false
-        forceUpdate()
         if (Axios.isAxiosError(err)) {
           alert(err.response.data.msg)
         } else {
           console.log(err)
         }
+        status.current.processing = false
+        forceUpdate()
         return
       })
     }
-  }, [domain, project, onSubmit])
+
+    if (action === "download") {
+      Axios.get(uri + "?mode=download", {
+        headers : { "X-Access-Token": Cookie.get("token") || "" },
+        data    : {},
+        responseType: "blob"
+      })
+      .then((res: AxiosResponse) => {
+        const blob = new Blob([res.data], { type: res.data.type })
+        const url = window.URL.createObjectURL(blob)
+        const link = document.createElement("a")
+
+        let filename: string
+        const match = res.headers["content-disposition"].match(/filename="(.*)"(;|$)/)
+        if (match) {
+          filename = match[1]
+          const matchUTF8 = res.headers["content-disposition"].match(/filename[*]=UTF-8''(.*)(;|$)/)
+          if (matchUTF8) {
+            filename = decodeURIComponent(matchUTF8[1])
+          }
+          link.href = url
+          link.setAttribute("download", filename)
+          document.body.appendChild(link)
+          link.click()
+          link.remove()
+          window.URL.revokeObjectURL(url)
+        } else {
+          alert("Could not get file information...")
+          console.log(res.headers["content-disposition"])
+        }
+        status.current.processing = false
+        forceUpdate()
+        return
+      })
+      .catch((err: Error | AxiosError) => {
+        if (Axios.isAxiosError(err)) {
+          alert(err.response.data.msg)
+        } else {
+          console.log(err)
+        }
+        status.current.processing = false
+        forceUpdate()
+        return
+      })
+    }
+  }, [domain, project, action, onSubmit])
 
   const listLabel = () => (
     data.current.bundles.filter((bundle: BundleInfo) => (
       (action === "open" && bundle.available)
       || (action === "delete" && bundle.available)
+      || (action === "download" && bundle.available && bundle.preserved)
     )).filter((bundle: BundleInfo) => (
       (bundle.name.includes(data.current.filter) || bundle.description.includes(data.current.filter))
     )).map((bundle: BundleInfo) => (
