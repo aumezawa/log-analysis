@@ -8,20 +8,22 @@ import ButtonSet from "../sets/button-set"
 
 type TextFilterFormProps = {
   className?: string,
+  operation?: string,
   mode?     : string,
   sensitive?: boolean,
   condition?: string,
   disabled? : boolean,
   dismiss?  : string,
-  onSubmit? : (mode: string, sensitive: boolean, display: string, condition: string) => void,
+  onSubmit? : (mode: string, sensitive: boolean, condition: string) => void,
   onCancel? : () => void
 }
 
+export const operations: Array<string> = ["filter", "search"]
 export const options: Array<string> = ["Be included", "Not be included", "Regex (unstable)"]
-const displays: Array<string> = ["Filter", "Highlight"]
 
 const TextFilterForm = React.memo<TextFilterFormProps>(({
   className = "",
+  operation = operations[0],
   mode      = options[0],
   sensitive = true,
   condition = null,
@@ -36,13 +38,11 @@ const TextFilterForm = React.memo<TextFilterFormProps>(({
     if (mode && typeof(sensitive) === "boolean" && condition) {
       data.current.mode       = ref.current.mode.current.value         = mode
       data.current.sensitive  = ref.current.sensitive.current.checked  = sensitive
-      data.current.display    = ref.current.display.current.value      = displays[0]
       data.current.condition  = ref.current.condition.current.value    = condition
       setValid(data.current.condition !== "")
     } else {
       data.current.mode       = ref.current.mode.current.value         = options[0]
       data.current.sensitive  = ref.current.sensitive.current.checked  = true
-      data.current.display    = ref.current.display.current.value      = displays[0]
       data.current.condition  = ref.current.condition.current.value    = ""
       setValid(false)
     }
@@ -51,44 +51,41 @@ const TextFilterForm = React.memo<TextFilterFormProps>(({
   const ref = useRef({
     mode      : React.createRef<HTMLSelectElement>(),
     sensitive : React.createRef<HTMLInputElement>(),
-    display   : React.createRef<HTMLSelectElement>(),
     condition : React.createRef<HTMLInputElement>()
   })
 
   const data = useRef({
     mode      : options[0],
     sensitive : true,
-    display   : displays[0],
     condition : ""
   })
 
-  const handleChangeMode = useCallback(value => {
+  const toUpperCase = (value: string) => (
+    value.charAt(0).toUpperCase() + value.slice(1)
+  )
+
+  const handleChangeMode = useCallback((value: string) => {
     data.current.mode = value
   }, [true])
 
-  const handleChangeSensitive = useCallback(value => {
+  const handleChangeSensitive = useCallback((value: boolean) => {
     data.current.sensitive = value
   }, [true])
 
-  const handleChangeDisplay = useCallback(value => {
-    data.current.display = value
-  }, [true])
-
-  const handleChangeCondition = useCallback(value => {
+  const handleChangeCondition = useCallback((value: string) => {
     data.current.condition = value
     setValid(data.current.condition !== "")
   }, [true])
 
   const handleSubmit = useCallback(() => {
     if (onSubmit) {
-      onSubmit(data.current.mode, data.current.sensitive, data.current.display, data.current.condition)
+      onSubmit(data.current.mode, data.current.sensitive, data.current.condition)
     }
   }, [onSubmit])
 
   const handleCancel = useCallback(() => {
     data.current.mode       = ref.current.mode.current.value         = options[0]
     data.current.sensitive  = ref.current.sensitive.current.checked  = true
-    data.current.display    = ref.current.display.current.value      = displays[0]
     data.current.condition  = ref.current.condition.current.value    = ""
     setValid(false)
     if (onCancel) {
@@ -103,7 +100,7 @@ const TextFilterForm = React.memo<TextFilterFormProps>(({
         className="mb-3"
         label="Mode"
         options={ options }
-        disabled={ disabled }
+        disabled={ disabled || operation !== "filter" }
         onChange={ handleChangeMode }
       />
       <CheckForm
@@ -112,14 +109,6 @@ const TextFilterForm = React.memo<TextFilterFormProps>(({
         label="Case-Sensitive"
         disabled={ disabled }
         onChange={ handleChangeSensitive }
-      />
-      <SelectForm
-        ref={ ref.current.display }
-        className="mb-3"
-        label="Display"
-        options={ displays }
-        disabled={ disabled }
-        onChange={ handleChangeDisplay }
       />
       <TextForm
         ref={ ref.current.condition }
@@ -130,7 +119,7 @@ const TextFilterForm = React.memo<TextFilterFormProps>(({
         onChange={ handleChangeCondition }
       />
       <ButtonSet
-        submit="Filter"
+        submit={ operation ? toUpperCase(operation) : toUpperCase(operations[0]) }
         cancel="Clear"
         valid={ valid }
         disabled={ disabled }

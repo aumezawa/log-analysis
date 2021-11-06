@@ -1,7 +1,8 @@
 import * as React from "react"
 import { useEffect, useRef, useCallback, useReducer } from "react"
 
-import { BookmarkCheck, BookmarkX, BookmarksFill, CaretDownFill, CaretUpFill, Clock, Download, FunnelFill, Hash, ListOl, Reply } from "react-bootstrap-icons"
+import { BookmarksFill, CaretDownFill, CaretUpFill, FunnelFill, Search } from "react-bootstrap-icons"
+import { BookmarkCheck, BookmarkX, Clock, Download, Hash, ListOl, Reply } from "react-bootstrap-icons"
 
 import ModalFrame from "../frames/modal-frame"
 import TextFilterForm from "../sets/text-filter-form"
@@ -25,7 +26,7 @@ type FunctionalTableProps = {
   textSensitive?      : boolean,
   dateFrom?           : string,
   dateTo?             : string,
-  copy?               : boolean,
+  //copy?               : boolean,
   onChangeLine?       : (line: number) => void,
   onChangeTextFilter? : (textFilter: string, textSensitive: boolean) => void,
   onChangeDateFilter? : (dateFrom: string, dateTo: string) => void,
@@ -44,7 +45,7 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
   textSensitive       = true,
   dateFrom            = null,
   dateTo              = null,
-  copy                = false,
+  //copy                = false,
   onChangeLine        = undefined,
   onChangeTextFilter  = undefined,
   onChangeDateFilter  = undefined,
@@ -71,13 +72,13 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
     maxRow    : DEFAULT_ROW,
     rows      : 0,
     line      : 1,
-    mark      : [],
-    find      : [],
-    caret     : false,
+    first     : 0,
+    marks     : [],
     label     : null,
+    operation : "filter",
     filters   : {} as FilterSettings,
-    localtime : false,
-    dlable    : false
+    searches  : {} as SearchSettings,
+    localtime : false
   })
 
   const input = useRef({
@@ -85,31 +86,31 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
   })
 
   useEffect(() => {
-    let scrollLine: number
+    let scroll: boolean
     if (content) {
-      env.current.format = Object.keys(content.format.label).includes("Date") ? "date" : "plain"
-      env.current.line = (line > 0) ? line : 1
+      env.current.format = (Object.values(content.format.label).includes("date")) ? "date" : "plain"
+      env.current.page = 1
       env.current.maxRow = DEFAULT_ROW
-      env.current.mark = []
-      env.current.find = []
-      env.current.caret = false
+      env.current.rows = 0
+      env.current.line = (line > 0) ? line : 1
+      env.current.first = 0
+      env.current.marks = []
       env.current.label = null
-      env.current.page = Math.ceil(env.current.line / env.current.maxRow)
+      env.current.operation = "filter"
       env.current.filters = {} as FilterSettings
+      env.current.searches = {} as SearchSettings
       env.current.localtime = false
-      env.current.dlable = true
-      scrollLine = env.current.line
+      scroll = true
 
       if (textFilter) {
         if (Object.keys(content.format.label).includes("Content")) {
-          env.current.page = 1
           env.current.filters["Content"] = {
             type      : "text",
             mode      : "Be included",
             sensitive : textSensitive,
             condition : textFilter
           }
-          scrollLine = 1
+          scroll = false
         } else {
           if (onChangeTextFilter) {
             onChangeTextFilter(null, null)
@@ -121,13 +122,12 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
         const from = LocalDate.isDate(dateFrom) ? new Date(dateFrom) : null
         const to   = LocalDate.isDate(dateTo)   ? new Date(dateTo)   : null
         if (Object.keys(content.format.label).includes("Date")) {
-          env.current.page = 1
           env.current.filters["Date"] = {
             type      : "date",
             from      : from,
             to        : to
           }
-          scrollLine = 1
+          scroll = false
         }
 
         if (onChangeDateFilter) {
@@ -138,12 +138,25 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
       ref.current.select.current.value = String(DEFAULT_ROW)
       ref.current.text.current.value = ""
       input.current.line = null
-      forceUpdate()
-      scrollToLine(scrollLine)
+
+      if (scroll) {
+        scrollToLine(env.current.line)
+      } else {
+        forceUpdate()
+      }
     }
   }, [content, line, textFilter, textSensitive, dateFrom, dateTo, onChangeTextFilter, onChangeDateFilter])
 
+  const scrollToPageTop = () => {
+    forceUpdate()
+    setTimeout(() => {
+      ref.current.parent.current.scrollTo(0, 0)
+    }, 0)
+  }
+
   const scrollToLine = (line: number) => {
+    env.current.page = Math.ceil(line / env.current.maxRow)
+    forceUpdate()
     setTimeout(() => {
       const lines = ref.current.table.current.tBodies[0].childNodes
       const toLine = (line - 1) % env.current.maxRow
@@ -152,110 +165,129 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
     }, 0)
   }
 
-  const displayContentCaret = () => {
-    if ((Object.keys(env.current.filters).length === 1) && ("Content" in env.current.filters) && (env.current.filters["Content"].display === "Highlight")) {
-      env.current.caret = true
-    } else {
-      env.current.caret = false
+  const isSearching = (label: string) => {
+    if (label in env.current.searches) {
+      return true
     }
+    return false
+  }
+
+  const isLineMovable = () => {
+    for (let label in env.current.filters) {
+      return false
+    }
+    return true
   }
 
   const handleClickMarkFilter = useCallback(() => {
     if ("Mark" in env.current.filters) {
       delete env.current.filters["Mark"]
-      env.current.page = Object.keys(env.current.filters).length ? 1 : Math.ceil(env.current.line / env.current.maxRow)
-      displayContentCaret()
-      forceUpdate()
       scrollToLine(Object.keys(env.current.filters).length ? 1 : env.current.line)
     } else {
-      env.current.page = 1
       env.current.filters["Mark"] = {
         type  : "mark",
         mode  : "head-to-tail",
-        head  : env.current.mark[0],
-        tail  : env.current.mark.slice(-1)[0]
+        head  : env.current.marks[0],
+        tail  : env.current.marks.slice(-1)[0]
       }
-      displayContentCaret()
-      forceUpdate()
       scrollToLine(1)
     }
   }, [true])
 
   const handleClickFilter = useCallback((targetValue: string, parentValue: string) => {
     env.current.label = parentValue
+    env.current.operation = "filter"
+    forceUpdate()
   }, [true])
 
-  const handleSubmitTextFilter = useCallback((mode: string, sensitive: boolean, display: string, condition: string) => {
-    if (env.current.label) {
-      env.current.page = (display !== "Highlight") ? 1 : Math.ceil(env.current.line / env.current.maxRow)
-      env.current.find = []
+  const handleClickSearch = useCallback((targetValue: string, parentValue: string) => {
+    env.current.label = parentValue
+    env.current.operation = "search"
+    forceUpdate()
+  }, [true])
+
+  const handleSubmitTextFilter = useCallback((mode: string, sensitive: boolean, condition: string) => {
+    if (env.current.operation === "filter") {
       env.current.filters[env.current.label] = {
         type      : "text",
         mode      : mode,
         sensitive : sensitive,
-        display   : display,
         condition : condition
       }
+
+      delete env.current.searches[env.current.label]
+
       if ((env.current.label === "Content") && (mode === "Be included")) {
-        env.current.dlable = true
         if (onChangeTextFilter) {
           onChangeTextFilter(condition, sensitive)
         }
       } else {
-        env.current.dlable = false
         if (onChangeTextFilter) {
           onChangeTextFilter(null, null)
         }
       }
-      displayContentCaret()
-      forceUpdate()
-      scrollToLine((display !== "Highlight") ? 1 : env.current.line)
-    }
-  }, [true])
 
-  const handleCancelTextFilter = useCallback(() => {
-    if (env.current.label) {
+      scrollToLine(1)
+    } else if (env.current.operation === "search") {
+      env.current.searches[env.current.label] = {
+        type      : "text",
+        mode      : mode,
+        sensitive : sensitive,
+        condition : condition,
+        founds    : []
+      }
+
       delete env.current.filters[env.current.label]
-      env.current.page = Object.keys(env.current.filters).length ? 1 : Math.ceil(env.current.line / env.current.maxRow)
-      env.current.dlable = true
+
       if (onChangeTextFilter) {
         onChangeTextFilter(null, null)
       }
-      displayContentCaret()
-      forceUpdate()
+
       scrollToLine(Object.keys(env.current.filters).length ? 1 : env.current.line)
     }
-  }, [true])
+  }, [onChangeTextFilter])
+
+  const handleCancelTextFilter = useCallback(() => {
+    if (env.current.operation === "filter") {
+      delete env.current.filters[env.current.label]
+
+      if (onChangeTextFilter) {
+        onChangeTextFilter(null, null)
+      }
+
+      scrollToLine(Object.keys(env.current.filters).length ? 1 : env.current.line)
+    } else if (env.current.operation === "search") {
+      delete env.current.searches[env.current.label]
+    }
+  }, [onChangeTextFilter])
 
   const handleSubmitDateFilter = useCallback((from: string, to: string) => {
-    if (env.current.label) {
-      env.current.page = 1
+    if (env.current.operation === "filter") {
       env.current.filters[env.current.label] = {
         type      : "date",
         from      : LocalDate.isDate(from) ? new Date(from) : null,
         to        : LocalDate.isDate(to)   ? new Date(to)   : null
       }
+
       if (onChangeDateFilter) {
         onChangeDateFilter(from, to)
       }
-      displayContentCaret()
-      forceUpdate()
+
       scrollToLine(1)
     }
-  }, [true])
+  }, [onChangeDateFilter])
 
   const handleCancelDateFilter = useCallback(() => {
-    if (env.current.label) {
+    if (env.current.operation === "filter") {
       delete env.current.filters[env.current.label]
-      env.current.page = Object.keys(env.current.filters).length ? 1 : Math.ceil(env.current.line / env.current.maxRow)
+
       if (onChangeDateFilter) {
         onChangeDateFilter(null, null)
       }
-      displayContentCaret()
-      forceUpdate()
+
       scrollToLine(Object.keys(env.current.filters).length ? 1 : env.current.line)
     }
-  }, [true])
+  }, [onChangeDateFilter])
 
   const handleClickLocalTime = useCallback(() => {
     env.current.localtime = !env.current.localtime
@@ -270,12 +302,14 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
     }
     // TODO: Automatically copy by click
     /*
-    const textarea = document.createElement("textarea")
-    textarea.value = (e.currentTarget as HTMLElement).innerText
-    document.body.appendChild(textarea)
-    textarea.select()
-    document.execCommand("copy")
-    textarea.remove()
+    if (copy) {
+      const textarea = document.createElement("textarea")
+      textarea.value = (e.currentTarget as HTMLElement).innerText
+      document.body.appendChild(textarea)
+      textarea.select()
+      document.execCommand("copy")
+      textarea.remove()
+    }
     */
   }, [onChangeLine])
 
@@ -288,46 +322,47 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
   }, [onChangeLine])
 
   const handleClickCaretUp = useCallback((targetValue: string, parentValue: string) => {
-    for (let line of env.current.find.slice().reverse()) {
-      if (env.current.line > line) {
-        env.current.line = line
-        env.current.page = Math.ceil(env.current.line / env.current.maxRow)
-        forceUpdate()
-        scrollToLine(env.current.line)
-        if (onChangeLine) {
-          onChangeLine(env.current.line)
+    for (let label in env.current.searches) {
+      if (label === parentValue) {
+        for (let line of env.current.searches[label].founds.slice().reverse()) {
+          if (env.current.line > line) {
+            env.current.line = line
+            if (onChangeLine) {
+              onChangeLine(env.current.line)
+            }
+            scrollToLine(env.current.line - env.current.first + 1)
+            return
+          }
         }
-        break
       }
     }
   }, [onChangeLine])
 
   const handleClickCaretDown = useCallback((targetValue: string, parentValue: string) => {
-    for (let line of env.current.find) {
-      if (env.current.line < line) {
-        env.current.line = line
-        env.current.page = Math.ceil(env.current.line / env.current.maxRow)
-        forceUpdate()
-        scrollToLine(env.current.line)
-        if (onChangeLine) {
-          onChangeLine(env.current.line)
+    for (let label in env.current.searches) {
+      if (label === parentValue) {
+        for (let line of env.current.searches[label].founds) {
+          if (env.current.line < line) {
+            env.current.line = line
+            if (onChangeLine) {
+              onChangeLine(env.current.line)
+            }
+            scrollToLine(env.current.line - env.current.first + 1)
+            return
+          }
         }
-        break
       }
     }
   }, [onChangeLine])
 
   const handleChangeMaxRow = useCallback((value: string) => {
     env.current.maxRow = Number(value)
-    env.current.page = Object.keys(env.current.filters).length ? 1 : Math.ceil(env.current.line / env.current.maxRow)
-    forceUpdate()
     scrollToLine(Object.keys(env.current.filters).length ? 1 : env.current.line)
   }, [true])
 
   const handleChangePage = useCallback((value: string) => {
     env.current.page = Number(value)
-    forceUpdate()
-    scrollToLine(1)
+    scrollToPageTop()
   }, [true])
 
   const handleChangeLine = useCallback((value: string) => {
@@ -335,14 +370,12 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
     forceUpdate()
   }, [true])
 
-  const handleClickGoToLine = useCallback(() => {
+  const handleClickMoveLine = useCallback(() => {
     env.current.line = input.current.line
-    env.current.page = Math.ceil(env.current.line / env.current.maxRow)
-    forceUpdate()
-    scrollToLine(env.current.line)
     if (onChangeLine) {
       onChangeLine(env.current.line)
     }
+    scrollToLine(env.current.line)
   }, [onChangeLine])
 
   const handleClickReload = useCallback(() => {
@@ -352,11 +385,11 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
   }, [onClickReload])
 
   const handleClickMark = useCallback(() => {
-    if (env.current.mark.includes(env.current.line)) {
-      env.current.mark = env.current.mark.filter((e: number) => (e != env.current.line))
+    if (env.current.marks.includes(env.current.line)) {
+      env.current.marks = env.current.marks.filter((e: number) => (e != env.current.line))
     } else {
-      env.current.mark.push(env.current.line)
-      env.current.mark.sort()
+      env.current.marks.push(env.current.line)
+      env.current.marks.sort((a: number, b: number) => (a - b))
     }
     forceUpdate()
   }, [true])
@@ -384,7 +417,7 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
               <EmbeddedIconButton
                 LIcon={ BookmarksFill }
                 color={ ("Mark" in env.current.filters) ? "success" : "light" }
-                disabled={ env.current.mark.length < 2 && !("Mark" in env.current.filters) }
+                disabled={ env.current.marks.length < 2 && !("Mark" in env.current.filters) }
                 onClick={ handleClickMarkFilter }
               />
             </th>
@@ -402,7 +435,17 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
                 onClick={ handleClickFilter }
               />
               {
-                (label === "Content" && env.current.caret) &&
+                (content.format.label[label] === "text") &&
+                <EmbeddedIconButton
+                  LIcon={ Search }
+                  color={ (label in env.current.searches) ? "success" : "light" }
+                  toggle="modal"
+                  target={ id.current.textFilter }
+                  onClick={ handleClickSearch }
+                />
+              }
+              {
+                isSearching(label) &&
                 <>
                   <EmbeddedIconButton
                     LIcon={ CaretUpFill }
@@ -417,7 +460,7 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
                 </>
               }
               {
-                (label === "Date") &&
+                (content.format.label[label] === "date") &&
                 <EmbeddedButton
                   label={ LocalDate.getOffset() === 9 ? "JST" : "Local" }
                   color={ (env.current.localtime) ? "success" : "light" }
@@ -437,27 +480,22 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
   const renderBody = () => {
     if (content) {
       env.current.rows = 0
+      env.current.first = 0
+      for (let label in env.current.searches) {
+        env.current.searches[label].founds = []
+      }
       return content.data.map((datum: TableData, index: number) => {
         for (let label in content.format.label) {
-          if (!isMarkFiltered(index + 1)) {
+          if (!isFiltered(datum, label) || !isMarkFiltered(index + 1)) {
             return
           }
-
-          if ((label === "Content") && ("Content" in env.current.filters) && (env.current.filters["Content"].display === "Highlight")) {
-            if (isFiltered(datum, label)) {
-              env.current.find.push(index + 1)
-            }
-          } else {
-            if (!isFiltered(datum, label)) {
-              return
-            }
+          if (foundSearchText(datum, label)) {
+            env.current.searches[label].founds.push(index + 1)
           }
         }
 
-          //if (!isFiltered(datum, label) || !isMarkFiltered(index + 1)) {
-          //    return
-
         env.current.rows++
+        env.current.first = (env.current.first) ? env.current.first : index + 1
         if (env.current.rows <= (env.current.page - 1) * env.current.maxRow || env.current.rows > env.current.page * env.current.maxRow) {
           return
         }
@@ -483,7 +521,7 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
           <tr
             key={ "row" + index }
             className={ `${
-              env.current.mark.includes(index + 1) ? "table-warning" :
+              env.current.marks.includes(index + 1) ? "table-warning" :
               (index + 1 === env.current.line)     ? "table-success" : ""
             }` }
             title={ `${ index + 1 }` }
@@ -562,16 +600,46 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
     }
   }
 
+  const foundSearchText = (datum: TableData, label: string) => {
+    if (!(label in env.current.searches)) {
+      return false
+    }
+
+    switch (env.current.searches[label].type) {
+      case "text":
+        switch (env.current.searches[label].mode) {
+          case "Be included":
+            if (env.current.searches[label].sensitive) {
+              return datum[label].includes(env.current.searches[label].condition)
+            } else {
+              return datum[label].toUpperCase().includes(env.current.searches[label].condition.toUpperCase())
+            }
+
+          default:
+            return false
+        }
+
+      default:
+        return false
+    }
+  }
+
   const highlight = (datum: TableData, label: string) => {
-    if (!(label in env.current.filters)) {
+    let setting: FilterSetting | SearchSetting
+
+    if (label in env.current.filters) {
+      setting = env.current.filters[label]
+    } else if (label in env.current.searches) {
+      setting = env.current.searches[label]
+    } else {
       return datum[label]
     }
 
-    switch (env.current.filters[label].type) {
+    switch (setting.type) {
       case "text":
-        let condition = env.current.filters[label].condition
-        let option = env.current.filters[label].sensitive ? "g" : "gi"
-        switch (env.current.filters[label].mode) {
+        let condition = setting.condition
+        let option = setting.sensitive ? "g" : "gi"
+        switch (setting.mode) {
           case "Be included":
             condition = Escape.regex(condition)
 
@@ -610,10 +678,11 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
       <div ref={ ref.current.parent } className="flex-main-area flex-main-overflow table-responsive">
         <ModalFrame
           id={ id.current.textFilter }
-          title="Text Filter"
+          title={ `Text ${ env.current.operation.charAt(0).toUpperCase() + env.current.operation.slice(1) }` }
           message="Input a condition, or press [Clear] to reset."
           body={
             <TextFilterForm
+              operation={ env.current.operation }
               sensitive={ env.current.filters["Content"] && env.current.filters["Content"].sensitive }
               condition={ env.current.filters["Content"] && env.current.filters["Content"].condition }
               dismiss="modal"
@@ -646,7 +715,7 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
       <div className="flex-area-bottom-0 flex-container-row justify-content-center">
         <Button
           className="flex-area-left"
-          label={ env.current.format === "date" ? "OFF" : "ON" }
+          label={ env.current.format !== "date" ? "ON" : "OFF" }
           LIcon={ Clock }
           type="btn-outline"
           color="secondary"
@@ -673,14 +742,14 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
           size={ 4 }
           valid={ input.current.line > 0 && input.current.line <= env.current.rows }
           validation={ false }
-          disabled={ !!Object.keys(env.current.filters).length }
+          disabled={ !isLineMovable() }
           onChange={ handleChangeLine }
-          onSubmit={ handleClickGoToLine }
+          onSubmit={ handleClickMoveLine }
         />
         <Button
           className="flex-area-center"
-          label={ env.current.mark.includes(env.current.line) ? "unmark"  : "mark" }
-          LIcon={ env.current.mark.includes(env.current.line) ? BookmarkX : BookmarkCheck }
+          label={ env.current.marks.includes(env.current.line) ? "unmark"  : "mark" }
+          LIcon={ env.current.marks.includes(env.current.line) ? BookmarkX : BookmarkCheck }
           type="btn-outline"
           color="secondary"
           onClick={ handleClickMark }
@@ -691,7 +760,6 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
           LIcon={ Download }
           type="btn-outline"
           color="secondary"
-          disabled={ !env.current.dlable }
           onClick={ handleClickDownload }
         />
       </div>
