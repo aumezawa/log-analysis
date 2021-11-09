@@ -80,6 +80,7 @@ const MainPage: React.FC<MainPageProps> = ({
     filepath  : null,
     filename  : null,
     line      : null,
+    mark      : null,
     filter    : null,
     sensitive : true,
     date_from : null,
@@ -103,6 +104,7 @@ const MainPage: React.FC<MainPageProps> = ({
       data.current.bundle,
       data.current.filepath,
       data.current.line,
+      data.current.mark,
       data.current.filter,
       data.current.sensitive,
       data.current.date_from,
@@ -117,6 +119,7 @@ const MainPage: React.FC<MainPageProps> = ({
     const bundle = params.get("bundle")
     const filepath = params.get("filepath")
     const line = params.get("line")
+    const mark = params.get("mark")
     const filter = params.get("filter")
     const sensitive = params.get("sensitive")
     const date_from = params.get("date_from")
@@ -136,6 +139,7 @@ const MainPage: React.FC<MainPageProps> = ({
         data.current.filepath   =  domain && project && bundle && filepath
         data.current.filename   =  domain && project && bundle && filepath && Path.basename(filepath)
         data.current.line       =  domain && project && bundle && filepath && line       && Number(line)
+        data.current.mark       =  domain && project && bundle && filepath && mark
         data.current.filter     =  domain && project && bundle && filepath && filter
         data.current.sensitive  = (domain && project && bundle && filepath && sensitive) ? false : true
         data.current.date_from  =  domain && project && bundle && filepath && date_from
@@ -236,6 +240,11 @@ const MainPage: React.FC<MainPageProps> = ({
 
   const handleChangeTableLine = useCallback((line: number) => {
     data.current.line = line
+    updateAddressBar()
+  }, [true])
+
+  const handleChangeTableMark = useCallback((mark: string) => {
+    data.current.mark = mark
     updateAddressBar()
   }, [true])
 
@@ -372,11 +381,13 @@ const MainPage: React.FC<MainPageProps> = ({
                       <FunctionalTableBox
                         path={ ProjectPath.strictEncodeFilepath(data.current.domain, data.current.project, data.current.bundle, data.current.filepath) }
                         line={ data.current.line }
+                        mark={ data.current.mark }
                         textFilter={ data.current.filter }
                         textSensitive={ data.current.sensitive }
                         dateFrom={ data.current.date_from }
                         dateTo={ data.current.date_to }
                         onChangeLine={ handleChangeTableLine }
+                        onChangeMark={ handleChangeTableMark }
                         onChangeTextFilter={ handleChangeTableTextFilter }
                         onChangeDateFilter={ handleChangeTableDateFilter }
                       />

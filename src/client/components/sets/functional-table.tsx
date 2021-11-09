@@ -23,12 +23,14 @@ type FunctionalTableProps = {
   className?          : string,
   content?            : TableContent,
   line?               : number,
+  mark?               : string,
   textFilter?         : string,
   textSensitive?      : boolean,
   dateFrom?           : string,
   dateTo?             : string,
   //copy?               : boolean,
   onChangeLine?       : (line: number) => void,
+  onChangeMark?       : (mark: string) => void,
   onChangeTextFilter? : (textFilter: string, textSensitive: boolean) => void,
   onChangeDateFilter? : (dateFrom: string, dateTo: string) => void,
   onClickReload?      : (format: string) => void,
@@ -42,12 +44,14 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
   className           = "",
   content             = null,
   line                = null,
+  mark                = null,
   textFilter          = null,
   textSensitive       = true,
   dateFrom            = null,
   dateTo              = null,
   //copy                = false,
   onChangeLine        = undefined,
+  onChangeMark        = undefined,
   onChangeTextFilter  = undefined,
   onChangeDateFilter  = undefined,
   onClickReload       = undefined,
@@ -95,7 +99,7 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
       env.current.rows = 0
       env.current.line = (line > 0) ? line : 1
       env.current.first = 0
-      env.current.marks = []
+      env.current.marks = mark ? mark.split("_").map((e: string) => Number(e)) : []
       env.current.label = null
       env.current.operation = "filter"
       env.current.filters = {} as FilterSettings
@@ -392,8 +396,11 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
       env.current.marks.push(env.current.line)
       env.current.marks.sort((a: number, b: number) => (a - b))
     }
+    if (onChangeMark) {
+      onChangeMark(env.current.marks.join("_"))
+    }
     forceUpdate()
-  }, [true])
+  }, [onChangeMark])
 
   const handleClickMarkUp = useCallback(() => {
     for (let line of env.current.marks.slice().reverse()) {

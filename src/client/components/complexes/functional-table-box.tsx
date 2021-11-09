@@ -18,10 +18,12 @@ type FunctionalTableBoxProps = {
   className?          : string,
   path?               : string,
   line?               : number,
+  mark?               : string,
   textFilter?         : string,
   textSensitive?      : boolean,
   dateFrom?           : string,
   dateTo?             : string,
+  onChangeMark?       : (mark: string) => void,
   onChangeLine?       : (line: number) => void,
   onChangeTextFilter? : (textFilter: string, textSensitive: boolean) => void,
   onChangeDateFilter? : (dateFrom: string, dateTo: string) => void
@@ -31,11 +33,13 @@ const FunctionalTableBox = React.memo<FunctionalTableBoxProps>(({
   className           = "",
   path                = null,
   line                = null,
+  mark                = null,
   textFilter          = null,
   textSensitive       = true,
   dateFrom            = null,
   dateTo              = null,
   onChangeLine        = undefined,
+  onChangeMark        = undefined,
   onChangeTextFilter  = undefined,
   onChangeDateFilter  = undefined
 }) => {
@@ -90,6 +94,12 @@ const FunctionalTableBox = React.memo<FunctionalTableBoxProps>(({
       onChangeLine(line)
     }
   }, [onChangeLine])
+
+  const handleChangeMark = useCallback((mark: string) => {
+    if (onChangeMark) {
+      onChangeMark(mark)
+    }
+  }, [onChangeMark])
 
   const handleChangeTextFilter = useCallback((textFilter: string, textSensitive: boolean) => {
     if (onChangeTextFilter) {
@@ -186,11 +196,13 @@ const FunctionalTableBox = React.memo<FunctionalTableBoxProps>(({
           className={ className }
           content={ data.current.content }
           line={ line }
+          mark={ mark }
           textFilter={ textFilter }
           textSensitive={ textSensitive }
           dateFrom={ dateFrom }
           dateTo={ dateTo }
           onChangeLine={ handleChangeLine }
+          onChangeMark={ handleChangeMark }
           onChangeTextFilter={ handleChangeTextFilter }
           onChangeDateFilter={ handleChangeDateFilter }
           onClickReload={ handleClickReload }
