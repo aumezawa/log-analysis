@@ -78,6 +78,9 @@ const TextFilterForm = React.memo<TextFilterFormProps>(({
   }, [true])
 
   const handleSubmit = useCallback(() => {
+    if (operation === "search") {
+      data.current.mode = options[0]
+    }
     if (onSubmit) {
       onSubmit(data.current.mode, data.current.sensitive, data.current.condition)
     }
@@ -100,7 +103,7 @@ const TextFilterForm = React.memo<TextFilterFormProps>(({
         className="mb-3"
         label="Mode"
         options={ options }
-        disabled={ disabled || operation !== "filter" }
+        disabled={ disabled || operation === "search" }
         onChange={ handleChangeMode }
       />
       <CheckForm
