@@ -1,10 +1,10 @@
 import * as React from "react"
 import { useRef, useCallback, useReducer } from "react"
 
-import { CaretRight, CaretRightFill, Dot, QuestionCircle, Tools } from "react-bootstrap-icons"
+import { CaretRight, CaretRightFill, Dot, Tools } from "react-bootstrap-icons"
 import { House } from "react-bootstrap-icons"
 import { FolderCheck, FolderPlus, FolderX, Folder, Folder2Open } from "react-bootstrap-icons"
-import { JournalArrowDown, JournalArrowUp, JournalCheck, JournalX, Journal } from "react-bootstrap-icons"
+import { JournalArrowDown, JournalArrowUp, JournalCheck, JournalX, Journal, Terminal } from "react-bootstrap-icons"
 import { PersonPlus } from "react-bootstrap-icons"
 import { FileEarmarkText } from "react-bootstrap-icons"
 
@@ -31,6 +31,8 @@ type ProjectNavigatorProps = {
   project         : string,
   bundle          : string,
   filename        : string,
+  terminal        : string,
+  focus           : string,
   onChangeDomain  : (domainName: string) => void,
   onChangeProject : (projectName: string) => void,
   onChangeBundle  : (bundleId: string) => void
@@ -43,6 +45,8 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
   project         = null,
   bundle          = null,
   filename        = null,
+  terminal        = null,
+  focus           = null,
   onChangeDomain  = undefined,
   onChangeProject = undefined,
   onChangeBundle  = undefined
@@ -248,13 +252,26 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
             onClick={ handleClickOpenBundle }
           />
         </div>
-        { filename &&
+        { focus === "filename" && filename &&
           <>
             <CaretRightFill />
             <div className="borderable">
               <Button
                 label={ filename }
                 LIcon={ FileEarmarkText }
+                color="success"
+                noAction={ true }
+              />
+            </div>
+          </>
+        }
+        { focus === "terminal" && terminal &&
+          <>
+            <CaretRightFill />
+            <div className="borderable">
+              <Button
+                label={ terminal }
+                LIcon={ Terminal }
                 color="success"
                 noAction={ true }
               />

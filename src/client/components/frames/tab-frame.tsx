@@ -15,7 +15,8 @@ type TabFrameProps = {
   items     : Array<JSX.Element>,
   refs      : Array<React.RefObject<HTMLAnchorElement>>,
   show?     : number,
-  overflow? : boolean
+  overflow? : boolean,
+  onClicks? : Array<() => void>
 }
 
 const TabFrame: React.FC<TabFrameProps> = ({
@@ -25,7 +26,8 @@ const TabFrame: React.FC<TabFrameProps> = ({
   items     = undefined,
   refs      = undefined,
   show      = 0,
-  overflow  = true
+  overflow  = true,
+  onClicks  = []
 }) => {
   const id = useRef({
     label : "label-" + UniqueId(),
@@ -45,6 +47,7 @@ const TabFrame: React.FC<TabFrameProps> = ({
               labelId={ id.current.label + index }
               itemId={ id.current.item + index }
               active={ index === show }
+              onClick={ onClicks[index] }
             />
           ))
         }

@@ -2,7 +2,7 @@ import * as React from "react"
 import { useEffect, useRef, useCallback, useReducer } from "react"
 
 import { ChatRightText, HourglassSplit, HourglassTop, InfoCircle, Key, Person, QuestionCircle, ReplyAllFill } from "react-bootstrap-icons"
-import { Display, FileEarmarkText, Search } from "react-bootstrap-icons"
+import { Display, FileEarmarkText, Search, Terminal } from "react-bootstrap-icons"
 
 import Axios from "axios"
 import { AxiosResponse, AxiosError } from "axios"
@@ -63,7 +63,8 @@ const MainPage: React.FC<MainPageProps> = ({
     files   : React.createRef<HTMLAnchorElement>(),
     search  : React.createRef<HTMLAnchorElement>(),
     viewer  : React.createRef<HTMLAnchorElement>(),
-    whatsnew: React.createRef<HTMLButtonElement>(),
+    terminal: React.createRef<HTMLAnchorElement>(),
+    whatsnew: React.createRef<HTMLButtonElement>()
   })
 
   const id = useRef({
@@ -79,13 +80,15 @@ const MainPage: React.FC<MainPageProps> = ({
     bundle    : null,
     filepath  : null,
     filename  : null,
+    termpath  : null,
+    terminal  : null,
+    focus     : null,
     line      : null,
     mark      : null,
     filter    : null,
     sensitive : true,
     date_from : null,
     date_to   : null,
-    terminal  : false,
     action    : "delete"
   })
 
@@ -179,6 +182,9 @@ const MainPage: React.FC<MainPageProps> = ({
     data.current.bundle = null
     data.current.filepath = null
     data.current.filename = null
+    data.current.termpath = null
+    data.current.terminal = null
+    data.current.focus = null
     data.current.line = null
     data.current.filter = null
     data.current.sensitive = true
@@ -194,6 +200,9 @@ const MainPage: React.FC<MainPageProps> = ({
     data.current.bundle = null
     data.current.filepath = null
     data.current.filename = null
+    data.current.termpath = null
+    data.current.terminal = null
+    data.current.focus = null
     data.current.line = null
     data.current.filter = null
     data.current.sensitive = true
@@ -208,6 +217,9 @@ const MainPage: React.FC<MainPageProps> = ({
     data.current.bundle = bundleId
     data.current.filepath = null
     data.current.filename = null
+    data.current.termpath = null
+    data.current.terminal = null
+    data.current.focus = null
     data.current.line = null
     data.current.filter = null
     data.current.sensitive = true
@@ -219,20 +231,19 @@ const MainPage: React.FC<MainPageProps> = ({
   }, [true])
 
   const handleSelectFile = useCallback((action: string, value: string, option: any) => {
-    ref.current.viewer.current.click()
-    data.current.filepath = value
-    data.current.filename = Path.basename(value)
-    data.current.line = null
-    data.current.filter = (option && option.search !== "") ? option.search : null
-    data.current.sensitive = true
-    data.current.date_from = (option && option.data_from) || null
-    data.current.date_to = (option && option.data_to) || null
     if (action === "terminal") {
-      data.current.terminal = true
-      setTimeout(() => forceUpdate(), 1000)
+      ref.current.terminal.current.click()
+      data.current.termpath = value
+      data.current.terminal = Path.basename(value)
     } else {
-      data.current.terminal = false
-      forceUpdate()
+      ref.current.viewer.current.click()
+      data.current.filepath = value
+      data.current.filename = Path.basename(value)
+      data.current.line = null
+      data.current.filter = (option && option.search !== "") ? option.search : null
+      data.current.sensitive = true
+      data.current.date_from = (option && option.data_from) || null
+      data.current.date_to = (option && option.data_to) || null
     }
     updateTitle()
     updateAddressBar()
@@ -264,6 +275,16 @@ const MainPage: React.FC<MainPageProps> = ({
     Cookie.remove("token")
     Cookie.remove("whatsnew")
     location.href = Environment.getBaseUrl()
+  }, [true])
+
+  const handleClickViewer = useCallback(() => {
+    data.current.focus = "filename"
+    forceUpdate()
+  }, [true])
+
+  const handleClickTerminal = useCallback(() => {
+    data.current.focus = "terminal"
+    setTimeout(() => forceUpdate(), 1000)
   }, [true])
 
   return (
@@ -349,6 +370,8 @@ const MainPage: React.FC<MainPageProps> = ({
                 project={ data.current.project }
                 bundle={ data.current.bundle }
                 filename={ data.current.filename }
+                terminal={ data.current.terminal }
+                focus={ data.current.focus }
                 onChangeDomain={ handleChangeDomain }
                 onChangeProject={ handleChangeProject }
                 onChangeBundle={ handleChangeBundle }
@@ -373,35 +396,30 @@ const MainPage: React.FC<MainPageProps> = ({
             }
             right={
               <TabFrame
-                labels={ ["Viewer"] }
-                LIcons={ [ Display ] }
+                labels={ ["Viewer", "Terminal"] }
+                LIcons={ [ Display, Terminal ] }
                 items={ [
-                  <>
-                    { !data.current.terminal &&
-                      <FunctionalTableBox
-                        path={ ProjectPath.strictEncodeFilepath(data.current.domain, data.current.project, data.current.bundle, data.current.filepath) }
-                        line={ data.current.line }
-                        mark={ data.current.mark }
-                        textFilter={ data.current.filter }
-                        textSensitive={ data.current.sensitive }
-                        dateFrom={ data.current.date_from }
-                        dateTo={ data.current.date_to }
-                        onChangeLine={ handleChangeTableLine }
-                        onChangeMark={ handleChangeTableMark }
-                        onChangeTextFilter={ handleChangeTableTextFilter }
-                        onChangeDateFilter={ handleChangeTableDateFilter }
-                      />
-                    }
-                    { data.current.terminal &&
-                      <TerminalBox
-                        app="term"
-                        path={ ProjectPath.strictEncodeFilepath(data.current.domain, data.current.project, data.current.bundle, data.current.filepath) }
-                        disabled={ !data.current.terminal }
-                      />
-                    }
-                  </>
+                  <FunctionalTableBox
+                    path={ ProjectPath.strictEncodeFilepath(data.current.domain, data.current.project, data.current.bundle, data.current.filepath) }
+                    line={ data.current.line }
+                    mark={ data.current.mark }
+                    textFilter={ data.current.filter }
+                    textSensitive={ data.current.sensitive }
+                    dateFrom={ data.current.date_from }
+                    dateTo={ data.current.date_to }
+                    onChangeLine={ handleChangeTableLine }
+                    onChangeMark={ handleChangeTableMark }
+                    onChangeTextFilter={ handleChangeTableTextFilter }
+                    onChangeDateFilter={ handleChangeTableDateFilter }
+                  />,
+                  <TerminalBox
+                    app="term"
+                    path={ ProjectPath.strictEncodeFilepath(data.current.domain, data.current.project, data.current.bundle, data.current.termpath) }
+                    disabled={ data.current.terminal === null }
+                  />
                 ] }
-                refs={ [ref.current.viewer] }
+                refs={ [ref.current.viewer, ref.current.terminal] }
+                onClicks={ [handleClickViewer, handleClickTerminal] }
               />
             }
             border={ true }
