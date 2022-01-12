@@ -1,3 +1,18 @@
+Version: **0.19.0** [2022/01/12]
+
+New Features:
+  - Supported CLI console
+
+Enhanced Features:
+  - Added terminal tab
+  - Supported prev/next buttons on functional table with mark
+  - Supported url preserving for mark
+
+Bug Fixes:
+  - Invalid mode is selected in search operation on functinal table
+
+***
+
 Version: **0.18.0** [2021/11/06]
 
 New Features:

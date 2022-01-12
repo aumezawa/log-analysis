@@ -28,6 +28,7 @@ app.set("public-key-path", process.env.npm_package_config_public_key_path)
 app.set("private-key-path", process.env.npm_package_config_private_key_path)
 app.set("certificate-path", process.env.npm_package_config_certificate_path)
 app.set("storage-path", storagePath)
+app.set("console-user", process.env.npm_package_config_console_user)
 app.set("max-view-size", Number(process.env.npm_package_config_max_view_size_mb))
 app.set("date-format", process.env.npm_package_config_date_format)
 

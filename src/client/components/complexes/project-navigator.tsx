@@ -1,10 +1,10 @@
 import * as React from "react"
 import { useRef, useCallback, useReducer } from "react"
 
-import { CaretRight, CaretRightFill, Dot, QuestionCircle, Tools } from "react-bootstrap-icons"
+import { CaretRight, CaretRightFill, Dot, Tools } from "react-bootstrap-icons"
 import { House } from "react-bootstrap-icons"
 import { FolderCheck, FolderPlus, FolderX, Folder, Folder2Open } from "react-bootstrap-icons"
-import { JournalArrowDown, JournalArrowUp, JournalCheck, JournalX, Journal } from "react-bootstrap-icons"
+import { FileEarmarkMedical, JournalArrowDown, JournalArrowUp, JournalCheck, JournalX, Journal, Terminal } from "react-bootstrap-icons"
 import { PersonPlus } from "react-bootstrap-icons"
 import { FileEarmarkText } from "react-bootstrap-icons"
 import { Box, ClipboardCheck, HddStack } from "react-bootstrap-icons"
@@ -34,11 +34,17 @@ type ProjectNavigatorProps = {
   project         : string,
   bundle          : string,
   filename        : string,
+  terminal        : string,
+  host            : string,
+  vm              : string,
+  dump            : string,
+  focus           : string,
   onChangeDomain  : (domainName: string) => void,
   onChangeProject : (projectName: string) => void,
   onChangeBundle  : (bundleId: string) => void,
   onChangeHosts   : (hosts: string) => void,
-  onChangeVms     : (vms: string) => void
+  onChangeVms     : (vms: string) => void,
+  onClickConsole  : () => void
 }
 
 const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
@@ -48,11 +54,17 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
   project         = null,
   bundle          = null,
   filename        = null,
+  terminal        = null,
+  host            = null,
+  vm              = null,
+  dump            = null,
+  focus           = null,
   onChangeDomain  = undefined,
   onChangeProject = undefined,
   onChangeBundle  = undefined,
   onChangeHosts   = undefined,
-  onChangeVms     = undefined
+  onChangeVms     = undefined,
+  onClickConsole  = undefined
 }) => {
   const [ignored,       forceUpdate]       = useReducer(x => x + 1, 0)
   const [reloadProject, updateProjectList] = useReducer(x => x + 1, 0)
@@ -167,6 +179,12 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
     data.current.mode = "vms"
     updateSelectList()
   }, [true])
+
+  const handleClickOpenConsole = useCallback(() => {
+    if (onClickConsole) {
+      onClickConsole()
+    }
+  }, [onClickConsole])
 
   const handleClickInviteUser = useCallback(() => {
     const textarea = document.createElement("textarea")
@@ -292,13 +310,65 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
             onClick={ handleClickOpenBundle }
           />
         </div>
-        { filename &&
+        { focus === "filename" && filename &&
           <>
             <CaretRightFill />
             <div className="borderable">
               <Button
                 label={ filename }
                 LIcon={ FileEarmarkText }
+                color="success"
+                noAction={ true }
+              />
+            </div>
+          </>
+        }
+        { focus === "terminal" && terminal &&
+          <>
+            <CaretRightFill />
+            <div className="borderable">
+              <Button
+                label={ terminal }
+                LIcon={ Terminal }
+                color="success"
+                noAction={ true }
+              />
+            </div>
+          </>
+        }
+        { focus === "host" && host &&
+          <>
+            <CaretRightFill />
+            <div className="borderable">
+              <Button
+                label={ host }
+                LIcon={ HddStack }
+                color="success"
+                noAction={ true }
+              />
+            </div>
+          </>
+        }
+        { focus === "vm" && vm &&
+          <>
+            <CaretRightFill />
+            <div className="borderable">
+              <Button
+                label={ vm }
+                LIcon={ Box }
+                color="success"
+                noAction={ true }
+              />
+            </div>
+          </>
+        }
+        { focus === "dump" && dump &&
+          <>
+            <CaretRightFill />
+            <div className="borderable">
+              <Button
+                label={ dump }
+                LIcon={ FileEarmarkMedical }
                 color="success"
                 noAction={ true }
               />
@@ -385,6 +455,13 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
               <DropdownHeader
                 key="advance-header"
                 label="Advanced Operations"
+              />,
+              <DropdownItem
+                key="console"
+                label="Open Console"
+                LIcon={ Terminal }
+                disabled={ !domain || !project || !bundle || !Privilege.isConsoleOpenable(privilege, domain) }
+                onClick={ handleClickOpenConsole }
               />,
               <DropdownItem
                 key="compare-hosts"

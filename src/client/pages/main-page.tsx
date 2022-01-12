@@ -2,7 +2,7 @@ import * as React from "react"
 import { useEffect, useRef, useCallback, useReducer } from "react"
 
 import { ChatRightText, HourglassSplit, HourglassTop, InfoCircle, Key, Person, QuestionCircle, ReplyAllFill } from "react-bootstrap-icons"
-import { Box, Display, FileEarmarkMedical, FileEarmarkText, HddStack, Search } from "react-bootstrap-icons"
+import { Box, Display, FileEarmarkMedical, FileEarmarkText, HddStack, Search, Terminal } from "react-bootstrap-icons"
 
 import Axios from "axios"
 import { AxiosResponse, AxiosError } from "axios"
@@ -74,6 +74,7 @@ const MainPage: React.FC<MainPageProps> = ({
     vm      : React.createRef<HTMLAnchorElement>(),
     zdump   : React.createRef<HTMLAnchorElement>(),
     viewer  : React.createRef<HTMLAnchorElement>(),
+    terminal: React.createRef<HTMLAnchorElement>(),
     whatsnew: React.createRef<HTMLButtonElement>()
   })
 
@@ -94,13 +95,20 @@ const MainPage: React.FC<MainPageProps> = ({
     dumpname  : null,
     filepath  : null,
     filename  : null,
+    termpath  : null,
+    terminal  : null,
+    focus     : null,
     line      : null,
+    mark      : null,
     filter    : null,
     sensitive : true,
     date_from : null,
     date_to   : null,
-    terminal  : false,
     action    : "delete"
+  })
+
+  const reload = useRef({
+    terminal  : 0
   })
 
   const updateTitle = () => {
@@ -118,6 +126,7 @@ const MainPage: React.FC<MainPageProps> = ({
       data.current.bundle,
       data.current.filepath,
       data.current.line,
+      data.current.mark,
       data.current.filter,
       data.current.sensitive,
       data.current.date_from,
@@ -132,6 +141,7 @@ const MainPage: React.FC<MainPageProps> = ({
     const bundle = params.get("bundle")
     const filepath = params.get("filepath")
     const line = params.get("line")
+    const mark = params.get("mark")
     const filter = params.get("filter")
     const sensitive = params.get("sensitive")
     const date_from = params.get("date_from")
@@ -151,6 +161,7 @@ const MainPage: React.FC<MainPageProps> = ({
         data.current.filepath   =  domain && project && bundle && filepath
         data.current.filename   =  domain && project && bundle && filepath && Path.basename(filepath)
         data.current.line       =  domain && project && bundle && filepath && line       && Number(line)
+        data.current.mark       =  domain && project && bundle && filepath && mark
         data.current.filter     =  domain && project && bundle && filepath && filter
         data.current.sensitive  = (domain && project && bundle && filepath && sensitive) ? false : true
         data.current.date_from  =  domain && project && bundle && filepath && date_from
@@ -194,6 +205,9 @@ const MainPage: React.FC<MainPageProps> = ({
     data.current.dumpname = null
     data.current.filepath = null
     data.current.filename = null
+    data.current.termpath = null
+    data.current.terminal = null
+    data.current.focus = null
     data.current.line = null
     data.current.filter = null
     data.current.sensitive = true
@@ -213,6 +227,9 @@ const MainPage: React.FC<MainPageProps> = ({
     data.current.dumpname = null
     data.current.filepath = null
     data.current.filename = null
+    data.current.termpath = null
+    data.current.terminal = null
+    data.current.focus = null
     data.current.line = null
     data.current.filter = null
     data.current.sensitive = true
@@ -231,6 +248,9 @@ const MainPage: React.FC<MainPageProps> = ({
     data.current.dumpname = null
     data.current.filepath = null
     data.current.filename = null
+    data.current.termpath = null
+    data.current.terminal = null
+    data.current.focus = null
     data.current.line = null
     data.current.filter = null
     data.current.sensitive = true
@@ -280,21 +300,28 @@ const MainPage: React.FC<MainPageProps> = ({
     forceUpdate()
   }, [true])
 
+  const handleClickOpenConsole = useCallback(() => {
+    ref.current.terminal.current.click()
+    data.current.termpath = null
+    data.current.terminal = "Console"
+    reload.current.terminal = reload.current.terminal + 1
+  }, [true])
+
   const handleSelectFile = useCallback((action: string, value: string, option: any) => {
-    ref.current.viewer.current.click()
-    data.current.filepath = value
-    data.current.filename = Path.basename(value)
-    data.current.line = null
-    data.current.filter = (option && option.search !== "") ? option.search : null
-    data.current.sensitive = true
-    data.current.date_from = (option && option.data_from) || null
-    data.current.date_to = (option && option.data_to) || null
     if (action === "terminal") {
-      data.current.terminal = true
-      setTimeout(() => forceUpdate(), 1000)
+      ref.current.terminal.current.click()
+      data.current.termpath = value
+      data.current.terminal = Path.basename(value)
+      reload.current.terminal = reload.current.terminal + 1
     } else {
-      data.current.terminal = false
-      forceUpdate()
+      ref.current.viewer.current.click()
+      data.current.filepath = value
+      data.current.filename = Path.basename(value)
+      data.current.line = null
+      data.current.filter = (option && option.search !== "") ? option.search : null
+      data.current.sensitive = true
+      data.current.date_from = (option && option.data_from) || null
+      data.current.date_to = (option && option.data_to) || null
     }
     updateTitle()
     updateAddressBar()
@@ -302,6 +329,11 @@ const MainPage: React.FC<MainPageProps> = ({
 
   const handleChangeTableLine = useCallback((line: number) => {
     data.current.line = line
+    updateAddressBar()
+  }, [true])
+
+  const handleChangeTableMark = useCallback((mark: string) => {
+    data.current.mark = mark
     updateAddressBar()
   }, [true])
 
@@ -321,6 +353,31 @@ const MainPage: React.FC<MainPageProps> = ({
     Cookie.remove("token")
     Cookie.remove("whatsnew")
     location.href = Environment.getBaseUrl()
+  }, [true])
+
+  const handleClickHost = useCallback(() => {
+    data.current.focus = "host"
+    forceUpdate()
+  }, [true])
+
+  const handleClickVm = useCallback(() => {
+    data.current.focus = "vm"
+    forceUpdate()
+  }, [true])
+
+  const handleClickDump = useCallback(() => {
+    data.current.focus = "dump"
+    forceUpdate()
+  }, [true])
+
+  const handleClickViewer = useCallback(() => {
+    data.current.focus = "filename"
+    forceUpdate()
+  }, [true])
+
+  const handleClickTerminal = useCallback(() => {
+    data.current.focus = "terminal"
+    setTimeout(() => forceUpdate(), 1000)
   }, [true])
 
   return (
@@ -406,11 +463,17 @@ const MainPage: React.FC<MainPageProps> = ({
                 project={ data.current.project }
                 bundle={ data.current.bundle }
                 filename={ data.current.filename }
+                terminal={ data.current.terminal }
+                host={ "Host" }
+                vm={ data.current.vmname }
+                dump={ data.current.dumpname }
+                focus={ data.current.focus }
                 onChangeDomain={ handleChangeDomain }
                 onChangeProject={ handleChangeProject }
                 onChangeBundle={ handleChangeBundle }
                 onChangeHosts={ handleChangeHosts }
                 onChangeVms={ handleChangeVms }
+                onClickConsole={ handleClickOpenConsole }
               />
             }
             left={
@@ -444,8 +507,8 @@ const MainPage: React.FC<MainPageProps> = ({
             }
             right={
               <TabFrame
-                labels={ ["Host", "VM", "Dump", "Viewer"] }
-                LIcons={ [ HddStack, Box, FileEarmarkMedical, Display ] }
+                labels={ ["Host", "VM", "Dump", "Viewer", "Terminal"] }
+                LIcons={ [HddStack, Box, FileEarmarkMedical, Display, Terminal] }
                 items={ [
                   <HostInfoBox
                     domain={ data.current.domain }
@@ -466,30 +529,28 @@ const MainPage: React.FC<MainPageProps> = ({
                     bundle={ data.current.bundle }
                     zdump={ data.current.dumpname }
                   />,
-                  <>
-                    { !data.current.terminal &&
-                      <FunctionalTableBox
-                        path={ ProjectPath.strictEncodeFilepath(data.current.domain, data.current.project, data.current.bundle, data.current.filepath) }
-                        line={ data.current.line }
-                        textFilter={ data.current.filter }
-                        textSensitive={ data.current.sensitive }
-                        dateFrom={ data.current.date_from }
-                        dateTo={ data.current.date_to }
-                        onChangeLine={ handleChangeTableLine }
-                        onChangeTextFilter={ handleChangeTableTextFilter }
-                        onChangeDateFilter={ handleChangeTableDateFilter }
-                      />
-                    }
-                    { data.current.terminal &&
-                      <TerminalBox
-                        app="term"
-                        path={ ProjectPath.strictEncodeFilepath(data.current.domain, data.current.project, data.current.bundle, data.current.filepath) }
-                        disabled={ !data.current.terminal }
-                      />
-                    }
-                  </>
+                  <FunctionalTableBox
+                    path={ ProjectPath.strictEncodeFilepath(data.current.domain, data.current.project, data.current.bundle, data.current.filepath) }
+                    line={ data.current.line }
+                    mark={ data.current.mark }
+                    textFilter={ data.current.filter }
+                    textSensitive={ data.current.sensitive }
+                    dateFrom={ data.current.date_from }
+                    dateTo={ data.current.date_to }
+                    onChangeLine={ handleChangeTableLine }
+                    onChangeMark={ handleChangeTableMark }
+                    onChangeTextFilter={ handleChangeTableTextFilter }
+                    onChangeDateFilter={ handleChangeTableDateFilter }
+                  />,
+                  <TerminalBox
+                    app="term"
+                    path={ ProjectPath.encode(data.current.domain, data.current.project, data.current.bundle, data.current.termpath) }
+                    disabled={ data.current.terminal === null }
+                    reload={ reload.current.terminal }
+                  />
                 ] }
-                refs={ [ref.current.host, ref.current.vm, ref.current.zdump, ref.current.viewer] }
+                refs={ [ref.current.host, ref.current.vm, ref.current.zdump, ref.current.viewer, ref.current.terminal] }
+                onClicks={ [handleClickHost, handleClickVm, handleClickDump, handleClickViewer, handleClickTerminal] }
               />
             }
             border={ true }
