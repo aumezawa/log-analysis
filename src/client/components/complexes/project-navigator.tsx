@@ -1,10 +1,10 @@
 import * as React from "react"
 import { useRef, useCallback, useReducer } from "react"
 
-import { CaretRight, CaretRightFill, Dot, QuestionCircle, Tools } from "react-bootstrap-icons"
+import { CaretRight, CaretRightFill, Dot, Tools } from "react-bootstrap-icons"
 import { House } from "react-bootstrap-icons"
 import { FolderCheck, FolderPlus, FolderX, Folder, Folder2Open } from "react-bootstrap-icons"
-import { JournalArrowDown, JournalArrowUp, JournalCheck, JournalX, Journal } from "react-bootstrap-icons"
+import { JournalArrowDown, JournalArrowUp, JournalCheck, JournalX, Journal, Terminal } from "react-bootstrap-icons"
 import { PersonPlus } from "react-bootstrap-icons"
 import { FileEarmarkText } from "react-bootstrap-icons"
 
@@ -31,9 +31,12 @@ type ProjectNavigatorProps = {
   project         : string,
   bundle          : string,
   filename        : string,
+  terminal        : string,
+  focus           : string,
   onChangeDomain  : (domainName: string) => void,
   onChangeProject : (projectName: string) => void,
-  onChangeBundle  : (bundleId: string) => void
+  onChangeBundle  : (bundleId: string) => void,
+  onClickConsole  : () => void
 }
 
 const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
@@ -43,9 +46,12 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
   project         = null,
   bundle          = null,
   filename        = null,
+  terminal        = null,
+  focus           = null,
   onChangeDomain  = undefined,
   onChangeProject = undefined,
-  onChangeBundle  = undefined
+  onChangeBundle  = undefined,
+  onClickConsole  = undefined
 }) => {
   const [ignored,       forceUpdate]       = useReducer(x => x + 1, 0)
   const [reloadProject, updateProjectList] = useReducer(x => x + 1, 0)
@@ -137,6 +143,12 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
     data.current.action = "download"
     updateBundleList()
   }, [true])
+
+  const handleClickOpenConsole = useCallback(() => {
+    if (onClickConsole) {
+      onClickConsole()
+    }
+  }, [onClickConsole])
 
   const handleClickInviteUser = useCallback(() => {
     const textarea = document.createElement("textarea")
@@ -248,13 +260,26 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
             onClick={ handleClickOpenBundle }
           />
         </div>
-        { filename &&
+        { focus === "filename" && filename &&
           <>
             <CaretRightFill />
             <div className="borderable">
               <Button
                 label={ filename }
                 LIcon={ FileEarmarkText }
+                color="success"
+                noAction={ true }
+              />
+            </div>
+          </>
+        }
+        { focus === "terminal" && terminal &&
+          <>
+            <CaretRightFill />
+            <div className="borderable">
+              <Button
+                label={ terminal }
+                LIcon={ Terminal }
                 color="success"
                 noAction={ true }
               />
@@ -341,6 +366,13 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
               <DropdownHeader
                 key="advanced-header"
                 label="Advanced Operations"
+              />,
+              <DropdownItem
+                key="console"
+                label="Open Console"
+                LIcon={ Terminal }
+                disabled={ !domain || !project || !bundle || !Privilege.isConsoleOpenable(privilege, domain) }
+                onClick={ handleClickOpenConsole }
               />,
               <DropdownItem
                 key="invite"

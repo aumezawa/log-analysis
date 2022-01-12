@@ -1,5 +1,5 @@
 export default {
-  encode: (domain: string = null, project: string = null, bundle: string = null, filepath: string = null, line: number = null, filter: string = null, sensitive: boolean = true, date_from: string = null, date_to: string = null) => {
+  encode: (domain: string = null, project: string = null, bundle: string = null, filepath: string = null, line: number = null, mark: string = null, filter: string = null, sensitive: boolean = true, date_from: string = null, date_to: string = null) => {
     let path: string = null
     if (domain) {
       path = `log/${ encodeURIComponent(domain) }`
@@ -12,6 +12,10 @@ export default {
             let firstParam: boolean = true
             if (line) {
               path = `${ path }${ firstParam ? "?" : "&" }line=${ encodeURIComponent(line) }`
+              firstParam = false
+            }
+            if (mark) {
+              path = `${ path }${ firstParam ? "?" : "&" }mark=${ encodeURIComponent(mark) }`
               firstParam = false
             }
             if (filter) {
