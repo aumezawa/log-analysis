@@ -132,10 +132,12 @@ router.route("/:domain/projects/:projectName/bundles/:bundleId/files/*")
           })
         }
       } else if (req.query.mode && req.query.mode === "term") {
+        const cmd = os.platform() === "win32"              ? "more" :
+                    req.app.get("console-user") === "root" ? "less" : `sudo -u ${ req.app.get("console-user") } less`
         // OK
         return res.status(200).json({
           msg: `You get a terminal command to open the file of path /${ file } of project ${ req.project } bundle ID = ${ req.bundleId }.`,
-          cmd: `${ os.platform() === "win32" ? "more" : "less" } ${ fileInfo.path }`
+          cmd: cmd
         })
       } else {
         // OK
@@ -218,10 +220,12 @@ router.route("/:domain/projects/:projectName/bundles/:bundleId")
     })
   } if (req.query.mode && req.query.mode === "term") {
     const dirpath = Project.getBundleResourcePathSync(req.token.usr, req.domain, req.project, req.bundleId)
+    const cmd = os.platform() === "win32"              ? `cmd /k cd ${ dirpath }` :
+                req.app.get("console-user") === "root" ? `cd ${ dirpath }; bash`  : `cd ${ dirpath }; sudo -u ${ req.app.get("console-user") } bash`
     // OK
     return res.status(200).json({
       msg: `You get a terminal command to open the console of project ${ req.project } bundle ID = ${ req.bundleId }.`,
-      cmd: `${ os.platform() === "win32" ? "cmd /k cd" : "cd" } ${ dirpath } ${ os.platform() === "win32" ? "" : "; bash" }`
+      cmd: cmd
     })
   } else {
     return Project.getBundleInfo(req.token.usr, req.domain, req.project, req.bundleId)
