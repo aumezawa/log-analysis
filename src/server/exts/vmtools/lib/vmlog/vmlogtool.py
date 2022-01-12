@@ -1153,7 +1153,7 @@ def GetVmNics(vmxDict):
                 'portgroup' : vmxDict[ethernet + '.networkName'],
                 'present'   : vmxDict[ethernet + '.present'] == 'TRUE',
                 'slot'      : _int(vmxDict[ethernet + '.pciSlotNumber']),
-                'mac'       : vmxDict[ethernet + '.generatedAddress']
+                'mac'       : vmxDict[ethernet + '.generatedAddress'] if (ethernet + '.generatedAddress' in vmxDict) else None
             })
     vmNics.sort(key=lambda x: x['name'])
     return vmNics
@@ -1262,7 +1262,7 @@ def GetVmSriovVfs(vmxDict):
                 'portgroup' : vmxDict[pciPassthru + '.networkName'],
                 'present'   : vmxDict[pciPassthru + '.present'] == 'TRUE',
                 'slot'      : int(vmxDict[pciPassthru + '.pciSlotNumber']),
-                'mac'       : vmxDict[pciPassthru + '.generatedMACAddress']
+                'mac'       : vmxDict[pciPassthru + '.generatedMACAddress'] if (pciPassthru + '.generatedAddress' in vmxDict) else None
             })
     vmSriovVfs.sort(key=lambda x: x['slot'])
     return vmSriovVfs
