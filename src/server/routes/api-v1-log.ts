@@ -216,6 +216,13 @@ router.route("/:domain/projects/:projectName/bundles/:bundleId")
         : // Internal Server Error
           res.status(500).json({ msg: "Contact an administrator." })
     })
+  } if (req.query.mode && req.query.mode === "term") {
+    const dirpath = Project.getBundleResourcePathSync(req.token.usr, req.domain, req.project, req.bundleId)
+    // OK
+    return res.status(200).json({
+      msg: `You get a terminal command to open the console of project ${ req.project } bundle ID = ${ req.bundleId }.`,
+      cmd: `${ os.platform() === "win32" ? "cmd /k cd" : "cd" } ${ dirpath } ${ os.platform() === "win32" ? "" : "; bash" }`
+    })
   } else {
     return Project.getBundleInfo(req.token.usr, req.domain, req.project, req.bundleId)
     .then((bundleInfo: BundleInfo) => {

@@ -92,6 +92,10 @@ const MainPage: React.FC<MainPageProps> = ({
     action    : "delete"
   })
 
+  const reload = useRef({
+    terminal  : 0
+  })
+
   const updateTitle = () => {
     let append: string
     append = (data.current.filename) ? ` - ${ data.current.filename }`            : ""
@@ -230,11 +234,19 @@ const MainPage: React.FC<MainPageProps> = ({
     updateAddressBar()
   }, [true])
 
+  const handleClickOpenConsole = useCallback(() => {
+    ref.current.terminal.current.click()
+    data.current.termpath = null
+    data.current.terminal = "Console"
+    reload.current.terminal = reload.current.terminal + 1
+  }, [true])
+
   const handleSelectFile = useCallback((action: string, value: string, option: any) => {
     if (action === "terminal") {
       ref.current.terminal.current.click()
       data.current.termpath = value
       data.current.terminal = Path.basename(value)
+      reload.current.terminal = reload.current.terminal + 1
     } else {
       ref.current.viewer.current.click()
       data.current.filepath = value
@@ -375,6 +387,7 @@ const MainPage: React.FC<MainPageProps> = ({
                 onChangeDomain={ handleChangeDomain }
                 onChangeProject={ handleChangeProject }
                 onChangeBundle={ handleChangeBundle }
+                onClickConsole={ handleClickOpenConsole }
               />
             }
             left={
@@ -414,8 +427,9 @@ const MainPage: React.FC<MainPageProps> = ({
                   />,
                   <TerminalBox
                     app="term"
-                    path={ ProjectPath.strictEncodeFilepath(data.current.domain, data.current.project, data.current.bundle, data.current.termpath) }
+                    path={ ProjectPath.encode(data.current.domain, data.current.project, data.current.bundle, data.current.termpath) }
                     disabled={ data.current.terminal === null }
+                    reload={ reload.current.terminal }
                   />
                 ] }
                 refs={ [ref.current.viewer, ref.current.terminal] }

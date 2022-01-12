@@ -658,7 +658,7 @@ export function getBundleInfo(user: string, domain: string, project: string, bun
   })
 }
 
-function getBundleResourcePathSync(user: string, domain: string, project: string, bundleId: string): string {
+export function getBundleResourcePathSync(user: string, domain: string, project: string, bundleId: string): string {
   const bundleInfo = getBundleInfoSync(user, domain, project, bundleId)
   return bundleInfo && joinResourcePathSync(getProjectResourcePathSync(user, domain, project), bundleInfo.name)
 }

@@ -157,6 +157,20 @@ export default {
     }
   },
 
+  isConsoleOpenable: (privilege: string, domain: string) => {
+    switch (privilege) {
+      case "root":
+      case "owner":
+      case "user":
+        return true
+
+      case "anonymous":
+      case "none":
+      default:
+        return false
+    }
+  },
+
   isInvitable: (privilege: string, domain: string) => {
     switch (privilege) {
       case "root":

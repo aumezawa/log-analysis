@@ -15,13 +15,15 @@ import Escape from "../../lib/escape"
 type TerminalBoxProps = {
   app       : "term",
   path?     : string,
-  disabled? : boolean
+  disabled? : boolean,
+  reload?   : number
 }
 
 const TerminalBox = React.memo<TerminalBoxProps>(({
   app       = null,
   path      = null,
-  disabled  = true
+  disabled  = true,
+  reload    = null
 }) => {
   const ref = React.createRef<HTMLDivElement>()
 
@@ -68,7 +70,7 @@ const TerminalBox = React.memo<TerminalBoxProps>(({
         socket.disconnect()
       }
     }
-  }, [app, path, disabled])
+  }, [app, path, disabled, reload])
 
   return (
     <div ref={ ref } className="h-100"></div>
