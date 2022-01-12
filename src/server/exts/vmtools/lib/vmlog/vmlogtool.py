@@ -59,6 +59,7 @@ def DecompressBundle(filePath, compressLargeFiles=False, preserveOriginalFile=Fa
         CompressLargeFiles(os.path.join(dirPath, 'var', 'run', 'log'))
     if not preserveOriginalFile:
         os.remove(filePath)
+    SetFilePermission(dirPath)
     return dirPath
 
 
@@ -427,6 +428,17 @@ def CompressLargeFiles(dirPath, threshold=10485760):
         return False
     #
     return True
+
+
+def SetFilePermission(node):
+    if os.path.isdir(node):
+        for subnode in os.listdir(node):
+            SetFilePermission(os.path.join(node, subnode))
+    elif os.path.isfile(node):
+        os.chmod(node, stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH)
+        return True
+    else:
+        return False
 
 
 def _RemoveReadonlyFileOnWin(func, path, _):
