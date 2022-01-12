@@ -132,8 +132,8 @@ router.route("/:domain/projects/:projectName/bundles/:bundleId/files/*")
           })
         }
       } else if (req.query.mode && req.query.mode === "term") {
-        const cmd = os.platform() === "win32"              ? "more" :
-                    req.app.get("console-user") === "root" ? "less" : `sudo -u ${ req.app.get("console-user") } less`
+        const cmd = os.platform() === "win32"              ? `more ${ fileInfo.path }` :
+                    req.app.get("console-user") === "root" ? `less ${ fileInfo.path }` : `sudo -u ${ req.app.get("console-user") } less ${ fileInfo.path }`
         // OK
         return res.status(200).json({
           msg: `You get a terminal command to open the file of path /${ file } of project ${ req.project } bundle ID = ${ req.bundleId }.`,
