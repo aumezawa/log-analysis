@@ -7,6 +7,8 @@ type TFrameProps = {
   right?    : JSX.Element,
   overflowL?: boolean,
   overflowR?: boolean,
+  hiddenL?  : boolean,
+  hiddenR?  : boolean,
   border?   : boolean
 }
 
@@ -17,6 +19,8 @@ const TFrame: React.FC<TFrameProps> = ({
   right     = <></>,
   overflowL = true,
   overflowR = true,
+  hiddenL   = false,
+  hiddenR   = false,
   border    = false
 }) => (
   <div className={ `flex-container-column ${ className }` }>
@@ -26,10 +30,10 @@ const TFrame: React.FC<TFrameProps> = ({
     <div className="flex-main-area flex-area-bottom">
       <div className="flex-main-inner">
         <div className="grid-container-center row">
-          <div className={ `grid-area-left col-3 ${ overflowL && "grid-area-overflow" } ${ border && "border-right" }` }>
+          <div className={ `grid-area-left ${ hiddenL && "d-none" } ${ !hiddenR ? "col-3" : "col-12" } ${ overflowL && "grid-area-overflow" } ${ border && !hiddenR && "border-right" }` }>
             { left }
           </div>
-          <div className={ `grid-area-right col-9 ${ overflowR && "grid-area-overflow" } ${ border && "border-left" }` }>
+          <div className={ `grid-area-right ${ hiddenR && "d-none" } ${ !hiddenL ? "col-9" : "col-12" } ${ overflowR && "grid-area-overflow" } ${ border && !hiddenL && "border-left" }` }>
             { right }
           </div>
         </div>

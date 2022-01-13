@@ -4,7 +4,9 @@ import { useRef, useCallback, useReducer } from "react"
 import { CaretRight, CaretRightFill, Dot, Tools } from "react-bootstrap-icons"
 import { House } from "react-bootstrap-icons"
 import { FolderCheck, FolderPlus, FolderX, Folder, Folder2Open } from "react-bootstrap-icons"
-import { JournalArrowDown, JournalArrowUp, JournalCheck, JournalX, Journal, Terminal } from "react-bootstrap-icons"
+import { JournalArrowDown, JournalArrowUp, JournalCheck, JournalX, Journal } from "react-bootstrap-icons"
+import { Window, WindowSidebar } from "react-bootstrap-icons"
+import { Terminal } from "react-bootstrap-icons"
 import { PersonPlus } from "react-bootstrap-icons"
 import { FileEarmarkText } from "react-bootstrap-icons"
 
@@ -25,6 +27,7 @@ import DropdownHeader from "../parts/dropdown-header"
 import DropdownItem from "../parts/dropdown-item"
 
 type ProjectNavigatorProps = {
+  menu?           : string,
   privilege?      : string,
   domains         : string,
   domain          : string,
@@ -33,6 +36,7 @@ type ProjectNavigatorProps = {
   filename        : string,
   terminal        : string,
   focus           : string,
+  onChangeMenu?   : (enabled: boolean) => void,
   onChangeDomain  : (domainName: string) => void,
   onChangeProject : (projectName: string) => void,
   onChangeBundle  : (bundleId: string) => void,
@@ -40,6 +44,7 @@ type ProjectNavigatorProps = {
 }
 
 const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
+  menu            = null,
   privilege       = "none",
   domains         = "public,private",
   domain          = null,
@@ -48,6 +53,7 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
   filename        = null,
   terminal        = null,
   focus           = null,
+  onChangeMenu    = undefined,
   onChangeDomain  = undefined,
   onChangeProject = undefined,
   onChangeBundle  = undefined,
@@ -69,6 +75,18 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
     action    : "open",
     bundleName: null
   })
+
+  const handleClickShowMenu = useCallback(() => {
+    if (onChangeMenu) {
+      onChangeMenu(true)
+    }
+  }, [true])
+
+  const handleClickHideMenu = useCallback(() => {
+    if (onChangeMenu) {
+      onChangeMenu(false)
+    }
+  }, [true])
 
   const handleChangeDomain = useCallback((domainName: string) => {
     if (onChangeDomain) {
@@ -292,6 +310,25 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
             LIcon={ Tools }
             align="right"
             items={ [
+              menu && <DropdownHeader
+                key="view-setting"
+                label="View Settings"
+              />,
+              menu && <DropdownItem
+                key="view-left-show"
+                label="Show Left Menu"
+                LIcon={ WindowSidebar }
+                disabled={ menu === "on" }
+                onClick={ handleClickShowMenu }
+              />,
+              menu && <DropdownItem
+                key="view-left-hide"
+                label="Hide Left Menu"
+                LIcon={ Window }
+                disabled={ menu === "off" }
+                onClick={ handleClickHideMenu }
+              />,
+              menu && <DropdownDivider key="divider-0" />,
               <DropdownHeader
                 key="project-header"
                 label="Project Operations"

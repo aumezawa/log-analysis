@@ -92,7 +92,8 @@ const MainPage: React.FC<MainPageProps> = ({
     action    : "delete"
   })
 
-  const reload = useRef({
+  const env = useRef({
+    menu      : true,
     terminal  : 0
   })
 
@@ -180,6 +181,11 @@ const MainPage: React.FC<MainPageProps> = ({
     updateTokenStatus()
   }, [true])
 
+  const handleChangeMenu = useCallback((enabled: boolean) => {
+    env.current.menu = enabled
+    forceUpdate()
+  }, [true])
+
   const handleChangeDomain = useCallback((domainName: string) => {
     data.current.domain = domainName
     data.current.project = null
@@ -238,7 +244,7 @@ const MainPage: React.FC<MainPageProps> = ({
     ref.current.terminal.current.click()
     data.current.termpath = null
     data.current.terminal = "Console"
-    reload.current.terminal = reload.current.terminal + 1
+    env.current.terminal = env.current.terminal + 1
   }, [true])
 
   const handleSelectFile = useCallback((action: string, value: string, option: any) => {
@@ -246,7 +252,7 @@ const MainPage: React.FC<MainPageProps> = ({
       ref.current.terminal.current.click()
       data.current.termpath = value
       data.current.terminal = Path.basename(value)
-      reload.current.terminal = reload.current.terminal + 1
+      env.current.terminal = env.current.terminal + 1
     } else {
       ref.current.viewer.current.click()
       data.current.filepath = value
@@ -376,6 +382,7 @@ const MainPage: React.FC<MainPageProps> = ({
           <TFrame
             head={
               <ProjectNavigator
+                menu={ env.current.menu ? "on" : "off" }
                 privilege={ privilege }
                 domains={ domains }
                 domain={ data.current.domain }
@@ -384,6 +391,7 @@ const MainPage: React.FC<MainPageProps> = ({
                 filename={ data.current.filename }
                 terminal={ data.current.terminal }
                 focus={ data.current.focus }
+                onChangeMenu={ handleChangeMenu }
                 onChangeDomain={ handleChangeDomain }
                 onChangeProject={ handleChangeProject }
                 onChangeBundle={ handleChangeBundle }
@@ -429,13 +437,14 @@ const MainPage: React.FC<MainPageProps> = ({
                     app="term"
                     path={ ProjectPath.encode(data.current.domain, data.current.project, data.current.bundle, data.current.termpath) }
                     disabled={ data.current.terminal === null }
-                    reload={ reload.current.terminal }
+                    reload={ env.current.terminal }
                   />
                 ] }
                 refs={ [ref.current.viewer, ref.current.terminal] }
                 onClicks={ [handleClickViewer, handleClickTerminal] }
               />
             }
+            hiddenL={ !env.current.menu }
             border={ true }
           />
         }
