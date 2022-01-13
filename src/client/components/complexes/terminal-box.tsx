@@ -1,5 +1,6 @@
 import * as React from "react"
-import { useEffect } from "react"
+import { useEffect, useRef, useCallback } from "react"
+import useResizeObserver from "../../lib/useResizeObserver"
 
 import Axios from "axios"
 import { AxiosResponse, AxiosError } from "axios"
@@ -27,9 +28,15 @@ const TerminalBox = React.memo<TerminalBoxProps>(({
 }) => {
   const ref = React.createRef<HTMLDivElement>()
 
+  const data = useRef({
+    terminal: null,
+    fitAddon: null,
+    socket  : null
+  })
+
   useEffect(() => {
-    const terminal = new Terminal({ cursorBlink: true, cursorStyle: "underline" })
-    const fitAddon = new FitAddon()
+    const terminal = data.current.terminal = new Terminal({ cursorBlink: true, cursorStyle: "underline" })
+    const fitAddon = data.current.fitAddon = new FitAddon()
     let socket: SocketIOClient.Socket = null
 
     if (path && !disabled) {
@@ -43,7 +50,7 @@ const TerminalBox = React.memo<TerminalBoxProps>(({
         terminal.open(ref.current)
         fitAddon.fit()
 
-        socket = require("socket.io-client")(`?cmd=${ encodeURIComponent(res.data.cmd) }&cols=${ terminal.cols }&rows=${ terminal.rows }`, { path: "/terminal" })
+        socket = data.current.socket = require("socket.io-client")(`?cmd=${ encodeURIComponent(res.data.cmd) }&cols=${ terminal.cols }&rows=${ terminal.rows }`, { path: "/terminal" })
 
         terminal.onData((data: string) => {
           socket.emit("request", data)
@@ -57,9 +64,12 @@ const TerminalBox = React.memo<TerminalBoxProps>(({
         })
         return
       })
-      .catch((err: any) => {
-        //alert(err.response.data.msg)
-        console.log(err)
+      .catch((err: Error | AxiosError) => {
+        if (Axios.isAxiosError(err)) {
+          alert(err.response.data.msg)
+        } else {
+          console.log(err)
+        }
         return
       })
     }
@@ -71,6 +81,17 @@ const TerminalBox = React.memo<TerminalBoxProps>(({
       }
     }
   }, [app, path, disabled, reload])
+
+  const handleChangeSize = useCallback(() => {
+    const terminal = data.current.terminal
+    const fitAddon = data.current.fitAddon
+    const socket = data.current.socket
+
+    fitAddon.fit()
+    socket.emit("resize", [`${ terminal.cols }`, `${ terminal.rows }`])
+  }, [true])
+
+  useResizeObserver(ref, handleChangeSize)
 
   return (
     <div ref={ ref } className="h-100"></div>
