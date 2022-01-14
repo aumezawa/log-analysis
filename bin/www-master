@@ -5,39 +5,128 @@
  */
 
 var app = require('../dist/server/app');
-var atomic = require('../dist/server/lib/atomic')
+var atomic = require('../dist/server/lib/atomic');
 var cluster = require('cluster');
-var logger = require('../dist/server/lib/logger')
-var os = require('os');
+var farmhash = require('farmhash');
+var fs = require('fs');
+var http = require('http');
+var https = require('https');
+var logger = require('../dist/server/lib/logger');
+var net = require('net');
+var path = require('path');
+var terminal = require('../dist/server/routes/terminal');
 
 /**
- * Cluster settings.
+ * Get root directory.
  */
 
-cluster.schedulingPolicy = (os.platform() === 'win32') ? cluster.SCHED_NONE : cluster.SCHED_RR;
+var rootPath = process.cwd();
+
+/**
+ * Get port.
+ */
+
+var http_port = app.get('http-port');
+var https_port = app.get('https-port');
+
+/**
+ * Get number of workers.
+ */
+
+var num_wokers = app.get('num-workers');
+
+
+/**
+ * Cluster logic.
+ */
 
 if (cluster.isMaster) {
 
-  var createWorker = function() {
-    var worker = cluster.fork();
-    logger.info(`created a new worker[${ worker.process.pid }]`);
+  logger.info(`master: now starting`)
+
+  var workers = [];
+
+  var createWorker = function(index) {
+		workers[index] = cluster.fork();
+    logger.info(`master: created a new worker[${ workers[index].process.pid }]`);
+
+		workers[index].on('exit', function(code, signal) {
+			logger.info(`master: respawning a worker ${ index }`);
+			createWorker(index);
+		});
   };
 
-  logger.info(`now starting`)
+  /**
+   * Create workers.
+   */
 
-  for (var i = 0; i < app.get('num-workers'); i++) {
-    createWorker();
-  }
+  for (var index = 0; index < num_wokers; index++) {
+		createWorker(index);
+	}
 
-  cluster.on('exit', function(worker, code, signal) {
-    logger.error(`detected dead of a worker[${ worker.process.pid }]`);
-    createWorker();
-  });
+  var getWorkerIndex = function(ip, len) {
+		return farmhash.fingerprint32(ip) % len;
+	};
+
+  /**
+   * Lister master servers.
+   */
+
+  var http_server = net.createServer({ pauseOnConnect: true }, function(connection) {
+		var worker = workers[getWorkerIndex(connection.remoteAddress, num_wokers)];
+		worker.send('sticky-session:http-connection', connection);
+	}).listen(http_port);
+
+  logger.info(`master: HTTP server is listening on port port ${ http_port }`)
+
+  var https_server = net.createServer({ pauseOnConnect: true }, function(connection) {
+		var worker = workers[getWorkerIndex(connection.remoteAddress, num_wokers)];
+		worker.send('sticky-session:https-connection', connection);
+	}).listen(https_port);
+
+  logger.info(`master: HTTPS server is listening on port port ${ https_port }`)
+
+  /**
+   * Initialize IPC.
+   */
 
   atomic.init()
 
 } else {
 
-  require('./www');
+  logger.info(`worker: now starting`)
+
+  /**
+   * Create HTTP/HTTPS server.
+   */
+
+  var http_server = http.createServer(app);
+  var https_server = https.createServer({
+    key : fs.readFileSync(path.join(rootPath, app.get('private-key-path'))),
+    cert: fs.readFileSync(path.join(rootPath, app.get('certificate-path')))
+  }, app);
+
+  /**
+   * Connect to Terminal.
+   */
+
+  terminal(http_server);
+  terminal(https_server);
+
+  /**
+   * Handed off from master.
+   */
+
+  process.on('message', function(message, connection) {
+    if (message === 'sticky-session:http-connection') {
+      http_server.emit('connection', connection);
+      connection.resume();
+    }
+
+    if (message === 'sticky-session:https-connection') {
+      https_server.emit('connection', connection);
+      connection.resume();
+    }
+	});
 
 }

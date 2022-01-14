@@ -23,6 +23,10 @@ const terminal = (server: http.Server) => {
       pty.write(data)
     })
 
+    socket.on("resize", (size: Array<string>) => {
+      pty.resize(Number(size[0]), Number(size[1]))
+    })
+
     socket.on("disconnect", () => {
       logger.info(`terminal disconnected: ${ cmd }`)
       pty.kill()
