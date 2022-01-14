@@ -88,7 +88,9 @@ const TerminalBox = React.memo<TerminalBoxProps>(({
     const socket = data.current.socket
 
     fitAddon.fit()
-    socket.emit("resize", [`${ terminal.cols }`, `${ terminal.rows }`])
+    if (socket) {
+      socket.emit("resize", [`${ terminal.cols }`, `${ terminal.rows }`])
+    }
   }, [true])
 
   useResizeObserver(ref, handleChangeSize)
