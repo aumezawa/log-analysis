@@ -1,3 +1,18 @@
+Version: **0.20.0** [2022/01/14]
+
+New Features:
+  - *None*
+
+Enhanced Features:
+  - Supported to resize for terminal
+  - Supported to hide left pane
+
+Bug Fixes:
+  - socket.io session was unintentionally disconnected
+  - Cannot open file by legacy view
+
+***
+
 Version: **0.19.0** [2022/01/12]
 
 New Features:
