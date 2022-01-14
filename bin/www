@@ -8,9 +8,9 @@ var app = require('../dist/server/app');
 var fs = require('fs');
 var http = require('http');
 var https = require('https');
-var logger = require('../dist/server/lib/logger')
+var logger = require('../dist/server/lib/logger');
 var path = require('path');
-var terminal = require('../dist/server/routes/terminal')
+var terminal = require('../dist/server/routes/terminal');
 
 /**
  * Get root directory.
