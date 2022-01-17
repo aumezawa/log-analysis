@@ -437,6 +437,7 @@ const MainPage: React.FC<MainPageProps> = ({
                     app="term"
                     path={ ProjectPath.encode(data.current.domain, data.current.project, data.current.bundle, data.current.termpath) }
                     disabled={ data.current.terminal === null }
+                    focus={ data.current.focus === "terminal" }
                     reload={ env.current.terminal }
                   />
                 ] }
