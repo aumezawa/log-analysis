@@ -723,6 +723,9 @@ export function registerBundleResource(user: string, domain: string, project: st
         return existsBundleName(user, domain, project, bundleName)
       })
       .then(() => {
+        return decompressBundle(bundlePath, preserve)
+      })
+      .then(() => {
         return Atomic.lock(getProjectInfoPathSync(user, domain, project))
       })
       .then(() => {
@@ -736,31 +739,10 @@ export function registerBundleResource(user: string, domain: string, project: st
           description : description,
           type        : "general",
           date        : bundleMTime,
-          available   : false,
+          available   : true,
           preserved   : preserve
         }
         projectInfo.bundles.push(bundleInfo)
-        return updateProjectInfo(user, domain, project, projectInfo)
-      })
-      .then(() => {
-        return Atomic.unlock(getProjectInfoPathSync(user, domain, project))
-      })
-      .then(() => {
-        return decompressBundle(bundlePath, preserve)
-      })
-      .then(() => {
-        return Atomic.lock(getProjectInfoPathSync(user, domain, project))
-      })
-      .then(() => {
-        return getProjectInfo(user, domain, project)
-      })
-      .then((projectInfo: ProjectInfo) => {
-        projectInfo.bundles = projectInfo.bundles.map((bundleInfo: BundleInfo) => {
-          if (bundleInfo.name === bundleName) {
-            bundleInfo.available = true
-          }
-          return bundleInfo
-        })
         return updateProjectInfo(user, domain, project, projectInfo)
       })
       .then(() => {
