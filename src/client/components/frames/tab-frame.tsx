@@ -40,41 +40,33 @@ const TabFrame: React.FC<TabFrameProps> = ({
     <div className={ `flex-container-column ${ className }` }>
       <ul className="nav nav-tabs nav-justified">
         {
-          labels.map((label: string, index: number) => {
-            if (hiddens && hiddens[index]) {
-              return null
-            }
-            return (
-              <TabLabel
-                ref={ refs[index] }
-                key={ `${ index }` }
-                label={ label }
-                LIcon={ LIcons[index] }
-                labelId={ id.current.label + index }
-                itemId={ id.current.item + index }
-                active={ index === show }
-                onClick={ onClicks[index] }
-              />
-            )
-          })
+          labels.map((label: string, index: number) => (
+            <TabLabel
+              ref={ refs[index] }
+              key={ `${ index }` }
+              label={ label }
+              LIcon={ LIcons[index] }
+              labelId={ id.current.label + index }
+              itemId={ id.current.item + index }
+              hidden={ hiddens && hiddens[index] }
+              active={ index === show }
+              onClick={ onClicks[index] }
+            />
+          ))
         }
       </ul>
       <div className={ `tab-content flex-main-area ${ overflow && "flex-main-overflow" }` }>
         {
-          items.map((item: JSX.Element, index: number) => {
-            if (hiddens && hiddens[index]) {
-              return null
-            }
-            return (
-              <TabItem
-                key={ `${ index }` }
-                item={ item }
-                labelId={ id.current.label + index }
-                itemId={ id.current.item + index }
-                active={ index === show }
-              />
-            )
-          })
+          items.map((item: JSX.Element, index: number) => (
+            <TabItem
+              key={ `${ index }` }
+              item={ item }
+              labelId={ id.current.label + index }
+              itemId={ id.current.item + index }
+              hidden={ hiddens && hiddens[index] }
+              active={ index === show }
+            />
+          ))
         }
       </div>
     </div>

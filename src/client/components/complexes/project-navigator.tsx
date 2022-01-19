@@ -228,7 +228,7 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
           />
         </div>
         <CaretRightFill />
-        <div className={ `${ domain && !project && "border border-info" } borderable` }>
+        <div className="borderable">
           { !project &&
             <>
               <Button
@@ -252,32 +252,36 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
             onClick={ handleClickOpenProject }
           />
         </div>
-        { project ? <CaretRightFill /> : <CaretRight /> }
-        <div className={ `${ project && !bundle && "border border-info" } borderable` }>
-          { !bundle &&
-            <>
+        { project &&
+          <>
+            <CaretRightFill />
+            <div className="borderable">
+              { !bundle &&
+                <>
+                  <Button
+                    label="Upload Bundle"
+                    LIcon={ JournalArrowUp }
+                    color="info"
+                    disabled={ !domain || !project || !Privilege.isBundleUploadable(privilege, domain) }
+                    toggle="modal"
+                    target={ id.current.bundleUpload }
+                    onClick={ handleClickOpenBundle }
+                  />
+                  <Dot />
+                </>
+              }
               <Button
-                label="Upload Bundle"
-                LIcon={ JournalArrowUp }
-                color="info"
-                disabled={ !domain || !project || !Privilege.isBundleUploadable(privilege, domain) }
+                label={ (bundle && data.current.bundleName) || "Select Bundle" }
+                LIcon={ (bundle && data.current.bundleName) ? JournalCheck : Journal }
+                color={ (bundle && data.current.bundleName) ? "success" : "secondary" }
+                disabled={ !domain || !project || !Privilege.isBundleOpenable(privilege, domain) }
                 toggle="modal"
-                target={ id.current.bundleUpload }
+                target={ id.current.bundleSelect }
                 onClick={ handleClickOpenBundle }
               />
-            <Dot />
+            </div>
           </>
-          }
-          <Button
-            label={ (bundle && data.current.bundleName) || "Select Bundle" }
-            LIcon={ (bundle && data.current.bundleName) ? JournalCheck : Journal }
-            color={ (bundle && data.current.bundleName) ? "success" : "secondary" }
-            disabled={ !domain || !project || !Privilege.isBundleOpenable(privilege, domain) }
-            toggle="modal"
-            target={ id.current.bundleSelect }
-            onClick={ handleClickOpenBundle }
-          />
-        </div>
+        }
         { focus === "filename" && filename &&
           <>
             <CaretRightFill />

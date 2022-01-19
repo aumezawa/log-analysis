@@ -8,6 +8,7 @@ type TabLabelProps = {
   LIcon?  : Icon,
   labelId : string,
   itemId  : string,
+  hidden? : boolean,
   active? : boolean,
   onClick?: () => void
 }
@@ -17,6 +18,7 @@ const TabLabel = React.forwardRef<HTMLAnchorElement, TabLabelProps>(({
   LIcon   = null,
   labelId = undefined,
   itemId  = undefined,
+  hidden  = false,
   active  = false,
   onClick = undefined
 }, ref) => {
@@ -28,7 +30,7 @@ const TabLabel = React.forwardRef<HTMLAnchorElement, TabLabelProps>(({
   }, [onClick])
 
   return (
-    <li className="nav-item">
+    <li className={ `nav-item ${ hidden && "d-none" }` }>
       <a
         ref={ ref }
         className={ `nav-link ${ active && "active" }` }
