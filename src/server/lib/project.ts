@@ -425,6 +425,9 @@ function getProjectInfoSync(user: string, domain: string, project: string): Proj
       projectInfo.status = "open"
     }
     projectInfo.bundles = projectInfo.bundles.map((bundleInfo: BundleInfo) => {
+      if (bundleInfo.type === undefined) {
+        bundleInfo.type = "general"
+      }
       if (bundleInfo.date === undefined) {
         bundleInfo.date = new Date().toISOString()
       }
@@ -731,6 +734,7 @@ export function registerBundleResource(user: string, domain: string, project: st
           id          : Number(bundleId),
           name        : bundleName,
           description : description,
+          type        : "general",
           date        : bundleMTime,
           available   : false,
           preserved   : preserve

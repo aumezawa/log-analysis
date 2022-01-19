@@ -12,6 +12,7 @@ type BundleInfo = {
   id          : number,
   name        : string,
   description : string,
+  type?       : string,
   date?       : string,  // collected date
   available   : boolean,
   preserved?  : boolean

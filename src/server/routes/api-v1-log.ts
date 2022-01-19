@@ -235,6 +235,7 @@ router.route("/:domain/projects/:projectName/bundles/:bundleId")
         msg: `You get a bundle name and description of bundle ID = ${ req.bundleId }.`,
         name: bundleInfo.name,
         description: bundleInfo.description,
+        type: bundleInfo.type,
         date: bundleInfo.date,
         preserved: bundleInfo.preserved
       })
