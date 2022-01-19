@@ -1,6 +1,7 @@
 import * as fs from "fs"
 import * as path from "path"
 import * as tar from "tar"
+import * as zip from "adm-zip"
 
 import * as CacheTool from "../lib/cache-tool"
 
@@ -233,6 +234,68 @@ export function decompressTgz(file: string, cwd: string, preserve: boolean, call
     return setImmediate(() => {
       try {
         decompressTgzSync(file, cwd, preserve)
+        return resolve()
+      } catch (err) {
+        return reject(err)
+      }
+    })
+  })
+
+  return callback ? promise.then(callback, callback) && undefined : promise
+}
+
+
+export function extractRootZipSync(name: string, cwd: string): FileInfo {
+  const fileInfo: FileInfo = {
+    name        : path.basename(name, ".zip"),
+    directory   : null,
+    path        : null,
+    isDirectory : null,
+    children    : null,
+    size        : null,
+    mtime       : new zip(path.join(cwd, name)).getEntries()[0].header.time.toISOString()
+  }
+  return fileInfo
+}
+
+export function extractRootZip(name: string, cwd: string, callback: (err?: any, fileInfo?: FileInfo) => void): void
+export function extractRootZip(name: string, cwd: string): Promise<FileInfo>
+export function extractRootZip(name: string, cwd: string, callback?: (err?: any, fileInfo?: FileInfo) => void): void | Promise<FileInfo> {
+  const promise = new Promise<FileInfo>((resolve: (fileInfo?: FileInfo) => void, reject: (err?: any) => void) => {
+    return setImmediate(() => {
+      try {
+        return resolve(extractRootZipSync(name, cwd))
+      } catch (err) {
+        return reject(err)
+      }
+    })
+  })
+
+  const resolve = (fileInfo?: FileInfo): void => {
+    callback(undefined, fileInfo)
+  }
+
+  return callback ? promise.then(resolve, callback) && undefined : promise
+}
+
+
+export function decompressZipSync(file: string, cwd: string, preserve?: boolean): void {
+  const dirName = path.basename(file, ".zip")
+  const dirPath = path.join(cwd, dirName)
+  fs.mkdirSync(dirPath)
+  new zip(path.join(cwd, file)).extractAllTo(dirPath, true)
+  if (!preserve) {
+    rmRecursiveSync(path.join(cwd, file))
+  }
+}
+
+export function decompressZip(file: string, cwd: string, preserve: boolean, callback: (err?: any) => void): void
+export function decompressZip(file: string, cwd: string, preserve: boolean): Promise<void>
+export function decompressZip(file: string, cwd: string, preserve: boolean, callback?: (err?: any) => void): void | Promise<void> {
+  const promise = new Promise<void>((resolve: () => void, reject: (err?: any) => void) => {
+    return setImmediate(() => {
+      try {
+        decompressZipSync(file, cwd, preserve)
         return resolve()
       } catch (err) {
         return reject(err)

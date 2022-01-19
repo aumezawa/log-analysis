@@ -171,7 +171,13 @@ function writeObjectData(path: string, data: Object): Promise<void> {
 
 function extractBundleInfoSync(file: string): FileInfo {
   try {
-    return FSTool.extractRootTgzSync(path.basename(file), path.dirname(file))
+    if (path.extname(file) === ".tgz") {
+      return FSTool.extractRootTgzSync(path.basename(file), path.dirname(file))
+    } else if (path.extname(file) === ".zip") {
+      return FSTool.extractRootZipSync(path.basename(file), path.dirname(file))
+    } else {
+      return null
+    }
   } catch (err) {
     (err instanceof Error) && logger.error(`${ err.name }: ${ err.message }`)
     return null
@@ -212,7 +218,14 @@ function compressBundle(directory: string): Promise<void> {
 
 function decompressBundleSync(file: string, preserve: boolean = false): boolean {
   try {
-    FSTool.decompressTgzSync(path.basename(file), path.dirname(file), preserve)
+    if (path.extname(file) === ".tgz") {
+      FSTool.decompressTgzSync(path.basename(file), path.dirname(file), preserve)
+    } else if (path.extname(file) === ".zip") {
+      FSTool.decompressZipSync(path.basename(file), path.dirname(file), preserve)
+    } else {
+      logger.error(`${ file } was unsupported file type.`)
+      return false
+    }
     logger.info(`${ file } was decompressed successfully.`)
     return true
   } catch (err) {

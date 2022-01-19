@@ -45,7 +45,13 @@ const FileUploadForm = React.memo<FileUploadFormProps>(({
   const handleChangeFile = useCallback((name: string, obj: any) => {
     data.current.name = name
     data.current.obj  = obj
-    setValid(!!name.match(new RegExp(`^.+${ accept }$`)))
+
+    setValid(false)
+    accept.split(",").forEach((ext: string) => {
+      if (!!name.match(new RegExp(`^.+${ ext }$`))) {
+        setValid(true)
+      }
+    })
   }, [accept])
 
   const handleChangeDescription = useCallback((value: string) => {
