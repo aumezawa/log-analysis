@@ -31,8 +31,9 @@
     "clean": "node ./bin/cleaner.js",
     "clean:once": "node ./bin/cleaner.js 0h",
     "start": "node ./bin/www-master",
+    "debug": "cross-env LOGLEVEL=debug node ./bin/www-master",
     "debug:single": "cross-env LOGLEVEL=debug LOGOUT=console node ./bin/www",
-    "debug:multi": "cross-env LOGLEVEL=debug node ./bin/www-master",
+    "debug:multi": "cross-env LOGLEVEL=debug LOGOUT=console node ./bin/www-master",
     "test": "npm run test:web-api",
     "test:web-api": "node ./dist/test/web-api"
   },
