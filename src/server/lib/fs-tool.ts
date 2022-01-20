@@ -182,7 +182,7 @@ export function extractRootTgz(file: string, cwd: string, callback?: (err?: any,
 }
 
 
-export function compressTgzSync(directory: string, cwd: string, preserve?: boolean): FileInfo {
+export function compressTgzSync(directory: string, cwd: string, preserved?: boolean): FileInfo {
   let fileInfo: FileInfo = {
     name        : directory + ".tgz",
     directory   : cwd,
@@ -194,27 +194,27 @@ export function compressTgzSync(directory: string, cwd: string, preserve?: boole
     mtime       : new Date().toISOString()
   }
 
-  tar.create({
-    file: path.join(cwd, directory + ".tgz"),
-    cwd : cwd,
-    sync: true,
-    gzip: true
-  }, [directory])
-
-  if (!preserve) {
-    rmRecursiveSync(path.join(cwd, directory))
+  if (!preserved) {
+    tar.create({
+      file: path.join(cwd, directory + ".tgz"),
+      cwd : cwd,
+      sync: true,
+      gzip: true
+    }, [directory])
   }
+
+  rmRecursiveSync(path.join(cwd, directory))
 
   return fileInfo
 }
 
-export function compressTgz(directory: string, cwd: string, preserve: boolean, callback: (err?: any) => void): FileInfo
-export function compressTgz(directory: string, cwd: string, preserve: boolean): Promise<FileInfo>
-export function compressTgz(directory: string, cwd: string, preserve: boolean, callback?: (err?: any) => void): FileInfo | Promise<FileInfo> {
+export function compressTgz(directory: string, cwd: string, preserved: boolean, callback: (err?: any) => void): FileInfo
+export function compressTgz(directory: string, cwd: string, preserved: boolean): Promise<FileInfo>
+export function compressTgz(directory: string, cwd: string, preserved: boolean, callback?: (err?: any) => void): FileInfo | Promise<FileInfo> {
   const promise = new Promise<FileInfo>((resolve: (fileInfo: FileInfo) => void, reject: (err?: any) => void) => {
     return setImmediate(() => {
       try {
-        const fileInfo = compressTgzSync(directory, cwd, preserve)
+        const fileInfo = compressTgzSync(directory, cwd, preserved)
         return resolve(fileInfo)
       } catch (err) {
         return reject(err)

@@ -195,9 +195,9 @@ function extractBundleInfo(file: string): Promise<FileInfo> {
   })
 }
 
-function compressBundleSync(directory: string): Array<FileInfo> {
+function compressBundleSync(directory: string, preserved: boolean): Array<FileInfo> {
   try {
-    const fileInfo = FSTool.compressTgzSync(path.basename(directory), path.dirname(directory), false)
+    const fileInfo = FSTool.compressTgzSync(path.basename(directory), path.dirname(directory), preserved)
     logger.info(`${ directory } was compressed successfully.`)
     return [fileInfo]
   } catch (err) {
@@ -206,12 +206,12 @@ function compressBundleSync(directory: string): Array<FileInfo> {
   }
 }
 
-function compressBundle(directory: string): Promise<Array<FileInfo>> {
+function compressBundle(directory: string, preserved: boolean): Promise<Array<FileInfo>> {
   return new Promise<Array<FileInfo>>((resolve: (filesInfo: Array<FileInfo>) => void, reject: (err? :any) => void) => {
     return setImmediate(() => {
       let err = new Error(`Resource: ${ directory } cloudn't be compressed.`)
       err.name = "Internal"
-      const filesInfo = compressBundleSync(directory)
+      const filesInfo = compressBundleSync(directory, preserved)
       return filesInfo ? resolve(filesInfo) : reject(err)
     })
   })
@@ -591,7 +591,9 @@ export function updateProjectStatus(user: string, domain: string, project: strin
         setImmediate(() => {
           return Promise.all(bundles.map((bundleInfo: BundleInfo) => {
             const bundle = joinResourcePathSync(getProjectResourcePathSync(user, domain, project), bundleInfo.name)
-            return (status === "open") ? decompressBundle(bundle + ".tgz") : compressBundle(bundle)
+            return (status === "close")                                 ? compressBundle(bundle, bundleInfo.preserved)            :
+                   (bundleInfo.type === ".zip" && bundleInfo.preserved) ? decompressBundle(bundle + ".zip", bundleInfo.preserved) :
+                                                                          decompressBundle(bundle + ".tgz", bundleInfo.preserved)
           }))
           .then(() => {
             return Atomic.lock(getProjectInfoPathSync(user, domain, project))
@@ -740,7 +742,7 @@ export function registerBundleResource(user: string, domain: string, project: st
             id          : Number(bundleId),
             name        : fileInfo.name,
             description : description,
-            type        : "general",
+            type        : fileInfo.type,
             date        : fileInfo.mtime,
             available   : true,
             preserved   : preserve
