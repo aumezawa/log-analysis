@@ -24,6 +24,7 @@ type FileInfo = {
   path        : string,
   isDirectory : boolean,
   children    : Array<string>,
+  type        : string,
   size        : number,
   mtime       : string
 }
