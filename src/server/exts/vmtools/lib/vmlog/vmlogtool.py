@@ -5,9 +5,9 @@
 
 from __future__ import print_function
 
-__all__     = ['DecompressBundle', 'GetHostList', 'GetHostInfo', 'GetVmList', 'GetVmInfo', 'GetVmLogPath', 'GetZdumpList' 'GetZdumpInfo']
+__all__     = ['DecompressBundle', 'GetHostList', 'GetHostInfo', 'GetVmList', 'GetVmInfo', 'GetVmLogPath', 'GetVCenterList', 'GetVCenterInfo', 'GetZdumpList' 'GetZdumpInfo']
 __author__  = 'aumezawa'
-__version__ = '0.1.5'
+__version__ = '0.1.6'
 
 
 ################################################################################
@@ -23,7 +23,9 @@ import shutil
 import stat
 import sys
 import tarfile
+import time
 import xml.etree.ElementTree as et
+import zipfile
 
 
 ################################################################################
@@ -47,30 +49,80 @@ except Exception as e:
 ### External Functions - Decompress
 ################################################################################
 def DecompressBundle(filePath, compressLargeFiles=False, preserveOriginalFile=False):
-    dirPath = ExtractFiles(filePath)
-    MargeFragmentFiles(os.path.join(dirPath, 'commands'))
-    MargeFragmentFiles(os.path.join(dirPath, 'var', 'core'))
-    MargeFragmentFiles(os.path.join(dirPath, 'var', 'log'))
-    MargeCompressedFragmentFiles(os.path.join(dirPath, 'var', 'run', 'log'))
-    CleanupFile(os.path.join(dirPath, 'commands', 'esxcfg-info_-a--F-xml.txt'), r"^ResourceGroup:.*$")
-    #MargeVmwareLogFiles(dirPath)
-    if compressLargeFiles:
-        CompressLargeFiles(os.path.join(dirPath, 'commands'))
-        CompressLargeFiles(os.path.join(dirPath, 'var', 'run', 'log'))
-    if not preserveOriginalFile:
+    if filePath.endswith('.zip'):
+        if not UnzippableVCenterBundle(filePath):
+            os.remove(filePath)
+            return None
+        #
+        fileList = UnzipFiles(filePath)
+        if fileList is None:
+            os.remove(filePath)
+            return None
+        #
         os.remove(filePath)
-    SetFilePermission(dirPath)
-    return dirPath
+        #
+        infoList = []
+        for unzippedFile in fileList:
+            info = DecompressBundle(unzippedFile, compressLargeFiles=compressLargeFiles, preserveOriginalFile=preserveOriginalFile)
+            if info is not None:
+                infoList.append(info[0])
+        return infoList
+    elif filePath.endswith('.tgz'):
+        dirPath = ExtractFiles(filePath)
+        if dirPath is None:
+            os.remove(filePath)
+            return None
+        #
+        logType = GetLogBundleType(dirPath)
+        if logType == 'vm-support':
+            MargeFragmentFiles(os.path.join(dirPath, 'commands'))
+            MargeFragmentFiles(os.path.join(dirPath, 'var', 'core'))
+            MargeFragmentFiles(os.path.join(dirPath, 'var', 'log'))
+            MargeCompressedFragmentFiles(os.path.join(dirPath, 'var', 'run', 'log'))
+            CleanupFile(os.path.join(dirPath, 'commands', 'esxcfg-info_-a--F-xml.txt'), r"^ResourceGroup:.*$")
+            #MargeVmwareLogFiles(dirPath)
+            if compressLargeFiles:
+                CompressLargeFiles(os.path.join(dirPath, 'commands'))
+                CompressLargeFiles(os.path.join(dirPath, 'var', 'run', 'log'))
+        elif logType == 'vc-support':
+            MargeFragmentFiles(os.path.join(dirPath, 'commands'))
+        #
+        logTime = GetLogBundleTime(filePath)
+        #
+        if preserveOriginalFile:
+            os.rename(filePath, dirPath + '.tgz')
+        else:
+            os.remove(filePath)
+        #
+        SetFilePermission(dirPath)
+        return [ {
+            'name'          : os.path.basename(dirPath),
+            'directory'     : os.path.dirname(dirPath),
+            'path'          : dirPath,
+            'isDirectory'   : True,
+            'children'      : None,
+            'type'          : logType,
+            'size'          : None,
+            'mtime'         : logTime
+        } ]
+    else:
+        os.remove(filePath)
+        return None
 
 
 ################################################################################
 ### External Functions - Get ESXi Information
 ################################################################################
 def GetHostList(dirPath):
+    if GetLogBundleType(dirPath) != "vm-support":
+        return None
+    #
     return [GetHostName(dirPath)]
 
 
 def GetHostInfo(dirPath, esxName):
+    if GetLogBundleType(dirPath) != "vm-support":
+        return None
     if esxName != GetHostName(dirPath):
         return None
     #
@@ -163,6 +215,35 @@ def GetVmLogPath(dirPath, vmName):
 
 
 ################################################################################
+### External Functions - Get vCenter Server Information
+################################################################################
+def GetVCenterList(dirPath):
+    if GetLogBundleType(dirPath) != "vc-support":
+        return None
+    #
+    return [GetVCenterName(dirPath)]
+
+
+def GetVCenterInfo(dirPath, vcName):
+    if GetLogBundleType(dirPath) != "vc-support":
+        return None
+    #
+    if vcName != GetVCenterName(dirPath):
+        return None
+    try:
+        return {
+            'format'        : __version__,
+            'vcname'        : GetVCenterName(dirPath),
+            'version'       : GetVCenterVersion(dirPath),
+            'build'         : GetVCenterBuild(dirPath),
+            'uptime'        : GetVCenterUptime(dirPath)
+        }
+    except Exception as e:
+        logger.error(e)
+        return None
+
+
+################################################################################
 ### External Functions - Get Zdump Information
 ################################################################################
 def GetZdumpList(dirPath):
@@ -252,6 +333,31 @@ def GetZdumpInfo(dirPath, zdumpName):
 ################################################################################
 ### Internal Functions - Decompress
 ################################################################################
+def UnzippableVCenterBundle(filePath):
+    try:
+        with zipfile.ZipFile(filePath) as zfile:
+            fileList = zfile.namelist()
+            for fileName in fileList:
+                if not fileName.endswith('.tgz'):
+                    return False
+    except Exception as e:
+        logger.error(e)
+        return False
+    return True
+
+
+def UnzipFiles(filePath):
+    dirPath = os.path.dirname(filePath)
+    try:
+        with zipfile.ZipFile(filePath) as zfile:
+            fileList = zfile.namelist()
+            zfile.extractall(dirPath)
+    except Exception as e:
+        logger.error(e)
+        return None
+    return list(map(lambda file: os.path.join(dirPath, file), fileList))
+
+
 def ExtractFiles(filePath, override=True, rmRetry=5):
     dirPath = os.path.dirname(filePath)
     try:
@@ -264,15 +370,7 @@ def ExtractFiles(filePath, override=True, rmRetry=5):
     #
     if os.path.exists(extPath):
         if override:
-            while rmRetry:
-                try:
-                    shutil.rmtree(extPath, onerror=_RemoveReadonlyFileOnWin)
-                    break
-                except Exception as e:
-                    logger.debug(e)
-                    rmRetry = rmRetry - 1
-            if not rmRetry:
-                logger.error('%s could be not removed.' % (extPath))
+            if not RemoveDirectory(extPath, rmRetry=rmRetry):
                 return None
         else:
             return extPath
@@ -286,8 +384,33 @@ def ExtractFiles(filePath, override=True, rmRetry=5):
         tarFile.close()
     except Exception as e:
         logger.error(e)
+        RemoveDirectory(extPath, rmRetry=rmRetry)
         return None
     return extPath
+
+
+def GetLogBundleTime(filePath):
+    try:
+        tarFile = tarfile.open(filePath, 'r')
+        logTime = dt.fromtimestamp(tarFile.getmembers()[0].mtime + time.timezone).isoformat() + 'Z'
+        tarFile.close()
+    except Exception as e:
+        logger.error(e)
+        return None
+    #
+    return logTime
+
+
+def GetLogBundleType(dirPath):
+    vmFilePath = os.path.join(dirPath, 'vm-support-incident-key')
+    vcFilePath = os.path.join(dirPath, 'usr', 'lib', 'vmware-sca', 'conf', 'vc-support.properties')
+    #
+    if os.path.exists(vmFilePath):
+        return "vm-support"
+    elif os.path.exists(vcFilePath):
+        return "vc-support"
+    else:
+        return "unknown"
 
 
 def MargeFragmentFiles(dirPath, suffix=r"[.]FRAG-[0-9]{5}"):
@@ -439,6 +562,20 @@ def SetFilePermission(node):
         return True
     else:
         return False
+
+
+def RemoveDirectory(dirPath, rmRetry=5):
+    while rmRetry:
+        try:
+            shutil.rmtree(dirPath, onerror=_RemoveReadonlyFileOnWin)
+            break
+        except Exception as e:
+            logger.debug(e)
+            rmRetry = rmRetry - 1
+    if not rmRetry:
+        logger.error('%s could be not removed.' % (dirPath))
+        return False
+    return True
 
 
 def _RemoveReadonlyFileOnWin(func, path, _):
@@ -1278,3 +1415,30 @@ def GetVmSriovVfs(vmxDict):
             })
     vmSriovVfs.sort(key=lambda x: x['slot'])
     return vmSriovVfs
+
+
+################################################################################
+### Internal Functions - Get vCenter Server Information
+################################################################################
+def GetVCenterName(dirPath):
+    filePath = os.path.join(dirPath, 'commands', 'uname_-a.txt')
+    keyword  = r"^Linux[ ](\S+)[ ].*$"
+    return SearchInText(filePath, keyword)
+
+
+def GetVCenterVersion(dirPath):
+    filePath = os.path.join(dirPath, 'etc', 'vmware', '.buildInfo')
+    keyword  = r"^SUMMARY:(.*)$"
+    return SearchInText(filePath, keyword)
+
+
+def GetVCenterBuild(dirPath):
+    filePath = os.path.join(dirPath, 'etc', 'vmware', '.buildInfo')
+    keyword  = r"^BUILDNUMBER:(.*)$"
+    return SearchInText(filePath, keyword)
+
+
+def GetVCenterUptime(dirPath):
+    filePath = os.path.join(dirPath, 'commands', 'uptime.txt')
+    keyword  = r"^.*up (.*),[ ]+[0-9]+[ ]users.*"
+    return SearchInText(filePath, keyword, default=0)

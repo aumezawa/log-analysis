@@ -7,7 +7,7 @@ from __future__ import print_function
 
 __all__     = []
 __author__  = 'aumezawa'
-__version__ = '0.1.4'
+__version__ = '0.1.5'
 
 
 ################################################################################
@@ -28,6 +28,7 @@ RET_SYS_ERROR   = -1
 RET_BAD_PARAM   = -2
 RET_NO_FILE     = -3
 RET_NO_DIRECTORY= -4
+RET_BAD_FILE    = -5
 
 
 ################################################################################
@@ -86,7 +87,7 @@ def GetArgs():
     group_common.add_argument('-g', '--get',
         action='store_true',
         required=False,
-        help='get information ("-b" option will be needed, "-e", "-v", or "-z" option will be needed)'
+        help='get information ("-b" option will be needed, "-e", "-v", "-vl", "-vc", or "-z" option will be needed)'
     )
     group_common.add_argument('-d', '--decomp',
         action='store_true',
@@ -131,6 +132,12 @@ def GetArgs():
         required=False,
         help='<NAME>: get a specific vm log file path',
         metavar='<NAME>'
+    )
+    group_get.add_argument('-vc', '--vc',
+        action='store',
+        required=False,
+        help='LIST: get vCenter list, <NAME>: get a specific vCenter information',
+        metavar='LIST | <NAME>'
     )
     group_get.add_argument('-z', '--zdump',
         action='store',
@@ -195,6 +202,18 @@ def GetVmInfoWithCache(bundle, vm):
     return result
 
 
+def GetVCenterInfoWithCache(bundle, vc):
+    cacheDir = os.path.join(os.path.dirname(bundle), 'cache')
+    cacheKey = os.path.basename(bundle) + '_' + vc
+    cacheData = cachelib.readCache(cacheDir, cacheKey, vmlogtool.__version__)
+    if cacheData:
+        result = cacheData
+    else:
+        result = vmlogtool.GetVCenterInfo(bundle, vc)
+        cachelib.writeCache(cacheDir, cacheKey, result)
+    return result
+
+
 ################################################################################
 ### Main Function
 ################################################################################
@@ -239,6 +258,17 @@ if __name__ == '__main__':
                 printResult(vmlogtool.GetVmLogPath(args.bundle, args.vmlog))
                 logger.info('Succeeded.')
                 sys.exit(RET_NORMAL_END)
+            if args.vc:
+                logger.info('Get vCenter Server Information. vc = %s' % args.vc)
+                if args.vc == 'LIST':
+                    printResult(vmlogtool.GetVCenterList(args.bundle))
+                else:
+                    if args.caching:
+                        printResult(GetVCenterInfoWithCache(args.bundle, args.vc))
+                    else:
+                        printResult(vmlogtool.GetVCenterInfo(args.bundle, args.vc))
+                logger.info('Succeeded.')
+                sys.exit(RET_NORMAL_END)
             if args.zdump:
                 logger.info('Get ZDUMP Information. ZDUMP = %s' % args.zdump)
                 if args.zdump == 'LIST':
@@ -258,8 +288,12 @@ if __name__ == '__main__':
                 sys.exit(RET_NO_FILE)
             #
             logger.info('Decompress log bundle. - %s' % args.file)
-            bundlePath = vmlogtool.DecompressBundle(args.file, preserveOriginalFile=args.preserve)
-            printResult({'msg': 'Succeeded.', 'path': bundlePath})
+            filesInfo = vmlogtool.DecompressBundle(args.file, preserveOriginalFile=args.preserve)
+            if filesInfo is None:
+                logger.error('Unsupported type of log bundle. - %s' % args.file)
+                sys.exit(RET_BAD_FILE)
+            #
+            printResult({'msg': 'Succeeded.', 'info': filesInfo})
             logger.info('Succeeded.')
             sys.exit(RET_NORMAL_END)
         # Bad options
