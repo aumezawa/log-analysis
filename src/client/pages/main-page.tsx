@@ -14,6 +14,7 @@ import Environment from "../lib/environment"
 import ProjectPath from "../lib/project-path"
 import UniqueId from "../lib/unique-id"
 
+import CenterFrame from "../components/frames/center-frame"
 import LayerFrame from "../components/frames/layer-frame"
 import TFrame from "../components/frames/t-frame"
 import TabFrame from "../components/frames/tab-frame"
@@ -31,6 +32,7 @@ import ProjectNavigator from "../components/complexes/project-navigator"
 import FileExplorerBox from "../components/complexes/file-explorer-box"
 import FileSearchBox from "../components/complexes/file-search-box"
 
+import MarkdownViewer from "../components/parts/markdown-viewer"
 import FunctionalTableBox from "../components/complexes/functional-table-box"
 import TerminalBox from "../components/complexes/terminal-box"
 
@@ -70,6 +72,7 @@ const MainPage: React.FC<MainPageProps> = ({
     search  : React.createRef<HTMLAnchorElement>(),
     vms     : React.createRef<HTMLAnchorElement>(),
     zdumps  : React.createRef<HTMLAnchorElement>(),
+    start   : React.createRef<HTMLAnchorElement>(),
     host    : React.createRef<HTMLAnchorElement>(),
     vm      : React.createRef<HTMLAnchorElement>(),
     zdump   : React.createRef<HTMLAnchorElement>(),
@@ -108,7 +111,8 @@ const MainPage: React.FC<MainPageProps> = ({
   })
 
   const env = useRef({
-    menu      : true,
+    state     : "INIT", // "INIT", "MAIN"
+    menu      : false,
     terminal  : 0
   })
 
@@ -167,6 +171,10 @@ const MainPage: React.FC<MainPageProps> = ({
         data.current.sensitive  = (domain && project && bundle && filepath && sensitive) ? false : true
         data.current.date_from  =  domain && project && bundle && filepath && date_from
         data.current.date_to    =  domain && project && bundle && filepath && date_to
+        if (domain && project && bundle) {
+          env.current.state     = "MAIN"
+          env.current.menu      = true
+        }
         if (filepath) {
           ref.current.files.current.click()
           ref.current.viewer.current.click()
@@ -219,6 +227,9 @@ const MainPage: React.FC<MainPageProps> = ({
     data.current.sensitive = true
     data.current.date_from = null
     data.current.date_to = null
+    env.current.state = "INIT"
+    env.current.menu = false
+    ref.current.start.current.click()
     forceUpdate()
     updateTitle()
     updateAddressBar()
@@ -241,6 +252,9 @@ const MainPage: React.FC<MainPageProps> = ({
     data.current.sensitive = true
     data.current.date_from = null
     data.current.date_to = null
+    env.current.state = "INIT"
+    env.current.menu = false
+    ref.current.start.current.click()
     forceUpdate()
     updateTitle()
     updateAddressBar()
@@ -262,7 +276,15 @@ const MainPage: React.FC<MainPageProps> = ({
     data.current.sensitive = true
     data.current.date_from = null
     data.current.date_to = null
-    ref.current.host.current.click()
+    if (bundleId) {
+      env.current.state = "MAIN"
+      env.current.menu = true
+      ref.current.host.current.click()
+    } else {
+      env.current.state = "INIT"
+      env.current.menu = false
+      ref.current.start.current.click()
+    }
     forceUpdate()
     updateTitle()
     updateAddressBar()
@@ -386,6 +408,22 @@ const MainPage: React.FC<MainPageProps> = ({
     setTimeout(() => forceUpdate(), 1000)
   }, [true])
 
+  const startMessage = `
+  # Welcome to ${ project }!
+
+  ***
+
+  ### How to use
+
+  ##### Step 1
+
+  Press **[New Project]** to create a new project ***or*** press **[Select Project]** to open an existing one.
+
+  ##### Step 2
+
+  Press **[Upload Bundle]** to upload a new log bundle ***or*** press **[Select Bundle]** to open an existing one.
+  `
+
   return (
     <div className="container-fluid">
       <LayerFrame
@@ -487,7 +525,7 @@ const MainPage: React.FC<MainPageProps> = ({
             left={
               <TabFrame
                 labels={ ["Files", "Search", "VMs", "Dumps"] }
-                LIcons={ [ FileEarmarkText, Search, Box, FileEarmarkMedical ] }
+                LIcons={ [FileEarmarkText, Search, Box, FileEarmarkMedical] }
                 items={ [
                   <FileExplorerBox
                     path={ ProjectPath.strictEncodeFiles(data.current.domain, data.current.project, data.current.bundle) }
@@ -515,9 +553,13 @@ const MainPage: React.FC<MainPageProps> = ({
             }
             right={
               <TabFrame
-                labels={ ["Host", "VM", "Dump", "Viewer", "Terminal"] }
-                LIcons={ [HddStack, Box, FileEarmarkMedical, Display, Terminal] }
+                labels={ ["Get Started", "Host", "VM", "Dump", "Viewer", "Terminal"] }
+                LIcons={ [InfoCircle, HddStack, Box, FileEarmarkMedical, Display, Terminal] }
                 items={ [
+                  <CenterFrame
+                    body={ <MarkdownViewer content={ startMessage } /> }
+                    overflow={ true }
+                  />,
                   <HostInfoBox
                     domain={ data.current.domain }
                     project={ data.current.project }
@@ -554,11 +596,13 @@ const MainPage: React.FC<MainPageProps> = ({
                     app="term"
                     path={ ProjectPath.encode(data.current.domain, data.current.project, data.current.bundle, data.current.termpath) }
                     disabled={ data.current.terminal === null }
+                    focus={ data.current.focus === "terminal" }
                     reload={ env.current.terminal }
                   />
                 ] }
-                refs={ [ref.current.host, ref.current.vm, ref.current.zdump, ref.current.viewer, ref.current.terminal] }
-                onClicks={ [handleClickHost, handleClickVm, handleClickDump, handleClickViewer, handleClickTerminal] }
+                refs={ [ref.current.start, ref.current.host, ref.current.vm, ref.current.zdump, ref.current.viewer, ref.current.terminal] }
+                hiddens={ [env.current.state !== "INIT", env.current.state !== "MAIN", env.current.state !== "MAIN", env.current.state !== "MAIN", env.current.state !== "MAIN", env.current.state !== "MAIN"] }
+                onClicks={ [null, handleClickHost, handleClickVm, handleClickDump, handleClickViewer, handleClickTerminal] }
               />
             }
             hiddenL={ !env.current.menu }

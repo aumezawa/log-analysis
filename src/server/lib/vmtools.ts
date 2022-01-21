@@ -59,9 +59,9 @@ function execVmtoolsSync(node: string, mode: string, type?: string, target?: str
   }
 }
 
-export function decompressBundleSync(file: string, preserve: boolean = false): boolean {
+export function decompressBundleSync(file: string, preserve: boolean = false): Array<FileInfo> {
   const result = execVmtoolsSync(file, "decomp", preserve ? "preserve" : "none")
-  return (result !== null) ? true : false
+  return (result !== null) ? result.info : null
 }
 
 export function getHostListSync(directory: string): Array<string> {

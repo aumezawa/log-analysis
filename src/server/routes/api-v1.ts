@@ -148,7 +148,7 @@ router.use((req: Request, res: Response, next: NextFunction) => {
     })
   }
 
-  jwt.verify(token, req.app.get("token-key"), (err: jwt.VerifyErrors, decoded: object) => {
+  jwt.verify(token, req.app.get("token-key"), (err: jwt.VerifyErrors, decoded: any) => {
     if (err) {
       // Unauthorized
       return res.status(401).json({

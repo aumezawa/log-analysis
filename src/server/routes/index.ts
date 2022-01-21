@@ -34,7 +34,7 @@ router.use((req: Request, res: Response, next: NextFunction) => {
     return res.redirect(`/login?${ (req.query.anonymous) ? "anonymous=true&" : "" }request=${ encodeURIComponent(req.url.replace("?anonymous=true", "").replace("&anonymous=true", "")) }`)
   }
 
-  jwt.verify(token, req.app.get("token-key"), (err: jwt.VerifyErrors, decoded: object) => {
+  jwt.verify(token, req.app.get("token-key"), (err: jwt.VerifyErrors, decoded: any) => {
     if (err) {
       // Unauthorized
       return res.redirect(`/error?type=token&msg=${ err.message }&request=${ encodeURIComponent(req.url) }`)

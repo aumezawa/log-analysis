@@ -501,6 +501,7 @@ router.route("/:domain/projects/:projectName/bundles/:bundleId")
         msg: `You get a bundle name and description of bundle ID = ${ req.bundleId }.`,
         name: bundleInfo.name,
         description: bundleInfo.description,
+        type: bundleInfo.type,
         date: bundleInfo.date,
         preserved: bundleInfo.preserved
       })
@@ -594,7 +595,7 @@ router.route("/:domain/projects/:projectName/bundles")
       destination : (req, file, cb) => cb(null, Project.getProjectResourcePathSync(req.token.usr, req.domain, req.project)),
       filename    : (req, file, cb) => cb(null, file.originalname)
     })
-  }).single("bundle")(req, res, (err: Error) => {
+  }).single("bundle")(req, res, (err: any) => {
     if (err) {
       (err instanceof Error) && logger.error(`${ err.name }: ${ err.message }`)
       // Bad Request
