@@ -1,3 +1,19 @@
+Version: **0.21.0** [2022/01/21]
+
+New Features:
+  - Supported uploading zip file
+
+Enhanced Features:
+  - Added get started
+
+Bug Fixes:
+  - Unexpected delete of preserved log bundle after closing/re-opening project
+  - Unexpected screen transition
+  - Unexpected cleaning of terminal after changing tab
+  - Vulnerary modules
+
+***
+
 Version: **0.20.0** [2022/01/14]
 
 New Features:

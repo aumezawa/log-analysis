@@ -14,6 +14,7 @@ import Environment from "../lib/environment"
 import ProjectPath from "../lib/project-path"
 import UniqueId from "../lib/unique-id"
 
+import CenterFrame from "../components/frames/center-frame"
 import LayerFrame from "../components/frames/layer-frame"
 import TFrame from "../components/frames/t-frame"
 import TabFrame from "../components/frames/tab-frame"
@@ -31,6 +32,7 @@ import ProjectNavigator from "../components/complexes/project-navigator"
 import FileExplorerBox from "../components/complexes/file-explorer-box"
 import FileSearchBox from "../components/complexes/file-search-box"
 
+import MarkdownViewer from "../components/parts/markdown-viewer"
 import FunctionalTableBox from "../components/complexes/functional-table-box"
 import TerminalBox from "../components/complexes/terminal-box"
 
@@ -62,6 +64,7 @@ const MainPage: React.FC<MainPageProps> = ({
   const ref = useRef({
     files   : React.createRef<HTMLAnchorElement>(),
     search  : React.createRef<HTMLAnchorElement>(),
+    start   : React.createRef<HTMLAnchorElement>(),
     viewer  : React.createRef<HTMLAnchorElement>(),
     terminal: React.createRef<HTMLAnchorElement>(),
     whatsnew: React.createRef<HTMLButtonElement>()
@@ -93,7 +96,8 @@ const MainPage: React.FC<MainPageProps> = ({
   })
 
   const env = useRef({
-    menu      : true,
+    state     : "INIT", // "INIT", "MAIN"
+    menu      : false,
     terminal  : 0
   })
 
@@ -152,6 +156,10 @@ const MainPage: React.FC<MainPageProps> = ({
         data.current.sensitive  = (domain && project && bundle && filepath && sensitive) ? false : true
         data.current.date_from  =  domain && project && bundle && filepath && date_from
         data.current.date_to    =  domain && project && bundle && filepath && date_to
+        if (domain && project && bundle) {
+          env.current.state     = "MAIN"
+          env.current.menu      = true
+        }
         if (filepath) {
           ref.current.files.current.click()
           ref.current.viewer.current.click()
@@ -200,6 +208,9 @@ const MainPage: React.FC<MainPageProps> = ({
     data.current.sensitive = true
     data.current.date_from = null
     data.current.date_to = null
+    env.current.state = "INIT"
+    env.current.menu = false
+    ref.current.start.current.click()
     forceUpdate()
     updateTitle()
     updateAddressBar()
@@ -218,6 +229,9 @@ const MainPage: React.FC<MainPageProps> = ({
     data.current.sensitive = true
     data.current.date_from = null
     data.current.date_to = null
+    env.current.state = "INIT"
+    env.current.menu = false
+    ref.current.start.current.click()
     forceUpdate()
     updateTitle()
     updateAddressBar()
@@ -235,6 +249,15 @@ const MainPage: React.FC<MainPageProps> = ({
     data.current.sensitive = true
     data.current.date_from = null
     data.current.date_to = null
+    if (bundleId) {
+      env.current.state = "MAIN"
+      env.current.menu = true
+      ref.current.viewer.current.click()
+    } else {
+      env.current.state = "INIT"
+      env.current.menu = false
+      ref.current.start.current.click()
+    }
     forceUpdate()
     updateTitle()
     updateAddressBar()
@@ -304,6 +327,22 @@ const MainPage: React.FC<MainPageProps> = ({
     data.current.focus = "terminal"
     setTimeout(() => forceUpdate(), 1000)
   }, [true])
+
+  const startMessage = `
+  # Welcome to ${ project }!
+
+  ***
+
+  ### How to use
+
+  ##### Step 1
+
+  Press **[New Project]** to create a new project ***or*** press **[Select Project]** to open an existing one.
+
+  ##### Step 2
+
+  Press **[Upload Bundle]** to upload a new log bundle ***or*** press **[Select Bundle]** to open an existing one.
+  `
 
   return (
     <div className="container-fluid">
@@ -401,7 +440,7 @@ const MainPage: React.FC<MainPageProps> = ({
             left={
               <TabFrame
                 labels={ ["Files", "Search"] }
-                LIcons={ [ FileEarmarkText, Search ] }
+                LIcons={ [FileEarmarkText, Search] }
                 items={ [
                   <FileExplorerBox
                     path={ ProjectPath.strictEncodeFiles(data.current.domain, data.current.project, data.current.bundle) }
@@ -417,9 +456,13 @@ const MainPage: React.FC<MainPageProps> = ({
             }
             right={
               <TabFrame
-                labels={ ["Viewer", "Terminal"] }
-                LIcons={ [ Display, Terminal ] }
+                labels={ ["Get Started", "Viewer", "Terminal"] }
+                LIcons={ [InfoCircle, Display, Terminal] }
                 items={ [
+                  <CenterFrame
+                    body={ <MarkdownViewer content={ startMessage } /> }
+                    overflow={ true }
+                  />,
                   <FunctionalTableBox
                     path={ ProjectPath.strictEncodeFilepath(data.current.domain, data.current.project, data.current.bundle, data.current.filepath) }
                     line={ data.current.line }
@@ -437,11 +480,13 @@ const MainPage: React.FC<MainPageProps> = ({
                     app="term"
                     path={ ProjectPath.encode(data.current.domain, data.current.project, data.current.bundle, data.current.termpath) }
                     disabled={ data.current.terminal === null }
+                    focus={ data.current.focus === "terminal" }
                     reload={ env.current.terminal }
                   />
                 ] }
-                refs={ [ref.current.viewer, ref.current.terminal] }
-                onClicks={ [handleClickViewer, handleClickTerminal] }
+                refs={ [ref.current.start, ref.current.viewer, ref.current.terminal] }
+                hiddens={ [env.current.state !== "INIT", env.current.state !== "MAIN", env.current.state !== "MAIN"] }
+                onClicks={ [null, handleClickViewer, handleClickTerminal] }
               />
             }
             hiddenL={ !env.current.menu }

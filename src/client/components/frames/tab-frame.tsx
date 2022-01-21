@@ -14,6 +14,7 @@ type TabFrameProps = {
   LIcons?   : Array<Icon>,
   items     : Array<JSX.Element>,
   refs      : Array<React.RefObject<HTMLAnchorElement>>,
+  hiddens?  : Array<boolean>,
   show?     : number,
   overflow? : boolean,
   onClicks? : Array<() => void>
@@ -25,6 +26,7 @@ const TabFrame: React.FC<TabFrameProps> = ({
   LIcons    = [],
   items     = undefined,
   refs      = undefined,
+  hiddens   = null,
   show      = 0,
   overflow  = true,
   onClicks  = []
@@ -46,6 +48,7 @@ const TabFrame: React.FC<TabFrameProps> = ({
               LIcon={ LIcons[index] }
               labelId={ id.current.label + index }
               itemId={ id.current.item + index }
+              hidden={ hiddens && hiddens[index] }
               active={ index === show }
               onClick={ onClicks[index] }
             />
@@ -60,6 +63,7 @@ const TabFrame: React.FC<TabFrameProps> = ({
               item={ item }
               labelId={ id.current.label + index }
               itemId={ id.current.item + index }
+              hidden={ hiddens && hiddens[index] }
               active={ index === show }
             />
           ))

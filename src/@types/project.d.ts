@@ -12,6 +12,7 @@ type BundleInfo = {
   id          : number,
   name        : string,
   description : string,
+  type?       : string,
   date?       : string,  // collected date
   available   : boolean,
   preserved?  : boolean
@@ -23,6 +24,7 @@ type FileInfo = {
   path        : string,
   isDirectory : boolean,
   children    : Array<string>,
+  type        : string,
   size        : number,
   mtime       : string
 }

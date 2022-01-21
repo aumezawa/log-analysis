@@ -171,7 +171,13 @@ function writeObjectData(path: string, data: Object): Promise<void> {
 
 function extractBundleInfoSync(file: string): FileInfo {
   try {
-    return FSTool.extractRootTgzSync(path.basename(file), path.dirname(file))
+    if (path.extname(file) === ".tgz") {
+      return FSTool.extractRootTgzSync(path.basename(file), path.dirname(file))
+    } else if (path.extname(file) === ".zip") {
+      return FSTool.extractRootZipSync(path.basename(file), path.dirname(file))
+    } else {
+      return null
+    }
   } catch (err) {
     (err instanceof Error) && logger.error(`${ err.name }: ${ err.message }`)
     return null
@@ -189,44 +195,54 @@ function extractBundleInfo(file: string): Promise<FileInfo> {
   })
 }
 
-function compressBundleSync(directory: string): boolean {
+function compressBundleSync(directory: string, preserved: boolean): Array<FileInfo> {
   try {
-    FSTool.compressTgzSync(path.basename(directory), path.dirname(directory), false)
+    const fileInfo = FSTool.compressTgzSync(path.basename(directory), path.dirname(directory), preserved)
     logger.info(`${ directory } was compressed successfully.`)
-    return true
+    return [fileInfo]
   } catch (err) {
     (err instanceof Error) && logger.error(`${ err.name }: ${ err.message }`)
-    return false
+    return null
   }
 }
 
-function compressBundle(directory: string): Promise<void> {
-  return new Promise<void>((resolve: () => void, reject: (err? :any) => void) => {
+function compressBundle(directory: string, preserved: boolean): Promise<Array<FileInfo>> {
+  return new Promise<Array<FileInfo>>((resolve: (filesInfo: Array<FileInfo>) => void, reject: (err? :any) => void) => {
     return setImmediate(() => {
       let err = new Error(`Resource: ${ directory } cloudn't be compressed.`)
       err.name = "Internal"
-      return compressBundleSync(directory) ? resolve() : reject(err)
+      const filesInfo = compressBundleSync(directory, preserved)
+      return filesInfo ? resolve(filesInfo) : reject(err)
     })
   })
 }
 
-function decompressBundleSync(file: string, preserve: boolean = false): boolean {
+function decompressBundleSync(file: string, preserve: boolean = false): Array<FileInfo> {
   try {
-    FSTool.decompressTgzSync(path.basename(file), path.dirname(file), preserve)
+    let fileInfo: FileInfo
+    if (path.extname(file) === ".tgz") {
+      fileInfo = FSTool.decompressTgzSync(path.basename(file), path.dirname(file), preserve)
+    } else if (path.extname(file) === ".zip") {
+      fileInfo = FSTool.decompressZipSync(path.basename(file), path.dirname(file), preserve)
+    } else {
+      logger.error(`${ file } was unsupported file type.`)
+      return null
+    }
     logger.info(`${ file } was decompressed successfully.`)
-    return true
+    return [fileInfo]
   } catch (err) {
     (err instanceof Error) && logger.error(`${ err.name }: ${ err.message }`)
-    return false
+    return null
   }
 }
 
-function decompressBundle(file: string, preserve: boolean = false): Promise<void> {
-  return new Promise<void>((resolve: () => void, reject: (err? :any) => void) => {
+function decompressBundle(file: string, preserve: boolean = false): Promise<Array<FileInfo>> {
+  return new Promise<Array<FileInfo>>((resolve: (filesInfo: Array<FileInfo>) => void, reject: (err? :any) => void) => {
     return setImmediate(() => {
       let err = new Error(`Resource: ${ file } cloudn't be decompressed.`)
       err.name = "Internal"
-      return decompressBundleSync(file, preserve) ? resolve() : reject(err)
+      const filesInfo = decompressBundleSync(file, preserve)
+      return filesInfo ? resolve(filesInfo) : reject(err)
     })
   })
 }
@@ -240,6 +256,7 @@ function getFileStatSync(file: string): FileInfo {
       path        : file,
       isDirectory : fstat.isDirectory(),
       children    : fstat.isDirectory() ? getChildResourceListSync(file) : null,
+      type        : path.extname(file),
       size        : fstat.size,
       mtime       : fstat.mtime.toISOString()
     })
@@ -412,6 +429,9 @@ function getProjectInfoSync(user: string, domain: string, project: string): Proj
       projectInfo.status = "open"
     }
     projectInfo.bundles = projectInfo.bundles.map((bundleInfo: BundleInfo) => {
+      if (bundleInfo.type === undefined) {
+        bundleInfo.type = "general"
+      }
       if (bundleInfo.date === undefined) {
         bundleInfo.date = new Date().toISOString()
       }
@@ -571,7 +591,9 @@ export function updateProjectStatus(user: string, domain: string, project: strin
         setImmediate(() => {
           return Promise.all(bundles.map((bundleInfo: BundleInfo) => {
             const bundle = joinResourcePathSync(getProjectResourcePathSync(user, domain, project), bundleInfo.name)
-            return (status === "open") ? decompressBundle(bundle + ".tgz") : compressBundle(bundle)
+            return (status === "close")                                 ? compressBundle(bundle, bundleInfo.preserved)            :
+                   (bundleInfo.type === ".zip" && bundleInfo.preserved) ? decompressBundle(bundle + ".zip", bundleInfo.preserved) :
+                                                                          decompressBundle(bundle + ".tgz", bundleInfo.preserved)
           }))
           .then(() => {
             return Atomic.lock(getProjectInfoPathSync(user, domain, project))
@@ -696,53 +718,36 @@ export function registerBundleResource(user: string, domain: string, project: st
     return setImmediate(() => {
       const bundlePath: string = joinResourcePathSync(getProjectResourcePathSync(user, domain, project), bundleTgz)
       let bundleId: string
-      let bundleName: string
-      let bundleMTime: string
       let bundleInfo: BundleInfo
+      let decompInfo: Array<FileInfo>
 
       return extractBundleInfo(bundlePath)
       .then((fileInfo: FileInfo) => {
-        bundleName = fileInfo.name
-        bundleMTime = fileInfo.mtime
-        return existsBundleName(user, domain, project, bundleName)
-      })
-      .then(() => {
-        return Atomic.lock(getProjectInfoPathSync(user, domain, project))
-      })
-      .then(() => {
-        return getProjectInfo(user, domain, project)
-      })
-      .then((projectInfo: ProjectInfo) => {
-        bundleId = String(projectInfo.index++)
-        bundleInfo = {
-          id          : Number(bundleId),
-          name        : bundleName,
-          description : description,
-          date        : bundleMTime,
-          available   : false,
-          preserved   : preserve
-        }
-        projectInfo.bundles.push(bundleInfo)
-        return updateProjectInfo(user, domain, project, projectInfo)
-      })
-      .then(() => {
-        return Atomic.unlock(getProjectInfoPathSync(user, domain, project))
+        return existsBundleName(user, domain, project, fileInfo.name)
       })
       .then(() => {
         return decompressBundle(bundlePath, preserve)
       })
-      .then(() => {
+      .then((filesInfo: Array<FileInfo>) => {
+        decompInfo = filesInfo
         return Atomic.lock(getProjectInfoPathSync(user, domain, project))
       })
       .then(() => {
         return getProjectInfo(user, domain, project)
       })
       .then((projectInfo: ProjectInfo) => {
-        projectInfo.bundles = projectInfo.bundles.map((bundleInfo: BundleInfo) => {
-          if (bundleInfo.name === bundleName) {
-            bundleInfo.available = true
+        decompInfo.forEach((fileInfo: FileInfo) => {
+          bundleId = String(projectInfo.index++)
+          bundleInfo = {
+            id          : Number(bundleId),
+            name        : fileInfo.name,
+            description : description,
+            type        : fileInfo.type,
+            date        : fileInfo.mtime,
+            available   : true,
+            preserved   : preserve
           }
-          return bundleInfo
+          projectInfo.bundles.push(bundleInfo)
         })
         return updateProjectInfo(user, domain, project, projectInfo)
       })

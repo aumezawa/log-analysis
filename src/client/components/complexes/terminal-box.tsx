@@ -17,6 +17,7 @@ type TerminalBoxProps = {
   app       : "term",
   path?     : string,
   disabled? : boolean,
+  focus?    : boolean,
   reload?   : number
 }
 
@@ -24,6 +25,7 @@ const TerminalBox = React.memo<TerminalBoxProps>(({
   app       = null,
   path      = null,
   disabled  = true,
+  focus     = false,
   reload    = null
 }) => {
   const ref = React.createRef<HTMLDivElement>()
@@ -82,18 +84,18 @@ const TerminalBox = React.memo<TerminalBoxProps>(({
     }
   }, [app, path, disabled, reload])
 
-  const handleChangeSize = useCallback(() => {
+  useResizeObserver(ref, () => {
     const terminal = data.current.terminal
     const fitAddon = data.current.fitAddon
     const socket = data.current.socket
 
-    fitAddon.fit()
-    if (socket) {
-      socket.emit("resize", [`${ terminal.cols }`, `${ terminal.rows }`])
+    if (focus) {
+      fitAddon.fit()
+      if (socket) {
+        socket.emit("resize", [`${ terminal.cols }`, `${ terminal.rows }`])
+      }
     }
-  }, [true])
-
-  useResizeObserver(ref, handleChangeSize)
+  }, [focus])
 
   return (
     <div ref={ ref } className="h-100"></div>
