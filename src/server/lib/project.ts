@@ -440,7 +440,7 @@ function getProjectInfoSync(user: string, domain: string, project: string): Proj
     }
     projectInfo.bundles = projectInfo.bundles.map((bundleInfo: BundleInfo) => {
       if (bundleInfo.type === undefined) {
-        bundleInfo.type = "general"
+        bundleInfo.type = "vm-support"
       }
       if (bundleInfo.date === undefined) {
         bundleInfo.date = new Date().toISOString()
@@ -1016,6 +1016,29 @@ export function getHostInfo(user: string, domain: string, project: string, bundl
     })
   })
 }
+
+export function getVCenterList(user: string, domain: string, project: string, bundleId: string): Promise<Array<string>> {
+  return new Promise<Array<string>>((resolve: (list: Array<string>) => void, reject: (err?: any) => void) => {
+    return setImmediate(() => {
+      let err = new Error(`vmtools: An internal error occurred.`)
+      err.name = "Internal"
+      const list = Vmtools.getVCenterListSync(getBundleResourcePathSync(user, domain, project, bundleId))
+      return list ? resolve(list) : reject(err)
+    })
+  })
+}
+
+export function getVCenterInfo(user: string, domain: string, project: string, bundleId: string, vc: string): Promise<VCenterInfo> {
+  return new Promise<VCenterInfo>((resolve: (vcInfo: VCenterInfo) => void, reject: (err?: any) => void) => {
+    return setImmediate(() => {
+      let err = new Error(`vmtools: An internal error occurred.`)
+      err.name = "Internal"
+      const vcInfo = Vmtools.getVCenterInfoSync(getBundleResourcePathSync(user, domain, project, bundleId), vc)
+      return vcInfo ? resolve(vcInfo) : reject(err)
+    })
+  })
+}
+
 
 export function getVmList(user: string, domain: string, project: string, bundleId: string): Promise<Array<string>> {
   return new Promise<Array<string>>((resolve: (list: Array<string>) => void, reject: (err?: any) => void) => {

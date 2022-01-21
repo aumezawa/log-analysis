@@ -21,6 +21,7 @@ function execVmtoolsSync(node: string, mode: string, type?: string, target?: str
               : null
   if (mode === "get") {
     options[3]  = (type === "esx")    ? "-e"
+                : (type === "vc")     ? "-vc"
                 : (type === "vm")     ? "-v"
                 : (type === "vmlog")  ? "-vl"
                 : (type === "zdump")  ? "-z"
@@ -70,6 +71,14 @@ export function getHostListSync(directory: string): Array<string> {
 
 export function getHostInfoSync(directory: string, host: string): HostInfo {
   return execVmtoolsSync(directory, "get", "esx", host) as HostInfo
+}
+
+export function getVCenterListSync(directory: string): Array<string> {
+  return execVmtoolsSync(directory, "get", "vc", "LIST") as Array<string>
+}
+
+export function getVCenterInfoSync(directory: string, vc: string): VCenterInfo {
+  return execVmtoolsSync(directory, "get", "vc", vc) as VCenterInfo
 }
 
 export function getVmListSync(directory: string): Array<string> {

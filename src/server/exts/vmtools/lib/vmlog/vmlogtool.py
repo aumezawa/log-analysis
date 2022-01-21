@@ -7,7 +7,7 @@ from __future__ import print_function
 
 __all__     = ['DecompressBundle', 'GetHostList', 'GetHostInfo', 'GetVmList', 'GetVmInfo', 'GetVmLogPath', 'GetVCenterList', 'GetVCenterInfo', 'GetZdumpList' 'GetZdumpInfo']
 __author__  = 'aumezawa'
-__version__ = '0.1.6'
+__version__ = '0.1.7'
 
 
 ################################################################################
@@ -58,6 +58,7 @@ def DecompressBundle(filePath, compressLargeFiles=False, preserveOriginalFile=Fa
         if fileList is None:
             os.remove(filePath)
             return None
+        fileList.sort()
         #
         os.remove(filePath)
         #
@@ -115,7 +116,7 @@ def DecompressBundle(filePath, compressLargeFiles=False, preserveOriginalFile=Fa
 ################################################################################
 def GetHostList(dirPath):
     if GetLogBundleType(dirPath) != "vm-support":
-        return None
+        return []
     #
     return [GetHostName(dirPath)]
 
@@ -189,7 +190,7 @@ def GetVmInfo(dirPath, vmName):
             'format'    : __version__,
             'name'      : vmName,
             'version'   : int(vmxDict['virtualHW.version']),
-            'cpus'      : int(vmxDict['numvcpus']),
+            'cpus'      : int(GetVmxValue(vmxDict, 'numvcpus', default='1')),
             'memory'    : int(vmxDict['memSize']) // 1024,
             'firmware'  : GetVmxValue(vmxDict, 'firmware', default='bios'),
             'guest'     : vmxDict['guestOS'],
@@ -1219,7 +1220,7 @@ def GetVmxPath(dirPath, vmName):
     xpath    = './ConfigEntry/vmxCfgPath'
     for vmxFile in SearchInXml(filePath, xpath, multi=True, default=[]):
         if vmName in vmxFile:
-            return vmxFile[1:]  # Note: removed leading character '/'
+            return vmxFile[1:].replace(':', '_')  # Note: removed leading character '/'
     return None
 
 

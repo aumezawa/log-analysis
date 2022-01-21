@@ -18,7 +18,7 @@ type BundleUploadBoxProps = {
   id        : string,
   domain?   : string
   project?  : string,
-  onSubmit? : (bundleId: string, bundleName: string) => void
+  onSubmit? : (bundleId: string, bundleName: string, bundleType: string) => void
 }
 
 const defaultMessage = `Please select a upload file (.tgz) and input a bundle "description".`
@@ -81,7 +81,7 @@ const BundleUploadBox = React.memo<BundleUploadBoxProps>(({
       status.current.success = true
       status.current.progress = 0
       if (onSubmit) {
-        onSubmit(String(res.data.id), res.data.name)
+        onSubmit(String(res.data.id), res.data.name, res.data.type)
       }
       clearFrom()
       return

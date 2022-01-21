@@ -23,7 +23,7 @@ type BundleSelectModalProps = {
   bundle?   : string,
   action?   : string,   // NOTE: "open" | "delete" | "download"
   reload?   : number,
-  onSubmit? : (bundleId: string, bundleName: string) => void,
+  onSubmit? : (bundleId: string, bundleName: string, bundleType: string) => void,
   onUpdate? : (bundleName: string) => void
 }
 
@@ -48,6 +48,7 @@ const BundleSelectModal = React.memo<BundleSelectModalProps>(({
     filter      : "",
     bundleId    : null,
     bundleName  : null,
+    bundleType  : null,
     bundles     : []
   })
 
@@ -75,7 +76,7 @@ const BundleSelectModal = React.memo<BundleSelectModalProps>(({
         return
       })
       .catch((err: Error | AxiosError) => {
-        onSubmit(null, null)
+        onSubmit(null, null, null)
         if (Axios.isAxiosError(err)) {
           // nop
         } else {
@@ -124,13 +125,14 @@ const BundleSelectModal = React.memo<BundleSelectModalProps>(({
   const handleSelectBundle = useCallback((value: string) => {
     data.current.bundleId = data.current.bundles.find((bundle: BundleInfo) => (bundle.name === value.split(" ")[0])).id.toString()
     data.current.bundleName = value.split(" ")[0]
+    data.current.bundleType = data.current.bundles.find((bundle: BundleInfo) => (bundle.name === value.split(" ")[0])).type
     forceUpdate()
   }, [true])
 
   const handleSubmit = useCallback(() => {
     if (action === "open") {
       if (onSubmit) {
-        onSubmit(data.current.bundleId, data.current.bundleName)
+        onSubmit(data.current.bundleId, data.current.bundleName, data.current.bundleType)
       }
       return
     }
@@ -146,7 +148,7 @@ const BundleSelectModal = React.memo<BundleSelectModalProps>(({
       })
       .then((res: AxiosResponse) => {
         if (onSubmit) {
-          onSubmit(data.current.bundleId, data.current.bundleName)
+          onSubmit(data.current.bundleId, data.current.bundleName, data.current.bundleType)
         }
         data.current.bundleId = null
         data.current.bundleName = null

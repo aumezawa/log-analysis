@@ -239,6 +239,58 @@ router.route("/:domain/projects/:projectName/bundles/:bundleId/zdumps")
 })
 
 
+router.route("/:domain/projects/:projectName/bundles/:bundleId/vcs/:vcName")
+.get((req: Request, res: Response, next: NextFunction) => {
+  return Project.getVCenterInfo(req.token.usr, req.domain, req.project, req.bundleId, req.params.vcName)
+  .then((vcInfo: VCenterInfo) => {
+    // OK
+    return res.status(200).json({
+      msg: "You get a vcenter server information.",
+      vc: vcInfo
+    })
+  })
+  .catch((err: any) => {
+    return ((err instanceof Error) && (err.name === "External"))
+      ? // Bad Request
+        res.status(400).json({ msg: err.message })
+      : // Internal Server Error
+        res.status(500).json({ msg: "Contact an administrator." })
+  })
+})
+.all((req: Request, res: Response, next: NextFunction) => {
+  // Method Not Allowed
+  return res.status(405).json({
+    msg: "GET method is only supported."
+  })
+})
+
+
+router.route("/:domain/projects/:projectName/bundles/:bundleId/vcs")
+.get((req: Request, res: Response, next: NextFunction) => {
+  return Project.getVCenterList(req.token.usr, req.domain, req.project, req.bundleId)
+  .then((list: Array<string>) => {
+    // OK
+    return res.status(200).json({
+      msg: "You get a vcenter server list.",
+      vcs: list
+    })
+  })
+  .catch((err: any) => {
+    return ((err instanceof Error) && (err.name === "External"))
+      ? // Bad Request
+        res.status(400).json({ msg: err.message })
+      : // Internal Server Error
+        res.status(500).json({ msg: "Contact an administrator." })
+  })
+})
+.all((req: Request, res: Response, next: NextFunction) => {
+  // Method Not Allowed
+  return res.status(405).json({
+    msg: "GET method is only supported."
+  })
+})
+
+
 router.route("/:domain/projects/:projectName/bundles/:bundleId/hosts/:hostName")
 .get((req: Request, res: Response, next: NextFunction) => {
   return Project.getHostInfo(req.token.usr, req.domain, req.project, req.bundleId, req.params.hostName)

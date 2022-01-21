@@ -46,7 +46,7 @@ type ProjectNavigatorProps = {
   onChangeMenu?   : (enabled: boolean) => void,
   onChangeDomain  : (domainName: string) => void,
   onChangeProject : (projectName: string) => void,
-  onChangeBundle  : (bundleId: string) => void,
+  onChangeBundle  : (bundleId: string, bundleType: string) => void,
   onChangeHosts   : (hosts: string) => void,
   onChangeVms     : (vms: string) => void,
   onClickConsole  : () => void
@@ -125,17 +125,17 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
     }
   }, [project, onChangeProject])
 
-  const handleChangeBundle = useCallback((bundleId: string, bundleName: string) => {
+  const handleChangeBundle = useCallback((bundleId: string, bundleName: string, bundleType: string) => {
     if (data.current.action === "open") {
       data.current.bundleName = bundleName
       if (onChangeBundle) {
-        onChangeBundle(bundleId)
+        onChangeBundle(bundleId, bundleType)
       }
     }
     if ((data.current.action === "delete") && (bundleId === bundle)) {
       data.current.bundleName = null
       if (onChangeBundle) {
-        onChangeBundle(null)
+        onChangeBundle(null, null)
       }
     }
   }, [bundle, onChangeBundle])

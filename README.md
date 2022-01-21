@@ -331,6 +331,26 @@ Access with your browser or issue HTTP requests.
   - data: `{ msg: <string>, host: <HostInfo> }`
 
 
+### Get vCenter Server Name
+
+- request
+  - method: `GET`
+  - header: `{ X-Access-Token: <string> }`
+  - path: `/api/v1/log/:domain/projects/:projectName/bundles/:bundleId/vcs`
+- response
+  - data: `{ msg: <string>, vcs: [<string>] }`
+
+
+### Get vCenter Server Information
+
+- request
+  - method: `GET`
+  - header: `{ X-Access-Token: <string> }`
+  - path: `/api/v1/log/:domain/projects/:projectName/bundles/:bundleId/vcs/:vcName`
+- response
+  - data: `{ msg: <string>, vc: <VCenterInfo> }`
+
+
 ### Get VM List
 
 - request

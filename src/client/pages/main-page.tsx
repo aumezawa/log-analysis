@@ -36,7 +36,7 @@ import MarkdownViewer from "../components/parts/markdown-viewer"
 import FunctionalTableBox from "../components/complexes/functional-table-box"
 import TerminalBox from "../components/complexes/terminal-box"
 
-import HostInfoBox from "../components/specifics/vmlog/host-info-box"
+import ServerInfoBox from "../components/specifics/vmlog/server-info-box"
 import VmExplorerBox from "../components/specifics/vmlog/vm-explorer-box"
 import VmInfoBox from "../components/specifics/vmlog/vm-info-box"
 import ZdumpExplorerBox from "../components/specifics/vmlog/zdump-explorer-box"
@@ -73,7 +73,7 @@ const MainPage: React.FC<MainPageProps> = ({
     vms     : React.createRef<HTMLAnchorElement>(),
     zdumps  : React.createRef<HTMLAnchorElement>(),
     start   : React.createRef<HTMLAnchorElement>(),
-    host    : React.createRef<HTMLAnchorElement>(),
+    server  : React.createRef<HTMLAnchorElement>(),
     vm      : React.createRef<HTMLAnchorElement>(),
     zdump   : React.createRef<HTMLAnchorElement>(),
     viewer  : React.createRef<HTMLAnchorElement>(),
@@ -92,6 +92,7 @@ const MainPage: React.FC<MainPageProps> = ({
     domain    : domains.split(",")[0],
     project   : null,
     bundle    : null,
+    type      : null,
     hosts     : null,
     vms       : null,
     vmname    : null,
@@ -153,16 +154,29 @@ const MainPage: React.FC<MainPageProps> = ({
     const date_to = params.get("date_to")
 
     if (domain) {
-      const uri = `${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project, bundle, filepath) }`
+      const uri1 = `${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project, bundle, filepath) }`
+      const uri2 = `${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project, bundle) }`
 
-      Axios.get(uri, {
+      Axios.get(uri1, {
         headers : { "X-Access-Token": Cookie.get("token") || "" },
         data    : {}
+      })
+      .then((res: AxiosResponse) => {
+        if (domain && project && bundle) {
+          return Axios.get(uri2, {
+            headers : { "X-Access-Token": Cookie.get("token") || "" },
+            data    : {}
+          })
+        }
+        else {
+          return null
+        }
       })
       .then((res: AxiosResponse) => {
         data.current.domain     =  domain
         data.current.project    =  domain && project
         data.current.bundle     =  domain && project && bundle
+        data.current.type       =  domain && project && bundle && res      && res.data.type
         data.current.filepath   =  domain && project && bundle && filepath
         data.current.filename   =  domain && project && bundle && filepath && Path.basename(filepath)
         data.current.line       =  domain && project && bundle && filepath && line       && Number(line)
@@ -174,6 +188,7 @@ const MainPage: React.FC<MainPageProps> = ({
         if (domain && project && bundle) {
           env.current.state     = "MAIN"
           env.current.menu      = true
+          ref.current.server.current.click()
         }
         if (filepath) {
           ref.current.files.current.click()
@@ -185,7 +200,7 @@ const MainPage: React.FC<MainPageProps> = ({
         return
       })
       .catch((err: Error | AxiosError) => {
-        alert(`No resource: ${ uri }`)
+        alert(`No resource: ${ uri1 }`)
         updateTitle()
         updateAddressBar()
         return
@@ -213,6 +228,7 @@ const MainPage: React.FC<MainPageProps> = ({
     data.current.domain = domainName
     data.current.project = null
     data.current.bundle = null
+    data.current.type = null
     data.current.hosts = null
     data.current.vms = null
     data.current.vmname = null
@@ -238,6 +254,7 @@ const MainPage: React.FC<MainPageProps> = ({
   const handleChangeProject = useCallback((projectName: string) => {
     data.current.project = projectName
     data.current.bundle = null
+    data.current.type = null
     data.current.hosts = null
     data.current.vms = null
     data.current.vmname = null
@@ -260,8 +277,9 @@ const MainPage: React.FC<MainPageProps> = ({
     updateAddressBar()
   }, [true])
 
-  const handleChangeBundle = useCallback((bundleId: string) => {
+  const handleChangeBundle = useCallback((bundleId: string, bundleType: string) => {
     data.current.bundle = bundleId
+    data.current.type = bundleType
     data.current.hosts = null
     data.current.vms = null
     data.current.vmname = null
@@ -279,7 +297,7 @@ const MainPage: React.FC<MainPageProps> = ({
     if (bundleId) {
       env.current.state = "MAIN"
       env.current.menu = true
-      ref.current.host.current.click()
+      ref.current.server.current.click()
     } else {
       env.current.state = "INIT"
       env.current.menu = false
@@ -292,7 +310,7 @@ const MainPage: React.FC<MainPageProps> = ({
 
   const handleChangeHosts = useCallback((hosts: string) => {
     data.current.hosts = hosts
-    ref.current.host.current.click()
+    ref.current.server.current.click()
     forceUpdate()
   }, [true])
 
@@ -509,7 +527,7 @@ const MainPage: React.FC<MainPageProps> = ({
                 bundle={ data.current.bundle }
                 filename={ data.current.filename }
                 terminal={ data.current.terminal }
-                host={ "Host" }
+                host={ data.current.type === "vm-support" ? "ESXi Server" : "vCenter Server" }
                 vm={ data.current.vmname }
                 dump={ data.current.dumpname }
                 focus={ data.current.focus }
@@ -549,21 +567,23 @@ const MainPage: React.FC<MainPageProps> = ({
                   />
                 ] }
                 refs={ [ref.current.files, ref.current.search, ref.current.vms, ref.current.zdump] }
+                hiddens={ [false, false, data.current.type !== "vm-support", data.current.type !== "vm-support"] }
               />
             }
             right={
               <TabFrame
-                labels={ ["Get Started", "Host", "VM", "Dump", "Viewer", "Terminal"] }
+                labels={ ["Get Started", "Server", "VM", "Dump", "Viewer", "Terminal"] }
                 LIcons={ [InfoCircle, HddStack, Box, FileEarmarkMedical, Display, Terminal] }
                 items={ [
                   <CenterFrame
                     body={ <MarkdownViewer content={ startMessage } /> }
                     overflow={ true }
                   />,
-                  <HostInfoBox
+                  <ServerInfoBox
                     domain={ data.current.domain }
                     project={ data.current.project }
                     bundle={ data.current.bundle }
+                    type={ data.current.type }
                     hosts={ data.current.hosts }
                   />,
                   <VmInfoBox
@@ -600,8 +620,8 @@ const MainPage: React.FC<MainPageProps> = ({
                     reload={ env.current.terminal }
                   />
                 ] }
-                refs={ [ref.current.start, ref.current.host, ref.current.vm, ref.current.zdump, ref.current.viewer, ref.current.terminal] }
-                hiddens={ [env.current.state !== "INIT", env.current.state !== "MAIN", env.current.state !== "MAIN", env.current.state !== "MAIN", env.current.state !== "MAIN", env.current.state !== "MAIN"] }
+                refs={ [ref.current.start, ref.current.server, ref.current.vm, ref.current.zdump, ref.current.viewer, ref.current.terminal] }
+                hiddens={ [env.current.state !== "INIT", env.current.state !== "MAIN", env.current.state !== "MAIN" || data.current.type !== "vm-support", env.current.state !== "MAIN" || data.current.type !== "vm-support", env.current.state !== "MAIN", env.current.state !== "MAIN"] }
                 onClicks={ [null, handleClickHost, handleClickVm, handleClickDump, handleClickViewer, handleClickTerminal] }
               />
             }
