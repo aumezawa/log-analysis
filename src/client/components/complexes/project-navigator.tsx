@@ -95,7 +95,7 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
   }, [onChangeDomain])
 
   const handleChangeProject = useCallback((projectName: string) => {
-    if (data.current.action === "open") {
+    if (data.current.action === "open" || data.current.action === "reopen") {
       if (onChangeProject) {
         onChangeProject(projectName)
       }
@@ -238,6 +238,7 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
                 disabled={ !domain || !Privilege.isProjectCreatable(privilege, domain) }
                 toggle="modal"
                 target={ id.current.projectCreate }
+                onClick={ handleClickOpenProject }
               />
               <Dot />
             </>

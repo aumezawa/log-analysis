@@ -208,6 +208,9 @@ const MainPage: React.FC<MainPageProps> = ({
     data.current.sensitive = true
     data.current.date_from = null
     data.current.date_to = null
+    env.current.state = "INIT"
+    env.current.menu = false
+    ref.current.start.current.click()
     forceUpdate()
     updateTitle()
     updateAddressBar()
@@ -226,6 +229,9 @@ const MainPage: React.FC<MainPageProps> = ({
     data.current.sensitive = true
     data.current.date_from = null
     data.current.date_to = null
+    env.current.state = "INIT"
+    env.current.menu = false
+    ref.current.start.current.click()
     forceUpdate()
     updateTitle()
     updateAddressBar()
@@ -250,6 +256,7 @@ const MainPage: React.FC<MainPageProps> = ({
     } else {
       env.current.state = "INIT"
       env.current.menu = false
+      ref.current.start.current.click()
     }
     forceUpdate()
     updateTitle()
