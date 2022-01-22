@@ -8,7 +8,6 @@
 Install required packages.
 
 ```
-# npm install --global gulp
 # npm install
 ```
 
