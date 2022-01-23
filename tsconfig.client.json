@@ -12,6 +12,7 @@
     "strictNullChecks": false,
     "moduleResolution": "node",
     "typeRoots": ["./node_modules/@types", "./src/@types"],
+    "allowSyntheticDefaultImports": true,
     "esModuleInterop": false,
     "forceConsistentCasingInFileNames": true
   },

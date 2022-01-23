@@ -4,7 +4,7 @@ import { useEffect, useRef, useCallback, useReducer } from "react"
 import Axios from "axios"
 import { AxiosResponse, AxiosError } from "axios"
 
-import * as Cookie from "js-cookie"
+import Cookies from "js-cookie"
 
 import Environment from "../../lib/environment"
 import ProjectPath from "../../lib/project-path"
@@ -65,7 +65,7 @@ const BundleUploadBox = React.memo<BundleUploadBoxProps>(({
     status.current.progress = 0
     forceUpdate()
     Axios.post(uri, params, {
-      headers: { "X-Access-Token": Cookie.get("token") || "" },
+      headers: { "X-Access-Token": Cookies.get("token") || "" },
       onUploadProgress: (progressEvent: any) => {
         status.current.progress = Math.floor(progressEvent.loaded / progressEvent.total * 100)
         if (status.current.progress === 100) {

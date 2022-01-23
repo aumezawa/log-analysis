@@ -4,7 +4,7 @@ import { useEffect, useRef, useCallback, useReducer } from "react"
 import Axios from "axios"
 import { AxiosResponse, AxiosError } from "axios"
 
-import * as Cookie from "js-cookie"
+import Cookies from "js-cookie"
 
 import Environment from "../../lib/environment"
 
@@ -28,7 +28,7 @@ const WhatsNewModal = React.memo<WhatsNewModalProps>(({
   useEffect(() => {
     const uri = `${ Environment.getBaseUrl() }/api/v1/whatsnew`
     Axios.get(uri, {
-      headers : { "X-Access-Token": Cookie.get("token") || "" },
+      headers : { "X-Access-Token": Cookies.get("token") || "" },
       data    : {}
     })
     .then((res: AxiosResponse) => {
@@ -47,11 +47,11 @@ const WhatsNewModal = React.memo<WhatsNewModalProps>(({
   }, [true])
 
   const handleSubmit = useCallback(() => {
-    Cookie.remove("whatsnew")
+    Cookies.remove("whatsnew")
   }, [true])
 
   const handleCancel = useCallback(() => {
-    Cookie.set("whatsnew", "false")
+    Cookies.set("whatsnew", "false")
   }, [true])
 
   return (

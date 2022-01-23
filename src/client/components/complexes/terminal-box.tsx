@@ -5,7 +5,7 @@ import useResizeObserver from "../../lib/useResizeObserver"
 import Axios from "axios"
 import { AxiosResponse, AxiosError } from "axios"
 
-import * as Cookie from "js-cookie"
+import Cookies from "js-cookie"
 import { Terminal } from "xterm"
 import { FitAddon } from "xterm-addon-fit"
 import "xterm/css/xterm.css"
@@ -44,7 +44,7 @@ const TerminalBox = React.memo<TerminalBoxProps>(({
     if (path && !disabled) {
       const uri = `${ Environment.getBaseUrl() }/api/v1/${ Escape.root(path) }?mode=${ app }`
       Axios.get(uri, {
-        headers : { "X-Access-Token": Cookie.get("token") || "" },
+        headers : { "X-Access-Token": Cookies.get("token") || "" },
         data    : {}
       })
       .then((res: AxiosResponse) => {

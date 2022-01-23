@@ -1,6 +1,5 @@
-import * as cluster from "cluster"
-
-import logger = require("../lib/logger")
+const cluster = require("cluster")
+const logger = require("../lib/logger")
 
 type RequestMessage = {
   signature : "RequestMessage",

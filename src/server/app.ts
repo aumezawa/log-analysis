@@ -3,10 +3,10 @@ import * as bodyParser from "body-parser"
 import * as cookieParser from "cookie-parser"
 import * as favicon from "serve-favicon"
 import * as path from "path"
-import * as helmet from "helmet"
 import * as log4js from "log4js"
 
-import logger = require("./lib/logger")
+const logger = require("./lib/logger")
+const helmet = require("helmet")
 
 import indexRouter from "./routes/index"
 import apiV1Router from "./routes/api-v1"

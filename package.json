@@ -36,7 +36,7 @@
     "debug:single": "cross-env LOGLEVEL=debug LOGOUT=console node ./bin/www",
     "debug:multi": "cross-env LOGLEVEL=debug LOGOUT=console node ./bin/www-master",
     "test": "npm run test:web-api",
-    "test:web-api": "node ./dist/test/web-api"
+    "test:web-api": "npm run build:test && node ./dist/test/web-api"
   },
   "repository": {
     "type": "git",
