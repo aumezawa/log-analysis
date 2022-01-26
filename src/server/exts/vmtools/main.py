@@ -7,7 +7,7 @@ from __future__ import print_function
 
 __all__     = []
 __author__  = 'aumezawa'
-__version__ = '0.1.5'
+__version__ = '0.1.6'
 
 
 ################################################################################
@@ -186,7 +186,8 @@ def GetHostInfoWithCache(bundle, esx):
         result = cacheData
     else:
         result = vmlogtool.GetHostInfo(bundle, esx)
-        cachelib.writeCache(cacheDir, cacheKey, result)
+        if result is not None:
+            cachelib.writeCache(cacheDir, cacheKey, result)
     return result
 
 
@@ -198,7 +199,8 @@ def GetVmInfoWithCache(bundle, vm):
         result = cacheData
     else:
         result = vmlogtool.GetVmInfo(bundle, vm)
-        cachelib.writeCache(cacheDir, cacheKey, result)
+        if result is not None:
+            cachelib.writeCache(cacheDir, cacheKey, result)
     return result
 
 
@@ -210,7 +212,8 @@ def GetVCenterInfoWithCache(bundle, vc):
         result = cacheData
     else:
         result = vmlogtool.GetVCenterInfo(bundle, vc)
-        cachelib.writeCache(cacheDir, cacheKey, result)
+        if result is not None:
+            cachelib.writeCache(cacheDir, cacheKey, result)
     return result
 
 

@@ -7,7 +7,7 @@ from __future__ import print_function
 
 __all__     = ['DecompressBundle', 'GetHostList', 'GetHostInfo', 'GetVmList', 'GetVmInfo', 'GetVmLogPath', 'GetVCenterList', 'GetVCenterInfo', 'GetZdumpList' 'GetZdumpInfo']
 __author__  = 'aumezawa'
-__version__ = '0.1.7'
+__version__ = '0.1.8'
 
 
 ################################################################################
@@ -116,6 +116,7 @@ def DecompressBundle(filePath, compressLargeFiles=False, preserveOriginalFile=Fa
 ################################################################################
 def GetHostList(dirPath):
     if GetLogBundleType(dirPath) != "vm-support":
+        logger.debug('Unsupported bundle type...')
         return []
     #
     return [GetHostName(dirPath)]
@@ -123,8 +124,10 @@ def GetHostList(dirPath):
 
 def GetHostInfo(dirPath, esxName):
     if GetLogBundleType(dirPath) != "vm-support":
+        logger.debug('Unsupported bundle type...')
         return None
     if esxName != GetHostName(dirPath):
+        logger.debug('Unknown hostname...')
         return None
     #
     try:
@@ -220,6 +223,7 @@ def GetVmLogPath(dirPath, vmName):
 ################################################################################
 def GetVCenterList(dirPath):
     if GetLogBundleType(dirPath) != "vc-support":
+        logger.debug('Unsupported bundle type...')
         return None
     #
     return [GetVCenterName(dirPath)]
@@ -227,6 +231,7 @@ def GetVCenterList(dirPath):
 
 def GetVCenterInfo(dirPath, vcName):
     if GetLogBundleType(dirPath) != "vc-support":
+        logger.debug('Unsupported bundle type...')
         return None
     #
     if vcName != GetVCenterName(dirPath):
@@ -403,7 +408,7 @@ def GetLogBundleTime(filePath):
 
 
 def GetLogBundleType(dirPath):
-    vmFilePath = os.path.join(dirPath, 'vm-support-incident-key')
+    vmFilePath = os.path.join(dirPath, 'etc', 'vmware', 'vm-support')
     vcFilePath = os.path.join(dirPath, 'usr', 'lib', 'vmware-sca', 'conf', 'vc-support.properties')
     #
     if os.path.exists(vmFilePath):
