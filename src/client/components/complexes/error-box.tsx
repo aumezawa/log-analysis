@@ -1,7 +1,7 @@
 import * as React from "react"
 import { useEffect, useCallback } from "react"
 
-import * as Cookie from "js-cookie"
+import Cookies from "js-cookie"
 
 import Environment from "../../lib/environment"
 
@@ -35,7 +35,7 @@ const ErrorBox = React.memo<ErrorBoxProps>(({
 
   useEffect(()=> {
     if (params.get("type") === "token") {
-      Cookie.remove("token")
+      Cookies.remove("token")
     }
   }, [true])
 

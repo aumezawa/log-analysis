@@ -6,7 +6,7 @@ import { Search } from "react-bootstrap-icons"
 import Axios from "axios"
 import { AxiosResponse, AxiosError } from "axios"
 
-import * as Cookie from "js-cookie"
+import Cookies from "js-cookie"
 
 import Environment from "../../lib/environment"
 import ProjectPath from "../../lib/project-path"
@@ -64,7 +64,7 @@ const ProjectSelectModal = React.memo<ProjectSelectModalProps>(({
     if (domain) {
       const uri = `${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain) }/projects`
       Axios.get(uri, {
-        headers : { "X-Access-Token": Cookie.get("token") || "" },
+        headers : { "X-Access-Token": Cookies.get("token") || "" },
         data    : {}
       })
       .then((res: AxiosResponse) => {
@@ -114,7 +114,7 @@ const ProjectSelectModal = React.memo<ProjectSelectModalProps>(({
 
     if (action === "delete") {
       Axios.delete(uri, {
-        headers : { "X-Access-Token": Cookie.get("token") || "" },
+        headers : { "X-Access-Token": Cookies.get("token") || "" },
         data    : {}
       })
       .then((res: AxiosResponse) => {
@@ -142,7 +142,7 @@ const ProjectSelectModal = React.memo<ProjectSelectModalProps>(({
       Axios.put(uri, {
         status  : (action === "reopen") ? "open" : "close"
       }, {
-        headers : { "X-Access-Token": Cookie.get("token") || "" },
+        headers : { "X-Access-Token": Cookies.get("token") || "" },
         data    : {}
       })
       .then((res: AxiosResponse) => {

@@ -2,6 +2,7 @@ const webpack = require("webpack");
 
 module.exports = {
   mode: "development",
+  devtool: "cheap-module-source-map",
   entry: {
     bundle: `${__dirname}/src/client/render-main.tsx`
   },
@@ -51,6 +52,14 @@ module.exports = {
                   require("autoprefixer")
                 ];
               }
+              /* for future version
+              postcssOptions: {
+                plugins: [
+                  require("precss")({}),
+                  require('autoprefixer')({})
+                ]
+              }
+              */
             }
           },
           {

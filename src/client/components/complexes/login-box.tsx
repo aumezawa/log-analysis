@@ -4,7 +4,7 @@ import { useEffect, useRef, useCallback, useReducer } from "react"
 import Axios from "axios"
 import { AxiosResponse, AxiosError } from "axios"
 
-import * as Cookie from "js-cookie"
+import Cookies from "js-cookie"
 import * as Crypto from "crypto"
 
 import Environment from "../../lib/environment"
@@ -65,7 +65,7 @@ const LoginBox = React.memo<LoginBoxProps>(({
       return Axios.post(uri, params)
     })
     .then((res: AxiosResponse) => {
-      Cookie.set("token", res.data.token)
+      Cookies.set("token", res.data.token)
       data.current.message = `${ res.data.msg }` + (redirect ? " Will redirect automatically in 3 sec." : "")
       status.current.done = true
       status.current.success = true

@@ -4,7 +4,7 @@ import { useEffect, useRef, useReducer } from "react"
 import Axios from "axios"
 import { AxiosResponse, AxiosError } from "axios"
 
-import * as Cookie from "js-cookie"
+import Cookies from "js-cookie"
 
 import Environment from "../../lib/environment"
 
@@ -28,7 +28,7 @@ const MarkdownViewerBox = React.memo<MarkdownViewerBoxProps>(({
   useEffect(() => {
     const uri = `${ Environment.getBaseUrl() }/api/v1/${ path }`
     Axios.get(uri, {
-      headers : { "X-Access-Token": Cookie.get("token") || "" },
+      headers : { "X-Access-Token": Cookies.get("token") || "" },
       data    : {}
     })
     .then((res: AxiosResponse) => {

@@ -4,7 +4,7 @@ import { useEffect, useRef, useCallback, useReducer } from "react"
 import Axios from "axios"
 import { AxiosResponse, AxiosError } from "axios"
 
-import * as Cookie from "js-cookie"
+import Cookies from "js-cookie"
 import * as Zlib from "zlib"
 
 import Environment from "../../lib/environment"
@@ -59,7 +59,7 @@ const FunctionalTableBox = React.memo<FunctionalTableBoxProps>(({
       status.current.processing = true
       forceUpdate()
       Axios.get(uri, {
-        headers : { "X-Access-Token": Cookie.get("token") || "" },
+        headers : { "X-Access-Token": Cookies.get("token") || "" },
         data    : {}
       })
       .then((res: AxiosResponse) => {
@@ -118,7 +118,7 @@ const FunctionalTableBox = React.memo<FunctionalTableBoxProps>(({
     status.current.processing = true
     forceUpdate()
     Axios.get(uri, {
-      headers : { "X-Access-Token": Cookie.get("token") || "" },
+      headers : { "X-Access-Token": Cookies.get("token") || "" },
       data    : {}
     })
     .then((res: AxiosResponse) => {
@@ -151,7 +151,7 @@ const FunctionalTableBox = React.memo<FunctionalTableBoxProps>(({
     uri = (dateFrom)                ? `${ uri }&date_from=${ encodeURIComponent(dateFrom) }` : uri
     uri = (dateTo)                  ? `${ uri }&date_to=${ encodeURIComponent(dateTo) }`     : uri
     Axios.get(uri, {
-      headers : { "X-Access-Token": Cookie.get("token") || "" },
+      headers : { "X-Access-Token": Cookies.get("token") || "" },
       data    : {},
       responseType: "blob"
     })

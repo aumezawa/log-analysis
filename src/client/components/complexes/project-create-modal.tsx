@@ -4,7 +4,7 @@ import { useEffect, useRef, useCallback, useReducer } from "react"
 import Axios from "axios"
 import { AxiosResponse, AxiosError } from "axios"
 
-import * as Cookie from "js-cookie"
+import Cookies from "js-cookie"
 
 import Environment from "../../lib/environment"
 import ProjectPath from "../../lib/project-path"
@@ -50,7 +50,7 @@ const ProjectCreateModal = React.memo<ProjectCreateModalProps>(({
     const params = new URLSearchParams()
     params.append("name", name)
     params.append("description", description)
-    params.append("token", Cookie.get("token") || "")
+    params.append("token", Cookies.get("token") || "")
 
     status.current.done = false
     forceUpdate()

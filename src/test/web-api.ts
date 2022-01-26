@@ -11,7 +11,7 @@ const scriptPath = path.join(__dirname, "script", "api-v1-log.yaml")
 
 function loadScript(path: string): TestScript {
   try {
-    return yaml.safeLoad(fs.readFileSync(path, "utf8")) as TestScript
+    return yaml.load(fs.readFileSync(path, "utf8")) as TestScript
   } catch (err) {
     console.log(err)
     process.exit(1)

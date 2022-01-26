@@ -6,7 +6,7 @@ import { Search } from "react-bootstrap-icons"
 import Axios from "axios"
 import { AxiosResponse, AxiosError } from "axios"
 
-import * as Cookie from "js-cookie"
+import Cookies from "js-cookie"
 
 import Environment from "../../lib/environment"
 import ProjectPath from "../../lib/project-path"
@@ -67,7 +67,7 @@ const BundleSelectModal = React.memo<BundleSelectModalProps>(({
     if (domain && project && bundle) {
       const uri = `${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project, bundle) }`
       Axios.get(uri, {
-        headers : { "X-Access-Token": Cookie.get("token") || "" },
+        headers : { "X-Access-Token": Cookies.get("token") || "" },
         data    : {}
       })
       .then((res: AxiosResponse) => {
@@ -90,7 +90,7 @@ const BundleSelectModal = React.memo<BundleSelectModalProps>(({
     if (domain && project) {
       const uri = `${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project) }/bundles`
       Axios.get(uri, {
-        headers : { "X-Access-Token": Cookie.get("token") || "" },
+        headers : { "X-Access-Token": Cookies.get("token") || "" },
         data    : {}
       })
       .then((res: AxiosResponse) => {
@@ -141,7 +141,7 @@ const BundleSelectModal = React.memo<BundleSelectModalProps>(({
 
     if (action === "delete") {
       Axios.delete(uri, {
-        headers : { "X-Access-Token": Cookie.get("token") || "" },
+        headers : { "X-Access-Token": Cookies.get("token") || "" },
         data    : {}
       })
       .then((res: AxiosResponse) => {
@@ -168,7 +168,7 @@ const BundleSelectModal = React.memo<BundleSelectModalProps>(({
 
     if (action === "download") {
       Axios.get(uri + "?mode=download", {
-        headers : { "X-Access-Token": Cookie.get("token") || "" },
+        headers : { "X-Access-Token": Cookies.get("token") || "" },
         data    : {},
         responseType: "blob"
       })

@@ -1,3 +1,16 @@
+Version: **0.22.0** [2022/01/26]
+
+New Features:
+  - *None*
+
+Enhanced Features:
+  - Modified codes for future versions
+
+Bug Fixes:
+  - *None*
+
+***
+
 Version: **0.21.0** [2022/01/21]
 
 New Features:

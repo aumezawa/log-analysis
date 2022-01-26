@@ -1,6 +1,7 @@
-import * as cluster from "cluster"
 import * as log4js from "log4js"
 import * as path from "path"
+
+const cluster = require("cluster")
 
 const rootPath: string = process.cwd()
 const filename: string = process.env.npm_package_name + ".log"

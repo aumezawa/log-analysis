@@ -102,7 +102,7 @@ main:
       - id:             0
         name:           log-bundle-test-0001
         description:    Automatic Web API Test Bundle
-        type:           general
+        type:           .tgz
         date:           2020-12-06T02:36:29.000Z
         available:      true
         preserved:      false
@@ -113,7 +113,7 @@ main:
       msg:              "You get a bundle name and description of bundle ID = 0."
       name:             log-bundle-test-0001
       description:      Automatic Web API Test Bundle
-      type:             general
+      type:             .tgz
       date:             2020-12-06T02:36:29.000Z
       preserved:        false
 
@@ -130,7 +130,7 @@ main:
       msg:              "You get a bundle name and description of bundle ID = 0."
       name:             log-bundle-test-0001
       description:      Modified Description for Automatic Web API Test Bundle
-      type:             general
+      type:             .tgz
       date:             2020-12-06T02:36:29.000Z
       preserved:        false
 

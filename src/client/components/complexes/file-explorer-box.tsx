@@ -7,7 +7,7 @@ import { Display, Download, Terminal } from "react-bootstrap-icons"
 import Axios from "axios"
 import { AxiosResponse, AxiosError } from "axios"
 
-import * as Cookie from "js-cookie"
+import Cookies from "js-cookie"
 
 import Environment from "../../lib/environment"
 import Escape from "../../lib/escape"
@@ -54,7 +54,7 @@ const FileExplorerBox = React.memo<FileExplorerBoxProps>(({
     if (path) {
       const uri = `${ Environment.getBaseUrl() }/api/v1/${ Escape.root(path) }`
       Axios.get(uri, {
-        headers : { "X-Access-Token": Cookie.get("token") || "" },
+        headers : { "X-Access-Token": Cookies.get("token") || "" },
         data    : {}
       })
       .then((res: AxiosResponse) => {
@@ -98,7 +98,7 @@ const FileExplorerBox = React.memo<FileExplorerBoxProps>(({
   const handleClickDownload = useCallback((targetValue: string, parentValue: string) => {
     const uri = `${ Environment.getBaseUrl() }/api/v1/${ Escape.root(path) }/${ Escape.root(parentValue) }?mode=download&gzip=true`
     Axios.get(uri, {
-      headers : { "X-Access-Token": Cookie.get("token") || "" },
+      headers : { "X-Access-Token": Cookies.get("token") || "" },
       data    : {},
       responseType: "blob"
     })
