@@ -6,7 +6,7 @@ import { FileEarmarkMedical, FileText, SortUp } from "react-bootstrap-icons"
 import Axios from "axios"
 import { AxiosResponse, AxiosError } from "axios"
 
-import * as Cookie from "js-cookie"
+import Cookies from "js-cookie"
 import * as Zlib from "zlib"
 
 import Environment from "../../../lib/environment"
@@ -45,7 +45,7 @@ const ZdumpInfoBox = React.memo<ZdumpInfoBoxProps>(({
       zdumpInfo.current = null
       forceUpdate()
       Axios.get(uri, {
-        headers : { "X-Access-Token": Cookie.get("token") || "" },
+        headers : { "X-Access-Token": Cookies.get("token") || "" },
         data    : {}
       })
       .then((res: AxiosResponse) => {

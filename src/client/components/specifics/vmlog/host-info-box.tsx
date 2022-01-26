@@ -6,7 +6,7 @@ import { Clock, Cpu, Diagram3, Diagram3Fill, Display, FileEarmarkText, Gear, Gri
 import Axios from "axios"
 import { AxiosResponse, AxiosError } from "axios"
 
-import * as Cookie from "js-cookie"
+import Cookies from "js-cookie"
 
 import Environment from "../../../lib/environment"
 import ProjectPath from "../../../lib/project-path"
@@ -58,19 +58,19 @@ const HostInfoBox = React.memo<HostInfoBoxProps>(({
       status.current.progress = true
       forceUpdate()
       Axios.get(`${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project, bundle) }`, {
-        headers : { "X-Access-Token": Cookie.get("token") || "" },
+        headers : { "X-Access-Token": Cookies.get("token") || "" },
         data    : {}
       })
       .then((res: AxiosResponse) => {
         data.current.bundles = [ { name: res.data.name, description: res.data.description } ]
         return Axios.get(`${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project, bundle) }/hosts`, {
-          headers : { "X-Access-Token": Cookie.get("token") || "" },
+          headers : { "X-Access-Token": Cookies.get("token") || "" },
           data    : {}
         })
       })
       .then((res: AxiosResponse) => {
         return Axios.get(`${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project, bundle) }/hosts/${ res.data.hosts[0] }`, {
-          headers : { "X-Access-Token": Cookie.get("token") || "" },
+          headers : { "X-Access-Token": Cookies.get("token") || "" },
           data    : {}
         })
       })
@@ -92,7 +92,7 @@ const HostInfoBox = React.memo<HostInfoBoxProps>(({
       forceUpdate()
       Promise.all(hosts.split(",").map((host: string) => {
         return Axios.get(`${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project, host.split(":")[0]) }`, {
-          headers : { "X-Access-Token": Cookie.get("token") || "" },
+          headers : { "X-Access-Token": Cookies.get("token") || "" },
           data    : {}
         })
       }))
@@ -100,7 +100,7 @@ const HostInfoBox = React.memo<HostInfoBoxProps>(({
         data.current.bundles = reses.map((res: AxiosResponse) => ({ name: res.data.name, description: res.data.description }))
         return Promise.all(hosts.split(",").map((host: string) => {
           return Axios.get(`${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project, host.split(":")[0]) }/hosts/${ host.split(":")[1] }`, {
-            headers : { "X-Access-Token": Cookie.get("token") || "" },
+            headers : { "X-Access-Token": Cookies.get("token") || "" },
             data    : {}
           })
         }))

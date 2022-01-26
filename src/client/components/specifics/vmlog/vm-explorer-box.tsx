@@ -6,7 +6,7 @@ import { Box, Display } from "react-bootstrap-icons"
 import Axios from "axios"
 import { AxiosResponse, AxiosError } from "axios"
 
-import * as Cookie from "js-cookie"
+import Cookies from "js-cookie"
 
 import Environment from "../../../lib/environment"
 import ProjectPath from "../../../lib/project-path"
@@ -43,7 +43,7 @@ const VmExplorerBox = React.memo<VmExplorerBoxProps>(({
     if (domain && project && bundle) {
       const uri = `${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project, bundle) }/vms`
       Axios.get(uri, {
-        headers : { "X-Access-Token": Cookie.get("token") || "" },
+        headers : { "X-Access-Token": Cookies.get("token") || "" },
         data    : {}
       })
       .then((res: AxiosResponse) => {
@@ -75,7 +75,7 @@ const VmExplorerBox = React.memo<VmExplorerBoxProps>(({
     const vmName = parentValue.slice(1)   // NOTE: removed leading character '/'
     const uri = `${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project, bundle) }/vms/${ vmName }/logpath`
     Axios.get(uri, {
-      headers : { "X-Access-Token": Cookie.get("token") || "" },
+      headers : { "X-Access-Token": Cookies.get("token") || "" },
       data    : {}
     })
     .then((res: AxiosResponse) => {

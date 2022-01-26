@@ -7,7 +7,7 @@ import { Box, Display, FileEarmarkMedical, FileEarmarkText, HddStack, Search, Te
 import Axios from "axios"
 import { AxiosResponse, AxiosError } from "axios"
 
-import * as Cookie from "js-cookie"
+import Cookies from "js-cookie"
 import * as Path from "path"
 
 import Environment from "../lib/environment"
@@ -158,13 +158,13 @@ const MainPage: React.FC<MainPageProps> = ({
       const uri2 = `${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project, bundle) }`
 
       Axios.get(uri1, {
-        headers : { "X-Access-Token": Cookie.get("token") || "" },
+        headers : { "X-Access-Token": Cookies.get("token") || "" },
         data    : {}
       })
       .then((res: AxiosResponse) => {
         if (domain && project && bundle) {
           return Axios.get(uri2, {
-            headers : { "X-Access-Token": Cookie.get("token") || "" },
+            headers : { "X-Access-Token": Cookies.get("token") || "" },
             data    : {}
           })
         }
@@ -210,7 +210,7 @@ const MainPage: React.FC<MainPageProps> = ({
       updateAddressBar()
     }
 
-    if ((Cookie.get("whatsnew") || "") !== "false") {
+    if ((Cookies.get("whatsnew") || "") !== "false") {
       ref.current.whatsnew.current.click()
     }
   }, [true])
@@ -396,8 +396,8 @@ const MainPage: React.FC<MainPageProps> = ({
   }, [true])
 
   const handleClickLogout = useCallback((targetValue: string, parentValue: string) => {
-    Cookie.remove("token")
-    Cookie.remove("whatsnew")
+    Cookies.remove("token")
+    Cookies.remove("whatsnew")
     location.href = Environment.getBaseUrl()
   }, [true])
 

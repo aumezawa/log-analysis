@@ -6,7 +6,7 @@ import { Display, HddStack, JournalCheck } from "react-bootstrap-icons"
 import Axios from "axios"
 import { AxiosResponse, AxiosError } from "axios"
 
-import * as Cookie from "js-cookie"
+import Cookies from "js-cookie"
 
 import Environment from "../../../lib/environment"
 import ProjectPath from "../../../lib/project-path"
@@ -56,19 +56,19 @@ const VCenterInfoBox = React.memo<VCenterInfoBoxProps>(({
       status.current.progress = true
       forceUpdate()
       Axios.get(`${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project, bundle) }`, {
-        headers : { "X-Access-Token": Cookie.get("token") || "" },
+        headers : { "X-Access-Token": Cookies.get("token") || "" },
         data    : {}
       })
       .then((res: AxiosResponse) => {
         data.current.bundles = [ { name: res.data.name, description: res.data.description } ]
         return Axios.get(`${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project, bundle) }/vcs`, {
-          headers : { "X-Access-Token": Cookie.get("token") || "" },
+          headers : { "X-Access-Token": Cookies.get("token") || "" },
           data    : {}
         })
       })
       .then((res: AxiosResponse) => {
         return Axios.get(`${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project, bundle) }/vcs/${ res.data.vcs[0] }`, {
-          headers : { "X-Access-Token": Cookie.get("token") || "" },
+          headers : { "X-Access-Token": Cookies.get("token") || "" },
           data    : {}
         })
       })

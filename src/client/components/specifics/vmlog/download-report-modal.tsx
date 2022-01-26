@@ -4,7 +4,7 @@ import { useCallback } from "react"
 import Axios from "axios"
 import { AxiosResponse, AxiosError } from "axios"
 
-import * as Cookie from "js-cookie"
+import Cookies from "js-cookie"
 
 import Environment from "../../../lib/environment"
 import ProjectPath from "../../../lib/project-path"
@@ -27,7 +27,7 @@ const DownloadReportModal = React.memo<DownloadReportModalProps>(({
 }) => {
   const handleDownload = useCallback(() => {
     Axios.get(`${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project, bundle) }/report`, {
-      headers       : { "X-Access-Token": Cookie.get("token") || "" },
+      headers       : { "X-Access-Token": Cookies.get("token") || "" },
       responseType  : "arraybuffer",
       data          : {}
     })
