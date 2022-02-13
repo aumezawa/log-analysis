@@ -46,20 +46,11 @@ module.exports = {
           {
             loader: "postcss-loader",
             options: {
-              plugins: function() {
-                return [
-                  require("precss"),
-                  require("autoprefixer")
-                ];
-              }
-              /* for future version
               postcssOptions: {
                 plugins: [
-                  require("precss")({}),
                   require('autoprefixer')({})
                 ]
               }
-              */
             }
           },
           {
