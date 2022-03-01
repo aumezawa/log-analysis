@@ -176,6 +176,7 @@ const HostInfoBox = React.memo<HostInfoBoxProps>(({
             ["kernel param - nmiAction"                 ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.system.nmiAction }`)),
             ["kernel param - HardwareAcceleratedInit"   ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.system.hardwareAcceleratedInit }`)),
             ["kernel param - HardwareAcceleratedMove"   ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.system.hardwareAcceleratedMove }`)),
+            ["kernel param - UseATSForHBOnVMFS5"        ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.system.UseATSForHBOnVMFS5 }`)),
             ["kernel param - pcipDisablePciErrReporting"].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.system.pcipDisablePciErrReporting }`)),
             ["kernel param - enableACPIPCIeHotplug"     ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.system.enableACPIPCIeHotplug }`)),
             ["syslog server"                            ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.log.server }`))

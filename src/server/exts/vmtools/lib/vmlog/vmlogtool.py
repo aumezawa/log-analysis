@@ -7,7 +7,7 @@ from __future__ import print_function
 
 __all__     = ['DecompressBundle', 'GetHostList', 'GetHostInfo', 'GetVmList', 'GetVmInfo', 'GetVmLogPath', 'GetVCenterList', 'GetVCenterInfo', 'GetZdumpList' 'GetZdumpInfo']
 __author__  = 'aumezawa'
-__version__ = '0.1.8'
+__version__ = '0.1.9'
 
 
 ################################################################################
@@ -188,6 +188,8 @@ def GetVmInfo(dirPath, vmName):
         return None
     vmxPath = os.path.join(dirPath, vmxFile)
     vmxDict = GetVmxDict(vmxPath)
+    vmsdPath = vmxPath.replace('.vmx', '.vmsd')
+    vmsdDict = GetVmxDict(vmsdPath)
     try:
         return {
             'format'    : __version__,
@@ -199,6 +201,7 @@ def GetVmInfo(dirPath, vmName):
             'guest'     : vmxDict['guestOS'],
             'options'   : GetVmOptions(vmxDict),
             'state'     : GetVmStatus(dirPath, vmName),
+            'snapshot'  : GetVmSnapshot(vmsdDict),
             'nics'      : GetVmNics(vmxDict),
             'scsis'     : GetVmScsis(vmxDict),
             'disks'     : GetVmDisks(vmxPath, vmxDict),
@@ -791,6 +794,7 @@ def GetEsxiSystem(dirPath):
         'nmiAction'                 : GetVimDictOption(filePath4, 'VMkernel.Boot.nmiAction'),
         'hardwareAcceleratedInit'   : GetVimDictOption(filePath4, 'DataMover.HardwareAcceleratedInit'),
         'hardwareAcceleratedMove'   : GetVimDictOption(filePath4, 'DataMover.HardwareAcceleratedMove'),
+        'UseATSForHBOnVMFS5'        : GetVimDictOption(filePath4, 'DataMover.HardwareAcceleratedMove'),
         'pcipDisablePciErrReporting': SearchInText(filePath2, keyword1, default='TRUE'),
         'enableACPIPCIeHotplug'     : SearchInText(filePath2, keyword2, default='FALSE')
     }
@@ -1247,8 +1251,7 @@ def GetVmxDict(vmxPath):
         logger.error(e)
         return None
     #
-    if 'numvcpus' not in vmxDict:
-        vmxDict['numvcpus'] = 1
+    VmxDictCache[vmxPath] = vmxDict
     #
     return vmxDict
 
@@ -1295,6 +1298,11 @@ def GetVmStatus(dirPath, vmName):
     return 'off'
 
 
+def GetVmSnapshot(vmsdDict):
+    generation = GetVmxValue(vmsdDict, 'snapshot.current', 0)
+    return True if generation > 0 else False
+
+
 def GetVmNics(vmxDict):
     repattern = re.compile(r"^(ethernet[0-9]+)[.]present$")
     vmNics = []
@@ -1339,7 +1347,7 @@ def GetVmDiskSizeGB(vmxPath, vmdkName):
             for line in fp:
                 match = repattern.match(line)
                 if match:
-                    return _int(match.groups()[0]) // 1024 // 1024
+                    return _int(match.groups()[0]) // 1024 // 1024 * 512 // 1024
     except Exception as e:
         logger.error(e)
         return 'Unknown'

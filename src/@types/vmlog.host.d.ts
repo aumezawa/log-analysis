@@ -21,6 +21,7 @@ type HostSystemInfo = {
   nmiAction                   : number,
   hardwareAcceleratedInit     : number,
   hardwareAcceleratedMove     : number,
+  UseATSForHBOnVMFS5          : number,
   pcipDisablePciErrReporting  : string,
   enableACPIPCIeHotplug       : string
 }

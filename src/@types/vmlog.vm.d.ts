@@ -7,6 +7,7 @@ type VmInfo = {
   firmware  : string,
   guest     : string,
   state     : string,
+  snapshot  : boolean,
   options   : VmOptionInfo,
   nics      : Array<VirtualNicInfo>,
   scsis     : Array<VirtualScsiInfo>,

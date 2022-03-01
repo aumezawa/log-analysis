@@ -154,7 +154,8 @@ const VmInfoBox = React.memo<VmInfoBoxProps>(({
             ["memory"     ].concat(data.current.vms.map((vmInfo: VmInfo) => `${ vmInfo.memory } GB`)),
             ["firmware"   ].concat(data.current.vms.map((vmInfo: VmInfo) => `${ vmInfo.firmware }`)),
             ["guest os"   ].concat(data.current.vms.map((vmInfo: VmInfo) => `${ vmInfo.guest }`)),
-            ["power state"].concat(data.current.vms.map((vmInfo: VmInfo) => `${ vmInfo.state }`))
+            ["power state"].concat(data.current.vms.map((vmInfo: VmInfo) => `${ vmInfo.state }`)),
+            ["snapshot"   ].concat(data.current.vms.map((vmInfo: VmInfo) => `${ vmInfo.snapshot }`))
           ] }
         />
       )
