@@ -1,7 +1,7 @@
 import * as React from "react"
 import { useEffect, useRef, useCallback, useReducer } from "react"
 
-import { Display, HddStack, JournalCheck } from "react-bootstrap-icons"
+import { Display, Hdd, HddStack, JournalCheck, Server } from "react-bootstrap-icons"
 
 import Axios from "axios"
 import { AxiosResponse, AxiosError } from "axios"
@@ -27,7 +27,7 @@ type VCenterInfoBoxProps = {
   bundle?   : string
 }
 
-const OPTIONS = ["All"]
+const OPTIONS = ["All", "vSAN"]
 
 const VCenterInfoBox = React.memo<VCenterInfoBoxProps>(({
   className = "px-2",
@@ -126,6 +126,69 @@ const VCenterInfoBox = React.memo<VCenterInfoBoxProps>(({
           ] }
         />
       )
+    }
+
+    const vsan = data.current.vcs.reduce((acc, cur) => (acc && cur))
+    if (["All", "vSAN"].includes(data.current.display) && vsan) {
+      tables.push(
+        <Table
+          key="vsan-base"
+          title="vSAN Base Information"
+          LIcon={ HddStack }
+          compare={ true }
+          content={ [
+            ["cluster"       ].concat(data.current.vcs.map((vcInfo: VCenterInfo) => `${ vcInfo.vsan.name }`)),
+            ["# of nodes"    ].concat(data.current.vcs.map((vcInfo: VCenterInfo) => `${ vcInfo.vsan.nodes.length }`)),
+            ["# of cap disks"].concat(data.current.vcs.map((vcInfo: VCenterInfo) => `${ vcInfo.vsan.disks.filter((disk: VSanDiskInfo) => (disk.tier === "Capacity")).length }`)),
+            ["total capacity"].concat(data.current.vcs.map((vcInfo: VCenterInfo) => {
+              let size = 0
+              vcInfo.vsan.disks.filter((disk: VSanDiskInfo) => (disk.tier === "Capacity")).forEach((disk: VSanDiskInfo) => {
+                size += disk.size
+              })
+              return `${ size } GB`
+            })),
+            ["total usage"   ].concat(data.current.vcs.map((vcInfo: VCenterInfo) => {
+              let size = 0
+              let usage = 0
+              vcInfo.vsan.disks.filter((disk: VSanDiskInfo) => (disk.tier === "Capacity")).forEach((disk: VSanDiskInfo) => {
+                size += disk.size
+                usage += disk.size * disk.usage / 100
+              })
+              return `${ Math.round(usage / size * 10000) / 100 } %`
+            }))
+          ] }
+        />
+      )
+    }
+
+    if (["All", "vSAN"].includes(data.current.display) && vsan) {
+      TableLayout(data.current.vcs.map((vcInfo: VCenterInfo) => vcInfo.vsan.nodes), "name")
+      .forEach((content: Array<Array<string>>, index: number) => {
+        tables.push(
+          <Table
+            key={ `vsan-node-${ index }` }
+            title={ `vSAN Node Information - ${ index }` }
+            LIcon={ Hdd }
+            compare={ true }
+            content={ content }
+          />
+        )
+      })
+    }
+
+    if (["All", "vSAN"].includes(data.current.display) && vsan) {
+      TableLayout(data.current.vcs.map((vcInfo: VCenterInfo) => vcInfo.vsan.disks), "path", null, {size: "GB", usage: "%"})
+      .forEach((content: Array<Array<string>>, index: number) => {
+        tables.push(
+          <Table
+            key={ `vsan-disk-${ index }` }
+            title={ `vSAN Physical Disk Information - ${ index }` }
+            LIcon={ Server }
+            compare={ true }
+            content={ content }
+          />
+        )
+      })
     }
 
     return tables

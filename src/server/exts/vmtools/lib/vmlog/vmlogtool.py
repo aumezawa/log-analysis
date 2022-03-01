@@ -7,7 +7,7 @@ from __future__ import print_function
 
 __all__     = ['DecompressBundle', 'GetHostList', 'GetHostInfo', 'GetVmList', 'GetVmInfo', 'GetVmLogPath', 'GetVCenterList', 'GetVCenterInfo', 'GetZdumpList' 'GetZdumpInfo']
 __author__  = 'aumezawa'
-__version__ = '0.1.9'
+__version__ = '0.1.10'
 
 
 ################################################################################
@@ -245,7 +245,8 @@ def GetVCenterInfo(dirPath, vcName):
             'vcname'        : GetVCenterName(dirPath),
             'version'       : GetVCenterVersion(dirPath),
             'build'         : GetVCenterBuild(dirPath),
-            'uptime'        : GetVCenterUptime(dirPath)
+            'uptime'        : GetVCenterUptime(dirPath),
+            'vsan'          : GetVSanInfo(dirPath)
         }
     except Exception as e:
         logger.error(e)
@@ -733,6 +734,122 @@ def GetVimDictOption(filePath, param, target='HostSystem', default='Unknown'):
     return default
 
 
+def GetVSanDict(filePath):
+    repattern_head = re.compile(r"^.*command>vsan.cluster_info (.+)$")
+    repattern_hst1 = re.compile(r"^\s*Host: (.+)$")
+    repattern_ver  = re.compile(r"^\s*Product: (.+)$")
+    repattern_role = re.compile(r"^\s*Cluster role: (.+)$")
+    repattern_evac = re.compile(r"^\s*Node evacuated: (.+)$")
+    repattern_net  = re.compile(r"^\s*Adapter: (.+) \((.+)\)$")
+    repattern_eff  = re.compile(r"^\s*Data efficiency enabled: (.+)$")
+    repattern_enc  = re.compile(r"^\s*Encryption enabled: (.+)$")
+    repattern_hst2 = re.compile(r"^\s*Disks on host (.+):$")
+    repattern_disk = re.compile(r"^[|]\s+Local VMware Disk \((.+)\)\s+[|]\s+(.+)\s+[|]\s+([0-9.]+) GB\s+[|]\s+(.+)\s+.+$")
+    repattern_tbl  = re.compile(r"^[|]\s+(.+)\s+[|]\s+(.+)\s+[|]\s+(.+)\s+[|]\s+[0-9]+\s+[|]\s+[0-9.]+ GB\s+[|]\s+([0-9.]+) %\s+[|]\s+([0-9.]+) %\s+.+$")
+    repattern_tail = re.compile(r"^.*command>vsan.check_limits.+$")
+    #
+    dict = {}
+    try:
+        with open(filePath, 'r') as fp:
+            for line in fp:
+                match = repattern_head.match(line)
+                if match:
+                    dict['name'] = match.groups()[0]
+                    dict['nodes'] = []
+                    dict['disks'] = []
+                    continue
+                #
+                match = repattern_hst1.match(line)
+                if match:
+                    hostname = match.groups()[0]
+                    dict['nodes'].append({
+                        'name'  : hostname
+                    })
+                    continue
+                #
+                match = repattern_ver.match(line)
+                if match:
+                    for host in dict['nodes']:
+                        if host['name'] == hostname:
+                            host['version'] = match.groups()[0]
+                            break
+                    continue
+                #
+                match = repattern_role.match(line)
+                if match:
+                    for host in dict['nodes']:
+                        if host['name'] == hostname:
+                            host['role'] = match.groups()[0]
+                            break
+                    continue
+                #
+                match = repattern_evac.match(line)
+                if match:
+                    for host in dict['nodes']:
+                        if host['name'] == hostname:
+                            host['evacuated'] = True if match.groups()[0] == 'yes' else False
+                            break
+                    continue
+                #
+                match = repattern_net.match(line)
+                if match:
+                    for host in dict['nodes']:
+                        if host['name'] == hostname:
+                            host['nic'] = match.groups()[0]
+                            host['ip']  = match.groups()[1]
+                            break
+                    continue
+                #
+                match = repattern_eff.match(line)
+                if match:
+                    for host in dict['nodes']:
+                        if host['name'] == hostname:
+                            host['efficiency'] = True if match.groups()[0] == 'yes' else False
+                            break
+                    continue
+                #
+                match = repattern_enc.match(line)
+                if match:
+                    for host in dict['nodes']:
+                        if host['name'] == hostname:
+                            host['encryption'] = True if match.groups()[0] == 'yes' else False
+                            break
+                    continue
+                #
+                match = repattern_hst2.match(line)
+                if match:
+                    hostname = match.groups()[0]
+                    continue
+                #
+                match = repattern_disk.match(line)
+                if match:
+                    dict['disks'].append({
+                        'path'  : hostname + ':' + match.groups()[0],
+                        'type'  : match.groups()[1],
+                        'size'  : _int(match.groups()[2]),
+                        'state' : match.groups()[3],
+                        'tier'  : 'Unknown',
+                        'usage' : 0
+                    })
+                    continue
+                #
+                match = repattern_tbl.match(line)
+                if match:
+                    for disk in dict['disks']:
+                        if disk['path'] == match.groups()[1] + ':' + match.groups()[0]:
+                            disk['tier']  = match.groups()[2]
+                            disk['usage'] = float(match.groups()[3])
+                            break
+                    continue
+                match = repattern_tail.match(line)
+                if match:
+                    break
+    except Exception as e:
+        logger.error(e)
+        return None
+    return dict
+
+
 ################################################################################
 ### Internal Functions - Get Host Information
 ################################################################################
@@ -794,7 +911,7 @@ def GetEsxiSystem(dirPath):
         'nmiAction'                 : GetVimDictOption(filePath4, 'VMkernel.Boot.nmiAction'),
         'hardwareAcceleratedInit'   : GetVimDictOption(filePath4, 'DataMover.HardwareAcceleratedInit'),
         'hardwareAcceleratedMove'   : GetVimDictOption(filePath4, 'DataMover.HardwareAcceleratedMove'),
-        'UseATSForHBOnVMFS5'        : GetVimDictOption(filePath4, 'DataMover.HardwareAcceleratedMove'),
+        'UseATSForHBOnVMFS5'        : GetVimDictOption(filePath4, 'VMFS3.UseATSForHBOnVMFS5'),
         'pcipDisablePciErrReporting': SearchInText(filePath2, keyword1, default='TRUE'),
         'enableACPIPCIeHotplug'     : SearchInText(filePath2, keyword2, default='FALSE')
     }
@@ -1456,3 +1573,8 @@ def GetVCenterUptime(dirPath):
     filePath = os.path.join(dirPath, 'commands', 'uptime.txt')
     keyword  = r"^.*up (.*),[ ]+[0-9]+[ ]users.*"
     return SearchInText(filePath, keyword, default=0)
+
+
+def GetVSanInfo(dirPath):
+    filePath = os.path.join(dirPath, 'commands', 'python_usrlibvmware-vpxvsan-healthvsan-vc-health-statuspy-rvc-basic-support-information.txt')
+    return GetVSanDict(filePath)
