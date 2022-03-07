@@ -1,7 +1,7 @@
 import * as React from "react"
 import { useRef, useCallback, useReducer } from "react"
 
-import { CaretRight, CaretRightFill, Dot, Tools } from "react-bootstrap-icons"
+import { CaretRightFill, Dot, Tools } from "react-bootstrap-icons"
 import { House } from "react-bootstrap-icons"
 import { FolderCheck, FolderPlus, FolderX, Folder, Folder2Open } from "react-bootstrap-icons"
 import { JournalArrowDown, JournalArrowUp, JournalCheck, JournalX, Journal } from "react-bootstrap-icons"
