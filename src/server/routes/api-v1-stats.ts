@@ -2,7 +2,6 @@ import * as express from "express"
 import { Router, Request, Response, NextFunction } from "express"
 
 import * as multer from "multer"
-import * as os from "os"
 
 import logger = require("../lib/logger")
 
@@ -55,15 +54,15 @@ router.param("projectName", (req: Request, res: Response, next: NextFunction, pr
   })
 })
 
-router.param("bundleId", (req: Request, res: Response, next: NextFunction, bundleId: string) => {
-  req.bundleId = decodeURIComponent(bundleId)
+router.param("statsId", (req: Request, res: Response, next: NextFunction, statsId: string) => {
+  req.statsId = decodeURIComponent(statsId)
 
-  return Project.validateBundleResource(req.token.usr, req.domain, req.project, req.bundleId)
+  return Project.validateStatsResource(req.token.usr, req.domain, req.project, req.statsId)
   .then(() => {
-    return Project.getBundleInfo(req.token.usr, req.domain, req.project, req.bundleId)
+    return Project.getStatsInfo(req.token.usr, req.domain, req.project, req.statsId)
   })
-  .then((bundleInfo: BundleInfo) => {
-    req.bundleName = bundleInfo.name
+  .then((statsInfo: StatsInfo) => {
+    req.statsName = statsInfo.name
     return next()
   })
   .catch((err: any) => {
@@ -75,108 +74,21 @@ router.param("bundleId", (req: Request, res: Response, next: NextFunction, bundl
   })
 })
 
+router.param("counter", (req: Request, res: Response, next: NextFunction, counter: string) => {
+  req.counter = counter
+  next()
+})
+
 /* -------------------------------------------------------------------------- */
 
-router.route("/:domain/projects/:projectName/bundles/:bundleId/files/*")
+router.route("/:domain/projects/:projectName/stats/:statsId/counters/:counter")
 .get((req: Request, res: Response, next: NextFunction) => {
-  const file = req.params[0]
-
-  return Project.validateFileResource(req.token.usr, req.domain, req.project, req.bundleId, file)
-  .then(() => {
-    return Project.getFileResourceInfo(req.token.usr, req.domain, req.project, req.bundleId, file)
-  })
-  .then((fileInfo: FileInfo) => {
-    if (fileInfo.isDirectory) {
-      // OK
-      return res.status(200).json({
-        msg: `You get a file list of path /${ file } of project ${ req.project } bundle ID = ${ req.bundleId }.`,
-        files: fileInfo.children
-      })
-    } else {
-      if (req.query.mode && req.query.mode === "plain") {
-        // OK
-        return res.status(200).sendFile(fileInfo.path)
-      } else if (req.query.mode && req.query.mode === "download") {
-        const filter    = (typeof(req.query.filter)    === "string") ? decodeURIComponent(req.query.filter)              : null
-        const sensitive = (typeof(req.query.sensitive) === "string") ? (req.query.sensitive === "false" ? false : true ) : true
-        const date_from = (typeof(req.query.date_from) === "string") ? decodeURIComponent(req.query.date_from)           : null
-        const date_to   = (typeof(req.query.date_to)   === "string") ? decodeURIComponent(req.query.date_to)             : null
-        const gzip      = (typeof(req.query.gzip)      === "string") ? (req.query.gzip === "true" ? true : false)        : false
-        // OK
-        const filename  = gzip ? fileInfo.name + ".gz" : fileInfo.name
-        return res.status(200)
-          .set({
-            "Content-Disposition" : `attachment; filename="${ filename }"`,
-            "Accept-Ranges"       : "bytes",
-            "Cache-Control"       : "public, max-age=0",
-            "Last-Modified"       : `${ fileInfo.mtime }`,
-            "Content-Type"        : "application/octet-stream"
-          })
-          .send(Project.getFileResourceAsBytesSync(req.token.usr, req.domain, req.project, req.bundleId, file, filter, sensitive, date_from, date_to, gzip))
-      } else if (req.query.mode && req.query.mode === "json") {
-        if (fileInfo.size >= (req.app.get("max-view-size") * 1024 * 1024)) {
-          // Service Unavailable
-          return res.status(503).json({
-            msg: "This file's size is too large. Please use legacy view."
-          })
-        } else {
-          // OK
-          const format = (typeof(req.query.format) === "string") ? decodeURIComponent(req.query.format)       : "auto"
-          const gzip   = (typeof(req.query.gzip)   === "string") ? (req.query.gzip === "true" ? true : false) : false
-          return res.status(200).json({
-            msg: `You get a file content of path /${ file } of project ${ req.project } bundle ID = ${ req.bundleId }.`,
-            content: Project.getFileResourceAsJsonSync(req.token.usr, req.domain, req.project, req.bundleId, file, format, gzip),
-            size: fileInfo.size,
-            mtime: fileInfo.mtime,
-            compression: `${ gzip ? "gzip" : "none" }`
-          })
-        }
-      } else if (req.query.mode && req.query.mode === "term") {
-        const cmd = os.platform() === "win32"              ? `more ${ fileInfo.path }` :
-                    req.app.get("console-user") === "root" ? `less ${ fileInfo.path }` : `sudo -u ${ req.app.get("console-user") } less ${ fileInfo.path }`
-        // OK
-        return res.status(200).json({
-          msg: `You get a terminal command to open the file of path /${ file } of project ${ req.project } bundle ID = ${ req.bundleId }.`,
-          cmd: cmd
-        })
-      } else {
-        // OK
-        res.status(200).json({
-          msg: `You get a file info of path /${ file } of project ${ req.project } bundle ID = ${ req.bundleId }.`,
-          content: Project.getFileResourceSync(req.token.usr, req.domain, req.project, req.bundleId, file),
-          size: fileInfo.size,
-          mtime: fileInfo.mtime
-        })
-      }
-    }
-  })
-  .catch((err: any) => {
-    return ((err instanceof Error) && (err.name === "External"))
-      ? // Bad Request
-        res.status(400).json({ msg: err.message })
-      : // Internal Server Error
-        res.status(500).json({ msg: "Contact an administrator." })
-  })
-})
-.all((req: Request, res: Response, next: NextFunction) => {
-  // Method Not Allowed
-  return res.status(405).json({
-    msg: "GET method is only supported."
-  })
-})
-
-
-router.route("/:domain/projects/:projectName/bundles/:bundleId/files")
-.get((req: Request, res: Response, next: NextFunction) => {
-  const search    = (typeof(req.query.search)    === "string") ? decodeURIComponent(req.query.search)    : null
-  const date_from = (typeof(req.query.date_from) === "string") ? decodeURIComponent(req.query.date_from) : null
-  const date_to   = (typeof(req.query.date_to)   === "string") ? decodeURIComponent(req.query.date_to)   : null
-  return Project.getFileResourceList(req.token.usr, req.domain, req.project, req.bundleId, search, date_from, date_to)
-  .then((node: NodeType) => {
+  return Project.getStatsCounterData(req.token.usr, req.domain, req.project, req.statsId, req.counter)
+  .then((data: any) => {
     // OK
     return res.status(200).json({
-      msg: `You get a file list of project ${ req.project } bundle ID = ${ req.bundleId }.`,
-      files: node
+      msg: `You get stats counter data of stats ID = ${ req.statsId }, counters = ${ req.counter }.`,
+      data: data
     })
   })
   .catch((err: any) => {
@@ -190,80 +102,70 @@ router.route("/:domain/projects/:projectName/bundles/:bundleId/files")
 .all((req: Request, res: Response, next: NextFunction) => {
   // Method Not Allowed
   return res.status(405).json({
-    msg: "GET method is only supported."
+    msg: "GET/PUT/DELETE method are only supported."
   })
 })
 
-
-router.route("/:domain/projects/:projectName/bundles/:bundleId")
+router.route("/:domain/projects/:projectName/stats/:statsId/counters")
 .get((req: Request, res: Response, next: NextFunction) => {
-  if (req.query.mode && req.query.mode === "download") {
-    return Project.getOriginalBundleInfo(req.token.usr, req.domain, req.project, req.bundleId)
-    .then((fileInfo: FileInfo) => {
-      // OK
-      return res.status(200)
-        .set({
-          "Content-Disposition" : `attachment; filename="${ fileInfo.name }"`,
-          "Accept-Ranges"       : "bytes",
-          "Cache-Control"       : "public, max-age=0",
-          "Last-Modified"       : `${ fileInfo.mtime }`,
-          "Content-Type"        : "application/octet-stream"
-        })
-        .send(Project.getOriginalBundleContentSync(req.token.usr, req.domain, req.project, fileInfo.name))
-    })
-    .catch((err: any) => {
-      return ((err instanceof Error) && (err.name === "External"))
-        ? // Bad Request
-          res.status(400).json({ msg: err.message })
-        : // Internal Server Error
-          res.status(500).json({ msg: "Contact an administrator." })
-    })
-  } if (req.query.mode && req.query.mode === "term") {
-    const dirpath = Project.getBundleResourcePathSync(req.token.usr, req.domain, req.project, req.bundleId)
-    const cmd = os.platform() === "win32"              ? `cmd /k cd ${ dirpath }` :
-                req.app.get("console-user") === "root" ? `cd ${ dirpath }; bash`  : `cd ${ dirpath }; sudo -u ${ req.app.get("console-user") } bash`
+  return Project.getStatsCounters(req.token.usr, req.domain, req.project, req.statsId)
+  .then((counters: any) => {
     // OK
     return res.status(200).json({
-      msg: `You get a terminal command to open the console of project ${ req.project } bundle ID = ${ req.bundleId }.`,
-      cmd: cmd
+      msg: `You get stats counters of stats ID = ${ req.statsId }.`,
+      counters: counters
     })
-  } else {
-    return Project.getBundleInfo(req.token.usr, req.domain, req.project, req.bundleId)
-    .then((bundleInfo: BundleInfo) => {
-      // OK
-      return res.status(200).json({
-        msg: `You get a bundle name and description of bundle ID = ${ req.bundleId }.`,
-        name: bundleInfo.name,
-        description: bundleInfo.description,
-        type: bundleInfo.type,
-        date: bundleInfo.date,
-        preserved: bundleInfo.preserved
-      })
+  })
+  .catch((err: any) => {
+    return ((err instanceof Error) && (err.name === "External"))
+      ? // Bad Request
+        res.status(400).json({ msg: err.message })
+      : // Internal Server Error
+        res.status(500).json({ msg: "Contact an administrator." })
+  })
+})
+.all((req: Request, res: Response, next: NextFunction) => {
+  // Method Not Allowed
+  return res.status(405).json({
+    msg: "GET/PUT/DELETE method are only supported."
+  })
+})
+
+router.route("/:domain/projects/:projectName/stats/:statsId")
+.get((req: Request, res: Response, next: NextFunction) => {
+  return Project.getStatsInfo(req.token.usr, req.domain, req.project, req.statsId)
+  .then((statsInfo: StatsInfo) => {
+    // OK
+    return res.status(200).json({
+      msg: `You get a stats name and description of stats ID = ${ req.statsId }.`,
+      name: statsInfo.name,
+      description: statsInfo.description,
+      type: statsInfo.type
     })
-    .catch((err: any) => {
-      return ((err instanceof Error) && (err.name === "External"))
-        ? // Bad Request
-          res.status(400).json({ msg: err.message })
-        : // Internal Server Error
-          res.status(500).json({ msg: "Contact an administrator." })
-    })
-  }
+  })
+  .catch((err: any) => {
+    return ((err instanceof Error) && (err.name === "External"))
+      ? // Bad Request
+        res.status(400).json({ msg: err.message })
+      : // Internal Server Error
+        res.status(500).json({ msg: "Contact an administrator." })
+  })
 })
 .put((req: Request, res: Response, next: NextFunction) => {
-  const bundelDescription = req.body.description
+  const statsDescription = req.body.description
 
-  if (!bundelDescription) {
+  if (!statsDescription) {
     // Bad Request
     return res.status(400).json({
-      msg: "Bundle description is required. (param name: description)"
+      msg: "Stats description is required. (param name: description)"
     })
   }
 
-  return Project.updateBundleDescription(req.token.usr, req.domain, req.project, req.bundleId, bundelDescription)
+  return Project.updateStatsDescription(req.token.usr, req.domain, req.project, req.statsId, statsDescription)
   .then(() => {
     // OK
     return res.status(200).json({
-      msg: `bundle: bundle ID=${ req.bundleId } description was updated successfully.`
+      msg: `stats: stats ID=${ req.statsId } description was updated successfully.`
     })
   })
   .catch((err: any) => {
@@ -278,15 +180,15 @@ router.route("/:domain/projects/:projectName/bundles/:bundleId")
   if (!["public", "private"].includes(req.domain) && req.token.prv !== "root") {
     // Bad Request
     return res.status(403).json({
-      msg: `bundle: ${ req.bundleName } is only deleted by an administrator.`
+      msg: `stats: ${ req.statsName } is only deleted by an administrator.`
     })
   }
 
-  return Project.deleteBundleResource(req.token.usr, req.domain, req.project, req.bundleId)
+  return Project.deleteStatsResource(req.token.usr, req.domain, req.project, req.statsId)
   .then(() => {
     // OK
     return res.status(200).json({
-      msg: `bundle: bundle ID = ${ req.bundleId } was deleted successfully.`
+      msg: `stats: stats ID = ${ req.statsId } was deleted successfully.`
     })
   })
   .catch((err: any) => {
@@ -305,14 +207,14 @@ router.route("/:domain/projects/:projectName/bundles/:bundleId")
 })
 
 
-router.route("/:domain/projects/:projectName/bundles")
+router.route("/:domain/projects/:projectName/stats")
 .get((req: Request, res: Response, next: NextFunction) => {
-  return Project.getBundleResourceList(req.token.usr, req.domain, req.project)
-  .then((list: Array<BundleInfo>) => {
+  return Project.getStatsResourceList(req.token.usr, req.domain, req.project)
+  .then((list: Array<StatsInfo>) => {
     // OK
     return res.status(200).json({
-      msg: `You get a bundle list of project ${ req.project }.`,
-      bundles: list
+      msg: `You get a stats list of project ${ req.project }.`,
+      stats: list
     })
   })
   .catch((err: any) => {
@@ -329,7 +231,7 @@ router.route("/:domain/projects/:projectName/bundles")
       destination : (req, file, cb) => cb(null, Project.getProjectResourcePathSync(req.token.usr, req.domain, req.project)),
       filename    : (req, file, cb) => cb(null, file.originalname)
     })
-  }).single("bundle")(req, res, (err: any) => {
+  }).single("stats")(req, res, (err: any) => {
     if (err) {
       (err instanceof Error) && logger.error(`${ err.name }: ${ err.message }`)
       // Bad Request
@@ -341,18 +243,18 @@ router.route("/:domain/projects/:projectName/bundles")
     if (!req.file) {
       // Bad Request
       return res.status(400).json({
-        msg: "log bundle is required. (param name: bundle)"
+        msg: "stats is required. (param name: stats)"
       })
     }
 
-    return Project.registerBundleResource(req.token.usr, req.domain, req.project, req.file.originalname, req.body.description || "", req.body.preserve === "true")
-    .then((bundleInfo: BundleInfo) => {
+    return Project.registerStatsResource(req.token.usr, req.domain, req.project, req.file.originalname, req.body.description || "")
+    .then((statsInfo: StatsInfo) => {
       // Created
       return res.status(201).location(`${ req.protocol }://${ req.headers.host }${ req.path }/`).json({
-        msg : `bundle: ${ req.file.originalname } was uploaded and was decompressed successfully.`,
-        id  : bundleInfo.id,
-        name: bundleInfo.name,
-        type: bundleInfo.type
+        msg : `stats: ${ req.file.originalname } was uploaded and successfully.`,
+        id  : statsInfo.id,
+        name: statsInfo.name,
+        type: statsInfo.type
       })
     })
     .catch((err: any) => {

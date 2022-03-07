@@ -17,6 +17,7 @@ type TabFrameProps = {
   hiddens?  : Array<boolean>,
   show?     : number,
   overflow? : boolean,
+  inmodal?  : boolean,
   onClicks? : Array<() => void>
 }
 
@@ -29,6 +30,7 @@ const TabFrame: React.FC<TabFrameProps> = ({
   hiddens   = null,
   show      = 0,
   overflow  = true,
+  inmodal   = false,
   onClicks  = []
 }) => {
   const id = useRef({
@@ -55,7 +57,7 @@ const TabFrame: React.FC<TabFrameProps> = ({
           ))
         }
       </ul>
-      <div className={ `tab-content flex-main-area ${ overflow && "flex-main-overflow" }` }>
+      <div className={ `tab-content ${ !inmodal && "flex-main-area" } ${ overflow && "flex-main-overflow" }` }>
         {
           items.map((item: JSX.Element, index: number) => (
             <TabItem

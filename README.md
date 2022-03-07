@@ -1,5 +1,11 @@
 # log-analysis
 
+## Requirements
+
+- Nodejs 10
+- Python 3.6 or later
+
+
 ## How to use
 
 

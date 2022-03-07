@@ -5,7 +5,8 @@ type ProjectInfo = {
   closed?     : string,  // closed date
   description : string,
   index       : number,
-  bundles     : Array<BundleInfo>
+  bundles     : Array<BundleInfo>,
+  stats?      : Array<StatsInfo>
 }
 
 type BundleInfo = {
@@ -27,4 +28,24 @@ type FileInfo = {
   type        : string,
   size        : number,
   mtime       : string
+}
+
+type StatsInfo = {
+  id          : number,
+  name        : string,
+  description : string,
+  type        : string,
+  available   : boolean
+}
+
+type CounterInfo = {
+  [label: string]: CounterSubInfo
+}
+
+type CounterSubInfo = {
+  [label: string]: Array<string>
+}
+
+type CounterData = {
+  [label: string]: string | number
 }

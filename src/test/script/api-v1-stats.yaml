@@ -1,0 +1,252 @@
+name:                   api-v1-stats
+version:                1.0.0
+main:
+  username:             root
+  password:             password
+
+  protocol:             http
+  host:                 localhost
+  port:                 3000
+
+  request:
+  - method:             GET
+    path:               /api/v1/stats/public
+    response:
+      msg:              "domain: public is available."
+
+  - method:             GET
+    path:               /api/v1/stats/public/projects
+    response:
+      msg:              "You get a project list."
+      projects:         []
+
+  - method:             POST
+    path:               /api/v1/stats/public/projects
+    body:
+      name:             Regression Test
+      description:      Automatic Web API Test
+    response:
+      msg:              "project: Regression Test was created successfully."
+
+  - method:             GET
+    path:               /api/v1/stats/public/projects/Regression Test
+    response:
+      msg:              "You get a project status and description."
+      status:           open
+      description:      Automatic Web API Test
+
+  - method:             PUT
+    path:               /api/v1/stats/public/projects/Regression Test
+    body:
+      description:      Modified Description for Automatic Web API Test
+    response:
+      msg:              "project: Regression Test description was updated successfully."
+
+  - method:             GET
+    path:               /api/v1/stats/public/projects/Regression Test
+    response:
+      msg:              "You get a project status and description."
+      status:           open
+      description:      Modified Description for Automatic Web API Test
+
+  - method:             PUT
+    path:               /api/v1/stats/public/projects/Regression Test
+    body:
+      status:           close
+    response:
+      msg:              "project: Regression Test status was updated successfully."
+
+  - method:             GET
+    path:               /api/v1/stats/public/projects/Regression Test
+    response:
+      msg:              "You get a project status and description."
+      status:           close
+      description:      Modified Description for Automatic Web API Test
+
+  - method:             PUT
+    path:               /api/v1/stats/public/projects/Regression Test
+    body:
+      status:           open
+    response:
+      msg:              "project: Regression Test status was updated successfully."
+
+  - method:             GET
+    path:               /api/v1/stats/public/projects/Regression Test
+    response:
+      msg:              "You get a project status and description."
+      status:           open
+      description:      Modified Description for Automatic Web API Test
+
+  - method:             GET
+    path:               /api/v1/stats/public/projects/Regression Test/stats
+    response:
+      msg:              "You get a stats list of project Regression Test."
+      stats:            []
+
+  - method:             POST
+    path:               /api/v1/stats/public/projects/Regression Test/stats
+    file:
+      name:             stats
+      path:             ./data/stats-test-0001.csv
+      description:      Automatic Web API Test Stats
+    response:
+      msg:              "stats: stats-test-0001.csv was uploaded and successfully."
+      id:               0
+      name:             test0001_20220203034625_1
+      type:             perfmon
+
+  - method:             GET
+    path:               /api/v1/stats/public/projects/Regression Test/stats
+    response:
+      msg:              "You get a stats list of project Regression Test."
+      stats:
+      - id:             0
+        name:           test0001_20220203034625_1
+        description:    Automatic Web API Test Stats
+        type:           perfmon
+        available:      true
+
+  - method:             GET
+    path:               /api/v1/stats/public/projects/Regression Test/stats/0
+    response:
+      msg:              "You get a stats name and description of stats ID = 0."
+      name:             test0001_20220203034625_1
+      description:      Automatic Web API Test Stats
+      type:             perfmon
+
+  - method:             PUT
+    path:               /api/v1/stats/public/projects/Regression Test/stats/0
+    body:
+      description:      Modified Description for Automatic Web API Test Stats
+    response:
+      msg:              "stats: stats ID=0 description was updated successfully."
+
+  - method:             GET
+    path:               /api/v1/stats/public/projects/Regression Test/stats/0
+    response:
+      msg:              "You get a stats name and description of stats ID = 0."
+      name:             test0001_20220203034625_1
+      description:      Modified Description for Automatic Web API Test Stats
+      type:             perfmon
+
+  - method:             GET
+    path:               /api/v1/stats/public/projects/Regression Test/stats/0/counters
+    response:
+      msg:              "You get stats counters of stats ID = 0."
+      counters:
+        "Memory":
+          "default":
+          - "Machine MBytes"
+          - "Kernel MBytes"
+          - "NonKernel MBytes"
+          - "Free MBytes"
+          - "Kernel Managed MBytes"
+          - "Kernel MinFree MBytes"
+          - "Kernel Reserved MBytes"
+          - "Kernel Unreserved MBytes"
+          - "Kernel State"
+          - "PShare Shared MBytes"
+          - "PShare Common MBytes"
+          - "PShare Savings MBytes"
+          - "Swap Used MBytes"
+          - "Swap Target MBytes"
+          - "Swap MBytes Read/sec"
+          - "Swap MBytes Write/sec"
+          - "Total Compressed MBytes"
+          - "Total Saved By Compression MBytes"
+          - "Memctl Current MBytes"
+          - "Memctl Target MBytes"
+          - "Memctl Max MBytes"
+        "Numa Node":
+          "0":
+          - "% Processor Time"
+          - "% Util Time"
+          - "% Core Util Time"
+          - "Total MBytes"
+          - "Free MBytes"
+          "1":
+          - "% Processor Time"
+          - "% Util Time"
+          - "% Core Util Time"
+          - "Total MBytes"
+          - "Free MBytes"
+        "Physical Cpu":
+          "0":
+          - "% Processor Time"
+          - "% Util Time"
+          - "% Core Util Time"
+          "1":
+          - "% Processor Time"
+          - "% Util Time"
+          - "% Core Util Time"
+          "2":
+          - "% Processor Time"
+          - "% Util Time"
+          - "% Core Util Time"
+          "3":
+          - "% Processor Time"
+          - "% Util Time"
+          - "% Core Util Time"
+          "4":
+          - "% Processor Time"
+          - "% Util Time"
+          - "% Core Util Time"
+          "5":
+          - "% Processor Time"
+          - "% Util Time"
+          - "% Core Util Time"
+          "6":
+          - "% Processor Time"
+          - "% Util Time"
+          - "% Core Util Time"
+          "7":
+          - "% Processor Time"
+          - "% Util Time"
+          - "% Core Util Time"
+
+  - method:             GET
+    path:               /api/v1/stats/public/projects/Regression Test/stats/0/counters/Memory->default->Kernel MBytes
+    response:
+      msg:              "You get stats counter data of stats ID = 0, counters = Memory->default->Kernel MBytes."
+      "data":
+      - "Memory_Kernel MBytes":             1729
+        "date":                             "2022-02-03T03:46:25Z"
+      - "Memory_Kernel MBytes":             1729
+        "date":                             "2022-02-03T03:46:30Z"
+      - "Memory_Kernel MBytes":             1731
+        "date":                             "2022-02-03T03:46:35Z"
+      - "Memory_Kernel MBytes":             1732
+        "date":                             "2022-02-03T03:46:40Z"
+      - "Memory_Kernel MBytes":             1732
+        "date":                             "2022-02-03T03:46:46Z"
+
+  - method:             GET
+    path:               /api/v1/stats/public/projects/Regression Test/stats/0/counters/Numa Node->0->%25 Processor Time,Physical Cpu->0->%25 Processor Time
+    response:
+      msg:              "You get stats counter data of stats ID = 0, counters = Numa Node->0->% Processor Time,Physical Cpu->0->% Processor Time."
+      "data":
+      - "Numa Node(0)_% Processor Time":    1.78
+        "Physical Cpu(0)_% Processor Time": 0.52
+        "date":                             "2022-02-03T03:46:25Z"
+      - "Numa Node(0)_% Processor Time":    1.85
+        "Physical Cpu(0)_% Processor Time": 0.33
+        "date":                             "2022-02-03T03:46:30Z"
+      - "Numa Node(0)_% Processor Time":    1.16
+        "Physical Cpu(0)_% Processor Time": 2.63
+        "date":                             "2022-02-03T03:46:35Z"
+      - "Numa Node(0)_% Processor Time":    3.23
+        "Physical Cpu(0)_% Processor Time": 4.76
+        "date":                             "2022-02-03T03:46:40Z"
+      - "Numa Node(0)_% Processor Time":    4.23
+        "Physical Cpu(0)_% Processor Time": 11.12
+        "date":                             "2022-02-03T03:46:46Z"
+
+  - method:             DELETE
+    path:               /api/v1/stats/public/projects/Regression Test/stats/0
+    response:
+      msg:              "stats: stats ID = 0 was deleted successfully."
+
+  - method:             DELETE
+    path:               /api/v1/stats/public/projects/Regression Test
+    response:
+      msg:              "project: Regression Test was deleted successfully."

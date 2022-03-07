@@ -4,11 +4,9 @@ import { useRef, useCallback, useReducer } from "react"
 import { CaretRightFill, Dot, Tools } from "react-bootstrap-icons"
 import { House } from "react-bootstrap-icons"
 import { FolderCheck, FolderPlus, FolderX, Folder, Folder2Open } from "react-bootstrap-icons"
-import { JournalArrowDown, JournalArrowUp, JournalCheck, JournalX, Journal } from "react-bootstrap-icons"
-import { Window, WindowSidebar } from "react-bootstrap-icons"
-import { Terminal } from "react-bootstrap-icons"
+import { JournalArrowUp, JournalCheck, JournalX, Journal } from "react-bootstrap-icons"
+import { NodeMinus, NodePlus } from "react-bootstrap-icons"
 import { PersonPlus } from "react-bootstrap-icons"
-import { FileEarmarkText } from "react-bootstrap-icons"
 
 import UniqueId from "../../lib/unique-id"
 import Environment from "../../lib/environment"
@@ -17,8 +15,10 @@ import Privilege from "../../lib/project-privilege"
 import DomainSelectModal from "../complexes/domain-select-modal"
 import ProjectCreateModal from "../complexes/project-create-modal"
 import ProjectSelectModal from "../complexes/project-select-modal"
-import BundleUploadModal from "../complexes/bundle-upload-modal"
-import BundleSelectModal from "../complexes/bundle-select-modal"
+import StatsUploadModal from "../complexes/stats-upload-modal"
+import StatsSelectModal from "../complexes/stats-select-modal"
+import CounterSelectModal from "../complexes/counter-select-modal"
+import CounterDeleteModal from "../complexes/counter-delete-modal"
 
 import Button from "../parts/button"
 import DropdownButton from "../parts/dropdown-button"
@@ -27,66 +27,48 @@ import DropdownHeader from "../parts/dropdown-header"
 import DropdownItem from "../parts/dropdown-item"
 
 type ProjectNavigatorProps = {
-  menu?           : string,
   privilege?      : string,
   domains         : string,
   domain          : string,
   project         : string,
-  bundle          : string,
-  filename        : string,
-  terminal        : string,
-  focus           : string,
-  onChangeMenu?   : (enabled: boolean) => void,
+  stats           : string,
+  counter         : string,
   onChangeDomain  : (domainName: string) => void,
   onChangeProject : (projectName: string) => void,
-  onChangeBundle  : (bundleId: string) => void,
-  onClickConsole  : () => void
+  onChangeStats   : (statsId: string) => void,
+  onChangeCounter : (counters: string) => void
 }
 
 const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
-  menu            = null,
   privilege       = "none",
   domains         = "public,private",
   domain          = null,
   project         = null,
-  bundle          = null,
-  filename        = null,
-  terminal        = null,
-  focus           = null,
-  onChangeMenu    = undefined,
+  stats           = null,
+  counter         = null,
   onChangeDomain  = undefined,
   onChangeProject = undefined,
-  onChangeBundle  = undefined,
-  onClickConsole  = undefined
+  onChangeStats   = undefined,
+  onChangeCounter = undefined
 }) => {
   const [ignored,       forceUpdate]       = useReducer(x => x + 1, 0)
   const [reloadProject, updateProjectList] = useReducer(x => x + 1, 0)
-  const [reloadBundle,  updateBundleList]  = useReducer(x => x + 1, 0)
+  const [reloadStats,   updateStatsList]   = useReducer(x => x + 1, 0)
 
   const id = useRef({
     domainSelect  : "modal-" + UniqueId(),
     projectCreate : "modal-" + UniqueId(),
     projectSelect : "modal-" + UniqueId(),
-    bundleUpload  : "modal-" + UniqueId(),
-    bundleSelect  : "modal-" + UniqueId()
+    statsUpload   : "modal-" + UniqueId(),
+    statsSelect   : "modal-" + UniqueId(),
+    counterSelect : "modal-" + UniqueId(),
+    counterDelete : "modal-" + UniqueId()
   })
 
   const data = useRef({
     action    : "open",
-    bundleName: null
+    statsName : null
   })
-
-  const handleClickShowMenu = useCallback(() => {
-    if (onChangeMenu) {
-      onChangeMenu(true)
-    }
-  }, [true])
-
-  const handleClickHideMenu = useCallback(() => {
-    if (onChangeMenu) {
-      onChangeMenu(false)
-    }
-  }, [true])
 
   const handleChangeDomain = useCallback((domainName: string) => {
     if (onChangeDomain) {
@@ -107,25 +89,37 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
     }
   }, [project, onChangeProject])
 
-  const handleChangeBundle = useCallback((bundleId: string, bundleName: string) => {
+  const handleChangeStats = useCallback((statsId: string, statsName: string) => {
     if (data.current.action === "open") {
-      data.current.bundleName = bundleName
-      if (onChangeBundle) {
-        onChangeBundle(bundleId)
+      data.current.statsName = statsName
+      if (onChangeStats) {
+        onChangeStats(statsId)
       }
     }
-    if ((data.current.action === "delete") && (bundleId === bundle)) {
-      data.current.bundleName = null
-      if (onChangeBundle) {
-        onChangeBundle(null)
+    if ((data.current.action === "delete") && (statsId === stats)) {
+      data.current.statsName = null
+      if (onChangeStats) {
+        onChangeStats(null)
       }
     }
-  }, [bundle, onChangeBundle])
+  }, [stats, onChangeStats])
 
-  const handleUpdateBundleName = useCallback((bundleName: string) => {
-    data.current.bundleName = bundleName
+  const handleUpdateStatsName = useCallback((statsName: string) => {
+    data.current.statsName = statsName
     forceUpdate()
   } , [true])
+
+  const handleSelectCounter = useCallback((cntr: string) => {
+    if (onChangeCounter) {
+      onChangeCounter(counter ? `${ counter },${ cntr }` : cntr)
+    }
+  }, [counter, onChangeCounter])
+
+  const handleDeleteCounter = useCallback((cntr: string) => {
+    if (onChangeCounter) {
+      onChangeCounter(counter ? counter.split(",").filter((cnt: string) => (cnt !== cntr)).join(",") : null)
+    }
+  }, [counter, onChangeCounter])
 
   const handleClickOpenProject = useCallback(() => {
     data.current.action = "open"
@@ -147,26 +141,15 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
     updateProjectList()
   }, [true])
 
-  const handleClickOpenBundle = useCallback(() => {
+  const handleClickOpenStats = useCallback(() => {
     data.current.action = "open"
-    updateBundleList()
+    updateStatsList()
   }, [true])
 
-  const handleClickDeleteBundle = useCallback(() => {
+  const handleClickDeleteStats = useCallback(() => {
     data.current.action = "delete"
-    updateBundleList()
+    updateStatsList()
   }, [true])
-
-  const handleClickDownloadBundle = useCallback(() => {
-    data.current.action = "download"
-    updateBundleList()
-  }, [true])
-
-  const handleClickOpenConsole = useCallback(() => {
-    if (onClickConsole) {
-      onClickConsole()
-    }
-  }, [onClickConsole])
 
   const handleClickInviteUser = useCallback(() => {
     const textarea = document.createElement("textarea")
@@ -200,21 +183,34 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
         reload={ reloadProject }
         onSubmit={ handleChangeProject }
       />
-      <BundleUploadModal
-        id={ id.current.bundleUpload }
+      <StatsUploadModal
+        id={ id.current.statsUpload }
         domain={ domain }
         project={ project }
-        onSubmit={ handleChangeBundle }
+        onSubmit={ handleChangeStats }
       />
-      <BundleSelectModal
-        id={ id.current.bundleSelect }
+      <StatsSelectModal
+        id={ id.current.statsSelect }
         domain={ domain }
         project={ project }
-        bundle={ bundle }
+        stats={ stats }
         action={ data.current.action }
-        reload={ reloadBundle }
-        onSubmit={ handleChangeBundle }
-        onUpdate={ handleUpdateBundleName }
+        reload={ reloadStats }
+        onSubmit={ handleChangeStats }
+        onUpdate={ handleUpdateStatsName }
+      />
+      <CounterSelectModal
+        id={ id.current.counterSelect }
+        domain={ domain }
+        project={ project }
+        stats={ stats }
+        counter={ counter }
+        onSubmit={ handleSelectCounter }
+      />
+      <CounterDeleteModal
+        id={ id.current.counterDelete }
+        counter={ counter }
+        onSubmit={ handleDeleteCounter }
       />
       <div className="flex-container-row align-items-center">
         <div className="borderable">
@@ -257,54 +253,52 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
           <>
             <CaretRightFill />
             <div className="borderable">
-              { !bundle &&
+              { !stats &&
                 <>
                   <Button
-                    label="Upload Bundle"
+                    label="Upload Stats"
                     LIcon={ JournalArrowUp }
                     color="info"
-                    disabled={ !domain || !project || !Privilege.isBundleUploadable(privilege, domain) }
+                    disabled={ !domain || !project || !Privilege.isStatsUploadable(privilege, domain) }
                     toggle="modal"
-                    target={ id.current.bundleUpload }
-                    onClick={ handleClickOpenBundle }
+                    target={ id.current.statsUpload }
+                    onClick={ handleClickOpenStats }
                   />
                   <Dot />
                 </>
               }
               <Button
-                label={ (bundle && data.current.bundleName) || "Select Bundle" }
-                LIcon={ (bundle && data.current.bundleName) ? JournalCheck : Journal }
-                color={ (bundle && data.current.bundleName) ? "success" : "secondary" }
-                disabled={ !domain || !project || !Privilege.isBundleOpenable(privilege, domain) }
+                label={ (stats && data.current.statsName) || "Select Stats" }
+                LIcon={ (stats && data.current.statsName) ? JournalCheck : Journal }
+                color={ (stats && data.current.statsName) ? "success" : "secondary" }
+                disabled={ !domain || !project || !Privilege.isStatsOpenable(privilege, domain) }
                 toggle="modal"
-                target={ id.current.bundleSelect }
-                onClick={ handleClickOpenBundle }
+                target={ id.current.statsSelect }
+                onClick={ handleClickOpenStats }
               />
             </div>
           </>
         }
-        { focus === "filename" && filename &&
+        { project && stats &&
           <>
             <CaretRightFill />
             <div className="borderable">
               <Button
-                label={ filename }
-                LIcon={ FileEarmarkText }
-                color="success"
-                noAction={ true }
+                label="Select Counter"
+                LIcon={ NodePlus }
+                color="info"
+                disabled={ !domain || !project || !stats || (!!counter && counter.split(",").length > 4) }
+                toggle="modal"
+                target={ id.current.counterSelect }
               />
-            </div>
-          </>
-        }
-        { focus === "terminal" && terminal &&
-          <>
-            <CaretRightFill />
-            <div className="borderable">
+              <Dot />
               <Button
-                label={ terminal }
-                LIcon={ Terminal }
-                color="success"
-                noAction={ true }
+                label="Delete Counter"
+                LIcon={ NodeMinus }
+                color="secondary"
+                disabled={ !domain || !project || !stats || (!counter || counter.split(",").length === 0) }
+                toggle="modal"
+                target={ id.current.counterDelete }
               />
             </div>
           </>
@@ -315,25 +309,6 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
             LIcon={ Tools }
             align="right"
             items={ [
-              menu && <DropdownHeader
-                key="view-setting"
-                label="View Settings"
-              />,
-              menu && <DropdownItem
-                key="view-left-show"
-                label="Show Left Menu"
-                LIcon={ WindowSidebar }
-                disabled={ menu === "on" }
-                onClick={ handleClickShowMenu }
-              />,
-              menu && <DropdownItem
-                key="view-left-hide"
-                label="Hide Left Menu"
-                LIcon={ Window }
-                disabled={ menu === "off" }
-                onClick={ handleClickHideMenu }
-              />,
-              menu && <DropdownDivider key="divider-0" />,
               <DropdownHeader
                 key="project-header"
                 label="Project Operations"
@@ -375,46 +350,30 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
               />,
               <DropdownDivider key="divider-1" />,
               <DropdownHeader
-                key="bundle-header"
-                label="Bundle Operations"
+                key="stats-header"
+                label="Stats Operations"
               />,
               <DropdownItem
-                key="upload-bundle"
+                key="upload-stats"
                 label="Upload"
                 LIcon={ JournalArrowUp }
-                disabled={ !domain || !project || !Privilege.isBundleUploadable(privilege, domain) }
+                disabled={ !domain || !project || !Privilege.isStatsUploadable(privilege, domain) }
                 toggle="modal"
-                target={ id.current.bundleUpload }
+                target={ id.current.statsUpload }
               />,
               <DropdownItem
-                key="delete-bundle"
+                key="delete-stats"
                 label="Delete"
                 LIcon={ JournalX }
-                disabled={ !domain || !project || !Privilege.isBundleDeletable(privilege, domain) }
+                disabled={ !domain || !project || !Privilege.isStatsDeletable(privilege, domain) }
                 toggle="modal"
-                target={ id.current.bundleSelect }
-                onClick={ handleClickDeleteBundle }
-              />,
-              <DropdownItem
-                key="download-bundle"
-                label="Download"
-                LIcon={ JournalArrowDown }
-                disabled={ !domain || !project || !Privilege.isBundleDownloadable(privilege, domain) }
-                toggle="modal"
-                target={ id.current.bundleSelect }
-                onClick={ handleClickDownloadBundle }
+                target={ id.current.statsSelect }
+                onClick={ handleClickDeleteStats }
               />,
               <DropdownDivider key="divider-2" />,
               <DropdownHeader
                 key="advanced-header"
                 label="Advanced Operations"
-              />,
-              <DropdownItem
-                key="console"
-                label="Open Console"
-                LIcon={ Terminal }
-                disabled={ !domain || !project || !bundle || !Privilege.isConsoleOpenable(privilege, domain) }
-                onClick={ handleClickOpenConsole }
               />,
               <DropdownItem
                 key="invite"

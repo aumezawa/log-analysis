@@ -1,0 +1,15 @@
+name:                   clean
+version:                1.0.0
+main:
+  username:             root
+  password:             password
+
+  protocol:             http
+  host:                 localhost
+  port:                 3000
+
+  request:
+  - method:             DELETE
+    path:               /api/v1/log/public/projects/Regression Test
+    response:
+      msg:              "project: Regression Test was deleted successfully."

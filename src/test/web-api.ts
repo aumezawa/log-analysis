@@ -7,7 +7,9 @@ import { AxiosResponse, AxiosError } from "axios"
 import * as Crypto from "crypto"
 import * as FormData from "form-data"
 
-const scriptPath = path.join(__dirname, "script", "api-v1-log.yaml")
+const cleanScriptPath = path.join(__dirname, "script", "clean.yaml")
+const logTestScriptPath = path.join(__dirname, "script", "api-v1-log.yaml")
+const statsTestScriptPath = path.join(__dirname, "script", "api-v1-stats.yaml")
 
 function loadScript(path: string): TestScript {
   try {
@@ -18,7 +20,7 @@ function loadScript(path: string): TestScript {
   }
 }
 
-async function execScript(script: TestScript): Promise<void> {
+async function execScript(script: TestScript, ignoreError: boolean = false): Promise<void> {
   const url = (config: TestWebApi): string => {
     return `${ config.protocol }://${ config.host }:${ config.port }`
   }
@@ -125,10 +127,18 @@ async function execScript(script: TestScript): Promise<void> {
       result(`[${ request.method }] ${ request.path }`, res.data, request.response)
     }
   } catch (err) {
-    console.log(err)
-    process.exit(1)
+    if (!ignoreError) {
+      console.log(err)
+      process.exit(1)
+    }
   }
 }
 
-const script = loadScript(scriptPath)
-execScript(script)
+async function execTest(): Promise<void> {
+  await execScript(loadScript(cleanScriptPath), true)
+  await execScript(loadScript(logTestScriptPath))
+  await execScript(loadScript(statsTestScriptPath))
+  return
+}
+
+execTest()

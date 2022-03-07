@@ -157,6 +157,57 @@ export default {
     }
   },
 
+  isStatsUploadable: (privilege: string, domain: string) => {
+    switch (privilege) {
+      case "root":
+      case "owner":
+      case "user":
+      case "anonymous":
+      case "none":
+        return true
+
+      default:
+        return false
+    }
+  },
+
+  isStatsOpenable: (privilege: string, domain: string) => {
+    switch (privilege) {
+      case "root":
+      case "owner":
+      case "user":
+      case "anonymous":
+      case "none":
+        return true
+
+      default:
+        return false
+    }
+  },
+
+  isStatsDeletable: (privilege: string, domain: string) => {
+    switch (privilege) {
+      case "root":
+      case "owner":
+        return true
+
+      case "user":
+        switch (domain) {
+          case "public":
+          case "private":
+            return true
+
+          default:
+            return false
+        }
+
+      case "anonymous":
+      case "none":
+      default:
+        return false
+    }
+  },
+
   isConsoleOpenable: (privilege: string, domain: string) => {
     switch (privilege) {
       case "root":

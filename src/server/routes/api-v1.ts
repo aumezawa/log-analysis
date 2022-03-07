@@ -9,6 +9,7 @@ import * as path from "path"
 import logger = require("../lib/logger")
 
 import logRouter from "./api-v1-log"
+import statsRouter from "./api-v1-stats"
 import testRouter from "./api-v1-test"
 
 const rootPath: string = process.cwd()
@@ -192,6 +193,8 @@ router.route("/token")
 })
 
 router.use("/log", logRouter)
+
+router.use("/stats", statsRouter)
 
 router.use("/test", testRouter)
 

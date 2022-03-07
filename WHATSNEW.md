@@ -1,3 +1,15 @@
+Version: **0.23.0** [2022/03/07]
+
+New Features:
+  - Supported viewing performance chart
+
+Bug Fixes:
+  - wrong compatibility of project.inf
+  - wrong log bundle type detected after posting log bundle
+  - Vulnerary modules
+
+***
+
 Version: **0.22.0** [2022/01/26]
 
 New Features:
