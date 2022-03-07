@@ -5,6 +5,7 @@ import "bootstrap"
 import "./css/bootstrap-custom.scss"
 
 import MainPage from "./pages/main-page"
+import StatsPage from "./pages/stats-page"
 import LoginPage from "./pages/login-page"
 import ErrorPage from "./pages/error-page"
 import HelloPage from "./pages/hello-page"
@@ -22,6 +23,10 @@ const query: string = main.getAttribute("data-query")
 switch (main.getAttribute("data-page")) {
   case "main":
     ReactDom.render(<MainPage project={ project } author={ author } version={ version } user={ user } alias={ alias } privilege={ privilege } domains={ domains } query={ query } />, main)
+    break
+
+  case "stats":
+    ReactDom.render(<StatsPage project={ project } author={ author } version={ version } user={ user } alias={ alias } privilege={ privilege } domains={ domains } query={ query } />, main)
     break
 
   case "login":
