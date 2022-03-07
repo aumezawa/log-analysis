@@ -669,7 +669,8 @@ router.route("/:domain/projects/:projectName/bundles")
       return res.status(201).location(`${ req.protocol }://${ req.headers.host }${ req.path }/`).json({
         msg : `bundle: ${ req.file.originalname } was uploaded and was decompressed successfully.`,
         id  : bundleInfo.id,
-        name: bundleInfo.name
+        name: bundleInfo.name,
+        type: bundleInfo.type
       })
     })
     .catch((err: any) => {

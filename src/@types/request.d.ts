@@ -17,6 +17,9 @@ declare namespace Express {
     domain?         : string,
     project?        : string,
     bundleId?       : string,
-    bundleName?     : string
+    bundleName?     : string,
+    statsId?        : string,
+    statsName?      : string,
+    counter?        : string
   }
 }

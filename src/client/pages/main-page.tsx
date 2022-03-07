@@ -65,7 +65,6 @@ const MainPage: React.FC<MainPageProps> = ({
 }) => {
   const [ignored,           forceUpdate]       = useReducer(x => x + 1, 0)
   const [reloadTokenStatus, updateTokenStatus] = useReducer(x => x + 1, 0)
-  const [reloadBundleList,  updateBundleList]  = useReducer(x => x + 1, 0)
 
   const ref = useRef({
     files   : React.createRef<HTMLAnchorElement>(),
@@ -107,8 +106,7 @@ const MainPage: React.FC<MainPageProps> = ({
     filter    : null,
     sensitive : true,
     date_from : null,
-    date_to   : null,
-    action    : "delete"
+    date_to   : null
   })
 
   const env = useRef({

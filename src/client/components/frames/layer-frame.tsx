@@ -5,7 +5,8 @@ type LayerFrameProps = {
   head?     : JSX.Element,
   body?     : JSX.Element,
   foot?     : JSX.Element,
-  overflow? : boolean
+  overflow? : boolean,
+  inmodal?  : boolean
 }
 
 const LayerFrame: React.FC<LayerFrameProps> = ({
@@ -13,13 +14,14 @@ const LayerFrame: React.FC<LayerFrameProps> = ({
   head      = <></>,
   body      = <></>,
   foot      = <></>,
-  overflow  = true
+  overflow  = true,
+  inmodal   = false
 }) => (
   <div className={ `flex-container-column ${ className }` }>
     <>
       { head }
     </>
-    <div className={ `flex-main-area ${ overflow && "flex-main-overflow" }` }>
+    <div className={ `${ !inmodal && "flex-main-area" } ${ overflow && "flex-main-overflow" }` }>
       <div className="flex-main-inner">
         { body }
       </div>

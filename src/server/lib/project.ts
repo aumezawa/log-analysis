@@ -9,6 +9,7 @@ import * as FSTool from "../lib/fs-tool"
 import * as LocalDate from "../lib/local-date"
 import * as PdfTool from "../lib/pdf-tool"
 import * as Vmtools from "../lib/vmtools"
+import * as StatsTool from "./stats-tool"
 
 const rootPath: string = process.cwd()
 
@@ -329,6 +330,91 @@ function getFileContentHeadSync(file: string): string {
   }
 }
 
+function extractStatsNameSync(file: string): string {
+  try {
+    const basename = StatsTool.extractStatsNameSync(file)
+    return basename
+  } catch (err) {
+    (err instanceof Error) && logger.error(`${ err.name }: ${ err.message }`)
+    return null
+  }
+}
+
+function extractStatsName(file: string): Promise<string> {
+  return new Promise<string>((resolve: (basename: string) => void, reject: (err? :any) => void) => {
+    return setImmediate(() => {
+      let err = new Error(`Resource: ${ file } is invalid stats.`)
+      err.name = "Internal"
+      const basename = extractStatsNameSync(file)
+      return basename ? resolve(basename) : reject(err)
+    })
+  })
+}
+
+function convertStatsSync(file: string): string {
+  try {
+    const basename = StatsTool.convertStatsSync(file)
+    logger.info(`${ file } was converted successfully.`)
+    return basename
+  } catch (err) {
+    (err instanceof Error) && logger.error(`${ err.name }: ${ err.message }`)
+    return null
+  }
+}
+
+function convertStats(file: string): Promise<string> {
+  return new Promise<string>((resolve: (basename: string) => void, reject: (err? :any) => void) => {
+    return setImmediate(() => {
+      let err = new Error(`Resource: ${ file } cloudn't be converted.`)
+      err.name = "Internal"
+      const basename = convertStatsSync(file)
+      return basename ? resolve(basename) : reject(err)
+    })
+  })
+}
+
+function getStatsAllCountersSync(file: string): any {
+  try {
+    const counters = StatsTool.getAllCountersSync(file)
+    return counters
+  } catch (err) {
+    (err instanceof Error) && logger.error(`${ err.name }: ${ err.message }`)
+    return null
+  }
+}
+
+function getStatsAllCounters(file: string): Promise<any> {
+  return new Promise<any>((resolve: (counters: any) => void, reject: (err? :any) => void) => {
+    return setImmediate(() => {
+      let err = new Error(`Resource: ${ file } cloudn't be converted.`)
+      err.name = "Internal"
+      const counters = getStatsAllCountersSync(file)
+      return counters ? resolve(counters) : reject(err)
+    })
+  })
+}
+
+function getStatsSpecificDataSync(file: string, counter: string): any {
+  try {
+    const data = StatsTool.getSpecificDataSync(file, counter)
+    return data
+  } catch (err) {
+    (err instanceof Error) && logger.error(`${ err.name }: ${ err.message }`)
+    return null
+  }
+}
+
+function getStatsSpecificData(file: string, counter: string): Promise<any> {
+  return new Promise<any>((resolve: (data: any) => void, reject: (err? :any) => void) => {
+    return setImmediate(() => {
+      let err = new Error(`Resource: ${ file } cloudn't be converted.`)
+      err.name = "Internal"
+      const data = getStatsSpecificDataSync(file, counter)
+      return data ? resolve(data) : reject(err)
+    })
+  })
+}
+
 //--- Domain Functions
 
 function getDomainResourceListSync(): Array<string> {
@@ -437,6 +523,9 @@ function getProjectInfoSync(user: string, domain: string, project: string): Proj
     const projectInfo = readObjectDataSync(getProjectInfoPathSync(user, domain, project)) as ProjectInfo
     if (projectInfo.status === undefined) {
       projectInfo.status = "open"
+    }
+    if (projectInfo.stats === undefined) {
+      projectInfo.stats = []
     }
     projectInfo.bundles = projectInfo.bundles.map((bundleInfo: BundleInfo) => {
       if (bundleInfo.type === undefined) {
@@ -1173,3 +1262,211 @@ export function getLogReport(user: string, domain: string, project: string, bund
     })
   })
 }
+
+//--- Stats Functions
+
+function getStatsResourceListSync(user: string, domain: string, project: string): Array<StatsInfo> {
+  const projectInfo = getProjectInfoSync(user, domain, project)
+  return projectInfo ? projectInfo.stats : []
+}
+
+export function getStatsResourceList(user: string, domain: string, project: string): Promise<Array<StatsInfo>> {
+  return new Promise((resolve: (list: Array<StatsInfo>) => void, reject: (err?: any) => void) => {
+    return setImmediate(() => {
+      return resolve(getStatsResourceListSync(user, domain, project))
+    })
+  })
+}
+
+function getStatsInfoSync(user: string, domain: string, project: string, statsId: string): StatsInfo {
+  return getStatsResourceListSync(user, domain, project).find((stats: StatsInfo) => (stats.id === Number(statsId))) || null
+}
+
+export function getStatsInfo(user: string, domain: string, project: string, statsId: string): Promise<StatsInfo> {
+  return new Promise<StatsInfo>((resolve: (statsInfo: StatsInfo) => void, reject: (err?: any) => void) => {
+    return setImmediate(() => {
+      let err = new Error(`stats: stats ID = ${ statsId } is invalid resource.`)
+      err.name = "External"
+      const statsInfo = getStatsInfoSync(user, domain, project, statsId)
+      return statsInfo ? resolve(statsInfo) : reject(err)
+    })
+  })
+}
+
+export function getStatsResourcePathSync(user: string, domain: string, project: string, statsId: string): string {
+  const statsInfo = getStatsInfoSync(user, domain, project, statsId)
+  return statsInfo && joinResourcePathSync(getProjectResourcePathSync(user, domain, project), statsInfo.name)
+}
+
+function validateStatsResourceSync(user: string, domain: string, project: string, statsId: string): boolean {
+  return existsResourcePathSync(getStatsResourcePathSync(user, domain, project, statsId) + ".db") && existsResourcePathSync(getStatsResourcePathSync(user, domain, project, statsId) + ".inf")
+}
+
+export function validateStatsResource(user: string, domain: string, project: string, statsId: string): Promise<void> {
+  return new Promise<void>((resolve: () => void, reject: (err?: any) => void) => {
+    return setImmediate(() => {
+      let err = new Error(`stats: stats ID = ${ statsId } is invalid stats resource.`)
+      err.name = "External"
+      return validateStatsResourceSync(user, domain, project, statsId) ? resolve() : reject(err)
+    })
+  })
+}
+
+function existsStatsNameSync(user: string, domain: string, project: string, statsName: string): boolean {
+  return !!getStatsResourceListSync(user, domain, project).find((statsInfo: StatsInfo) => (statsInfo.name === statsName))
+}
+
+export function existsStatsName(user: string, domain: string, project: string, statsName: string): Promise<void> {
+  return new Promise<void>((resolve: () => void, reject: (err?: any) => void) => {
+    return setImmediate(() => {
+      let err = new Error(`stats: ${ statsName } has already existed.`)
+      err.name = "External"
+      return existsStatsNameSync(user, domain, project, statsName) ? reject(err) : resolve()
+    })
+  })
+}
+
+export function registerStatsResource(user: string, domain: string, project: string, statsCsv: string, description: string = ""): Promise<StatsInfo> {
+  return new Promise<StatsInfo>((resolve: (statsInfo: StatsInfo) => void, reject: (err?: any) => void) => {
+    return setImmediate(() => {
+      const statsPath: string = joinResourcePathSync(getProjectResourcePathSync(user, domain, project), statsCsv)
+      let statsId: string
+      let statsInfo: StatsInfo
+      let statsName: string
+
+      return extractStatsName(statsPath)
+      .then((basename: string) => {
+        return existsStatsName(user, domain, project, basename)
+      })
+      .then(() => {
+        return convertStats(statsPath)
+      })
+      .then((basename: string) => {
+        statsName = basename
+        return Atomic.lock(getProjectInfoPathSync(user, domain, project))
+      })
+      .then(() => {
+        return getProjectInfo(user, domain, project)
+      })
+      .then((projectInfo: ProjectInfo) => {
+        statsId = String(projectInfo.index++)
+        statsInfo = {
+          id          : Number(statsId),
+          name        : statsName,
+          description : description,
+          type        : "perfmon",
+          available   : true,
+        }
+        projectInfo.stats.push(statsInfo)
+        return updateProjectInfo(user, domain, project, projectInfo)
+      })
+      .then(() => {
+        return Atomic.unlock(getProjectInfoPathSync(user, domain, project))
+      })
+      .then(() => {
+        return resolve(statsInfo)
+      })
+      .catch((err: any) => {
+        return Atomic.unlock(getProjectInfoPathSync(user, domain, project))
+        .then(() => {
+          return reject(err)
+        })
+      })
+    })
+  })
+}
+
+export function updateStatsDescription(user: string, domain: string, project: string, statsId: string, description?: string): Promise<void> {
+  return new Promise<void>((resolve: () => void, reject: (err?: any) => void) => {
+    return setImmediate(() => {
+      return Atomic.lock(getProjectInfoPathSync(user, domain, project))
+      .then(() => {
+        return getProjectInfo(user, domain, project)
+      })
+      .then((projectInfo: ProjectInfo) => {
+        projectInfo.stats = projectInfo.stats.map((statsInfo: StatsInfo) => {
+          if (statsInfo.id === Number(statsId)) {
+            statsInfo.description = description || ""
+          }
+          return statsInfo
+        })
+        return updateProjectInfo(user, domain, project, projectInfo)
+      })
+      .then(() => {
+        return Atomic.unlock(getProjectInfoPathSync(user, domain, project))
+      })
+      .then(() => {
+        return resolve()
+      })
+      .catch((err: any) => {
+        return Atomic.unlock(getProjectInfoPathSync(user, domain, project))
+        .then(() => {
+          return reject(err)
+        })
+      })
+    })
+  })
+}
+
+export function deleteStatsResource(user: string, domain: string, project: string, statsId: string): Promise<void> {
+  return new Promise<void>((resolve: () => void, reject: (err?: any) => void) => {
+    return setImmediate(() => {
+      return deleteResource(getStatsResourcePathSync(user, domain, project, statsId) + ".db")
+      .then(() => {
+        return deleteResource(getStatsResourcePathSync(user, domain, project, statsId) + ".inf")
+      })
+      .then(() => {
+        return Atomic.lock(getProjectInfoPathSync(user, domain, project))
+      })
+      .then(() => {
+        return getProjectInfo(user, domain, project)
+      })
+      .then((projectInfo: ProjectInfo) => {
+        projectInfo.stats = projectInfo.stats.filter((statsInfo: StatsInfo) => (statsInfo.id !== Number(statsId)))
+        return updateProjectInfo(user, domain, project, projectInfo)
+      })
+      .then(() => {
+        return Atomic.unlock(getProjectInfoPathSync(user, domain, project))
+      })
+      .then(() => {
+        return resolve()
+      })
+      .catch((err: any) => {
+        return Atomic.unlock(getProjectInfoPathSync(user, domain, project))
+        .then(() => {
+          return reject(err)
+        })
+      })
+    })
+  })
+}
+
+export function getStatsCounters(user: string, domain: string, project: string, statsId: string): Promise<any> {
+  return new Promise<any>((resolve: (counters: any) => void, reject: (err?: any) => void) => {
+    return setImmediate(() => {
+      return getStatsAllCounters(getStatsResourcePathSync(user, domain, project, statsId) + ".db")
+      .then((counters: any) => {
+        return resolve(counters)
+      })
+      .catch((err: any) => {
+        return reject(err)
+      })
+    })
+  })
+}
+
+export function getStatsCounterData(user: string, domain: string, project: string, statsId: string, counter: string): Promise<any> {
+  return new Promise<any>((resolve: (counters: any) => void, reject: (err?: any) => void) => {
+    return setImmediate(() => {
+      return getStatsSpecificData(getStatsResourcePathSync(user, domain, project, statsId) + ".db", counter)
+      .then((data: any) => {
+        return resolve(data)
+      })
+      .catch((err: any) => {
+        return reject(err)
+      })
+    })
+  })
+}
+
+//---
