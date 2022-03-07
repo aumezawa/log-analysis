@@ -7,7 +7,7 @@ from __future__ import print_function
 
 __all__     = ['DecompressBundle', 'GetHostList', 'GetHostInfo', 'GetVmList', 'GetVmInfo', 'GetVmLogPath', 'GetVCenterList', 'GetVCenterInfo', 'GetZdumpList' 'GetZdumpInfo']
 __author__  = 'aumezawa'
-__version__ = '0.1.10'
+__version__ = '0.1.11'
 
 
 ################################################################################
@@ -137,7 +137,7 @@ def GetHostInfo(dirPath, esxName):
             'version'       : GetEsxiVersion(dirPath),
             'build'         : GetEsxiBuildNumber(dirPath),
             'profile'       : GetHostProfile(dirPath),
-            'uptime'        : GetHostUptime(dirPath),
+            'state'         : GetHostState(dirPath),
             'system'        : GetEsxiSystem(dirPath),
             'log'           : GetLogConfig(dirPath),
             'date'          : GetDateStatus(dirPath),
@@ -887,10 +887,34 @@ def GetHostUptime(dirPath):
     return _int(uptime, calc=lambda x: x // 1000 // 1000 // 3600 // 24)
 
 
+def GetHostCpuMemoryUsage(dirPath):
+    vmList = GetVmList(dirPath)
+    cpu = 0
+    mem = 0
+    for vmName in vmList:
+        vmxFile = GetVmxPath(dirPath, vmName)
+        vmxPath = os.path.join(dirPath, vmxFile)
+        vmxDict = GetVmxDict(vmxPath)
+        if GetVmStatus(dirPath, vmName) == 'on':
+            cpu = cpu + int(GetVmxValue(vmxDict, 'numvcpus', default='1'))
+            mem = mem + (int(vmxDict['memSize']) // 1024)
+    #
+    return (cpu * 100 // GetCpuInfo(dirPath)['cores'], mem * 100 // GetMemory(dirPath))
+
+
 def GetHostName(dirPath):
     filePath = os.path.join(dirPath, 'commands', 'uname_-a.txt')
     keyword  = r"^VMkernel[ ](\S+)[ ].*$"
     return SearchInText(filePath, keyword)
+
+
+def GetHostState(dirPath):
+    (cpu, mem) = GetHostCpuMemoryUsage(dirPath)
+    return {
+        'uptime'        : GetHostUptime(dirPath),
+        'cpu_usage'     : cpu,
+        'mem_usage'     : mem
+    }
 
 
 def GetEsxiSystem(dirPath):

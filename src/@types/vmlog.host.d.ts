@@ -4,7 +4,7 @@ type HostInfo = {
   version   : string,
   build     : string,
   profile   : string,
-  uptime    : number,
+  state     : HostStateInfo,
   system    : HostSystemInfo,
   log       : HostLogInfo,
   date      : HostDateInfo,
@@ -12,6 +12,12 @@ type HostInfo = {
   network   : HostNetworkInfo,
   storage   : HostStorageInfo,
   packages  : Array<HostPackageInfo>
+}
+
+type HostStateInfo = {
+  uptime    : number,
+  cpu_usage : number,
+  mem_usage : number
 }
 
 type HostSystemInfo = {

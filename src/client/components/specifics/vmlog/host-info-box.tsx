@@ -156,7 +156,9 @@ const HostInfoBox = React.memo<HostInfoBoxProps>(({
             ["version" ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.version }`)),
             ["build"   ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.build }`)),
             ["profile" ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.profile }`)),
-            ["uptime"  ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.uptime } days`))
+            ["uptime"  ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.state.uptime } days`)),
+            ["cpu usage"].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.state.cpu_usage } % + hypervisor overhead 10 %`)),
+            ["mem usage"].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.state.mem_usage } % + hypervisor overhead 10 %`))
           ] }
         />
       )
