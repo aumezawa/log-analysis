@@ -430,7 +430,7 @@ function getProjectInfoSync(user: string, domain: string, project: string): Proj
     }
     projectInfo.bundles = projectInfo.bundles.map((bundleInfo: BundleInfo) => {
       if (bundleInfo.type === undefined) {
-        bundleInfo.type = "general"
+        bundleInfo.type = ".tgz"
       }
       if (bundleInfo.date === undefined) {
         bundleInfo.date = new Date().toISOString()
