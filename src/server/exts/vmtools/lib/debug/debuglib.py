@@ -29,7 +29,7 @@ RET_SYS_ERROR   = -1
 ################################################################################
 ### External Functions
 ################################################################################
-def SetupLogger(filename='vmtools.log', dirpath='.', mode=logging.DEBUG):
+def SetupLogger(filename='debug.log', dirpath='.', mode=logging.DEBUG):
     try:
         logging.config.dictConfig({
             'version': 1,
@@ -63,7 +63,7 @@ def SetupLogger(filename='vmtools.log', dirpath='.', mode=logging.DEBUG):
                     'level': mode,
                     'propagate': False
                 },
-                'vmtools': {
+                'file': {
                     'handlers': ['fileHandler'],
                     'level': mode,
                     'propagate': False

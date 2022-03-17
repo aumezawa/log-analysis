@@ -50,7 +50,7 @@ except Exception as e:
 ### Setup Logger
 ################################################################################
 try:
-    logger = logging.getLogger('vmtools')
+    logger = logging.getLogger('file')
 except Exception as e:
     print(e)
     sys.exit(RET_SYS_ERROR)
@@ -79,7 +79,7 @@ def GetArgs():
     )
     group_common.add_argument('-l', '--log',
         action='store',
-        default='log',
+        default='.',
         required=False,
         help='set directory path of storing log files (optional)',
         metavar='<DIRPATH>'
@@ -226,7 +226,7 @@ if __name__ == '__main__':
     if not os.path.exists(args.log):
         printResult({'msg': 'No directory of logging found.'})
         sys.exit(RET_NO_DIRECTORY)
-    debuglib.SetupLogger(dirpath=args.log)
+    debuglib.SetupLogger(filename="vmtools.log", dirpath=args.log)
     #
     if args.get:
         if args.bundle:

@@ -28,7 +28,7 @@ RET_SYS_ERROR   = -1
 ### Setup Logger
 ################################################################################
 try:
-    logger = logging.getLogger('vmtools')
+    logger = logging.getLogger('file')
 except Exception as e:
     print(e)
     sys.exit(RET_SYS_ERROR)
