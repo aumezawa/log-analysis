@@ -84,7 +84,7 @@ def convertCsv2Database(csvFile, preserve=False):
     #
     # Insert data into each table
     try:
-        with open(csvFile, encoding='utf-8') as fp:
+        with open(csvFile, 'r') as fp:
             fp.readline() ## drop first line
             index = 1
             for line in fp:
@@ -138,7 +138,7 @@ def pealLine(line):
 
 def getMetaData(csvFile):
     try:
-        with open(csvFile, encoding='utf-8') as fp:
+        with open(csvFile, 'r') as fp:
             titleLine = pealLine(fp.readline())
             firstLine = pealLine(fp.readline())
             lastLine  = firstLine
