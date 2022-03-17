@@ -72,9 +72,13 @@ type HostCpuInfo = {
 }
 
 type HostPciCardInfo = {
-  slot      : number,
-  device    : string,
-  sbdf      : string
+  slot          : number,
+  device        : string,
+  sbdf          : string,
+  parent        : string,
+  dpio_enabled  : boolean,
+  sriov_enabled : boolean,
+  sriov_vfs     : number
 }
 
 type HostNetworkInfo = {

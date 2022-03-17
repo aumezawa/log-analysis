@@ -7,7 +7,7 @@ from __future__ import print_function
 
 __all__     = ['DecompressBundle', 'GetHostList', 'GetHostInfo', 'GetVmList', 'GetVmInfo', 'GetVmLogPath', 'GetVCenterList', 'GetVCenterInfo', 'GetZdumpList' 'GetZdumpInfo']
 __author__  = 'aumezawa'
-__version__ = '0.1.11'
+__version__ = '0.1.12'
 
 
 ################################################################################
@@ -734,6 +734,36 @@ def GetVimDictOption(filePath, param, target='HostSystem', default='Unknown'):
     return default
 
 
+def GetVimDictDpioDevices(filePath, target='HostSystem'):
+    vimDict  = GetVimDict(filePath, target=target)
+    Dpios = []
+    try:
+        for prop in vimDict['propSet']:
+            if prop['name'] == 'config':
+                for info in prop['val']['pciPassthruInfo']:
+                    if 'passthruEnabled' in info and info['passthruEnabled'] == True:
+                        Dpios.append(info['id'])
+    except Exception as e:
+        logger.error(e)
+        return []
+    return Dpios
+
+
+def GetVimDictSriovDevices(filePath, target='HostSystem'):
+    vimDict  = GetVimDict(filePath, target=target)
+    Sriov = {}
+    try:
+        for prop in vimDict['propSet']:
+            if prop['name'] == 'config':
+                for info in prop['val']['pciPassthruInfo']:
+                    if 'sriovEnabled' in info and info['sriovEnabled'] == True and info['id'] == info['dependentDevice']:
+                        Sriov[info['id']] = info['numVirtualFunction']
+    except Exception as e:
+        logger.error(e)
+        return {}
+    return Sriov
+
+
 def GetVSanDict(filePath):
     repattern_head = re.compile(r"^.*command>vsan.cluster_info (.+)$")
     repattern_hst1 = re.compile(r"^\s*Host: (.+)$")
@@ -921,8 +951,8 @@ def GetEsxiSystem(dirPath):
     filePath1 = os.path.join(dirPath, 'commands', 'esxcfg-info_-a--F-xml.txt')
     #
     filePath2 = os.path.join(dirPath, 'commands', 'localcli_system-settings-kernel-list--d.txt')
-    keyword1  = r"^pcipDisablePciErrReporting\s+Bool\s+[A-Z]+\s+(TRUE|FALSE)\s+.*$"
-    keyword2  = r"^enableACPIPCIeHotplug\s+Bool\s+[A-Z]+\s+(TRUE|FALSE)\s+.*$"
+    keyword1  = r"^pcipDisablePciErrReporting\s+Bool\s+\S+\s+(TRUE|FALSE)\s+.*$"
+    keyword2  = r"^enableACPIPCIeHotplug\s+Bool\s+\S+\s+(TRUE|FALSE)\s+.*$"
     #
     filePath3 = os.path.join(dirPath, 'commands', 'localcli_system-coredump-partition-get.txt')
     keyword3  = r"^.*Active: (.*)$"
@@ -1066,6 +1096,18 @@ def GetNumOfNumaNodes(dirPath):
     return _int(nodes)
 
 
+def convertSBDFForHPEServer(sbdf):
+    repattern = re.compile(r"^PCI ([0-9]+):([0-9]+):([0-9]+):([0-9]+)$")
+    match = repattern.match(sbdf)
+    if match:
+        seg  = _int(match.groups()[0])
+        bus  = _int(match.groups()[1])
+        dev  = _int(match.groups()[2])
+        func = _int(match.groups()[3])
+        return '%04x:%02x:%02x.%01x' % (seg, bus, dev, func)
+    return sbdf
+
+
 def GetPciCards(dirPath):
     filePath = os.path.join(dirPath, 'commands', 'esxcfg-info_-a--F-xml.txt')
     xpath    = './hardware-info/pci-info/all-pci-devices/pci-device'
@@ -1073,18 +1115,30 @@ def GetPciCards(dirPath):
     if nodes is None:
         return []
     #
+    filePath2 = os.path.join(dirPath, 'commands', 'vmware-vimdump_-o----U-dcui.txt')
+    #
     cards = []
     for node in nodes:
-        seg  = _int(node.findtext('./value[@name="segment"]'), base=16)
-        bus  = _int(node.findtext('./value[@name="bus"]'), base=16)
-        dev  = _int(node.findtext('./value[@name="slot"]'), base=16)
-        func = _int(node.findtext('./value[@name="function"]'), base=16)
-        slot = _int(node.findtext('./value[@name="physical-slot"]'))
-        if (func == 0) and (slot >= 1) and (slot <= 32):
+        name   = node.findtext('./value[@name="device-name"]')
+        seg    = _int(node.findtext('./value[@name="segment"]'), base=16)
+        bus    = _int(node.findtext('./value[@name="bus"]'), base=16)
+        dev    = _int(node.findtext('./value[@name="slot"]'), base=16)
+        func   = _int(node.findtext('./value[@name="function"]'), base=16)
+        sbdf   = '%04x:%02x:%02x.%01x' % (seg, bus, dev, func)
+        slot   = _int(node.findtext('./value[@name="physical-slot"]'))
+        slot   = slot if (slot <= 32) else (slot - 2080) # WA for HPE Superdome Flex
+        parent = node.findtext('./value[@name="parent-device"]')
+        if (func == 0) and (slot >= 1) and (slot <= 32) and (len(parent) > 0):
+            dpios  = GetVimDictDpioDevices(filePath2)
+            sriovs = GetVimDictSriovDevices(filePath2)
             cards.append({
-                'slot'  : slot,
-                'device': node.findtext('./value[@name="device-name"]'),
-                'sbdf'  : '%04x:%02x:%02x:%01x' % (seg, bus, dev, func)
+                'slot'          : slot,
+                'device'        : name,
+                'sbdf'          : sbdf,
+                'parent'        : convertSBDFForHPEServer(parent),
+                'dpio_enabled'  : sbdf in dpios,
+                'sriov_enabled' : sbdf in sriovs,
+                'sriov_vfs'     : 0 if sbdf not in sriovs else sriovs[sbdf]
             })
     cards.sort(key=lambda x: x['slot'])
     return cards
