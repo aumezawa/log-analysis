@@ -6,6 +6,7 @@
     "domains": "public,private",
     "http_port": "3000",
     "https_port": "3443",
+    "server_timeout": "1200000",
     "num_workers": "4",
     "token_period": "1h",
     "userlist_path": "./local/user/userlist.json",
