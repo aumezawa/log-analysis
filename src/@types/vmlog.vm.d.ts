@@ -54,6 +54,7 @@ type VirtualDiskInfo = {
   size      : number,
   present   : boolean,
   mode      : string,
+  type      : string,
   pdisk     : string
 }
 

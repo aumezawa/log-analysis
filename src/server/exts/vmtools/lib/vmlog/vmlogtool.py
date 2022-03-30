@@ -7,7 +7,7 @@ from __future__ import print_function
 
 __all__     = ['DecompressBundle', 'GetHostList', 'GetHostInfo', 'GetVmList', 'GetVmInfo', 'GetVmLogPath', 'GetVCenterList', 'GetVCenterInfo', 'GetZdumpList' 'GetZdumpInfo']
 __author__  = 'aumezawa'
-__version__ = '0.1.12'
+__version__ = '0.1.13'
 
 
 ################################################################################
@@ -1423,7 +1423,7 @@ def GetVmxPath(dirPath, vmName):
     filePath = os.path.join(dirPath, 'etc', 'vmware', 'hostd', 'vmInventory.xml')
     xpath    = './ConfigEntry/vmxCfgPath'
     for vmxFile in SearchInXml(filePath, xpath, multi=True, default=[]):
-        if vmName in vmxFile:
+        if vmName == os.path.splitext(os.path.basename(vmxFile))[0]:
             return vmxFile[1:].replace(':', '_')  # Note: removed leading character '/'
     return None
 
@@ -1549,6 +1549,21 @@ def GetVmDiskSizeGB(vmxPath, vmdkName):
     return 'Unknown'
 
 
+def GetVmDiskType(vmxPath, vmdkName):
+    repattern = re.compile(r"^ddb.thinProvisioned = \"(1)\"$")
+    #
+    try:
+        with open(os.path.join(os.path.dirname(vmxPath), vmdkName), 'r') as fp:
+            for line in fp:
+                match = repattern.match(line)
+                if match:
+                    return 'thin'
+    except Exception as e:
+        logger.error(e)
+        return 'Unknown'
+    return 'thick'
+
+
 def GetVmRdmInfo(vmxPath, vmdkName):
     pattern = "Disk %s is a Passthrough Raw Device Mapping" % vmdkName
     #
@@ -1577,11 +1592,13 @@ def GetVmDisks(vmxPath, vmxDict):
             mode = vmxDict[scsi + '.mode'] if (scsi + '.mode' in vmxDict) else None
             vmdk = vmxDict[scsi + '.fileName']
             pdisk = GetVmRdmInfo(vmxPath, vmdk) if (mode == 'independent-persistent') else None
+            type = 'rdm'                        if (mode == 'independent-persistent') else GetVmDiskType(vmxPath, vmdk)
             vmDisks.append({
                 'name'      : scsi,
                 'device'    : vmxDict[scsi + '.deviceType'],
                 'size'      : GetVmDiskSizeGB(vmxPath, vmdk),
                 'mode'      : mode,
+                'type'      : type,
                 'pdisk'     : pdisk,
                 'present'   : vmxDict[scsi + '.present'] == 'TRUE'
             })
