@@ -2,8 +2,8 @@
 
 ## Requirements
 
-- Nodejs 10
-- Python 2.7 or 3.6 or later
+- Nodejs 16
+- Python 3.6 or later
 
 
 ## How to use
