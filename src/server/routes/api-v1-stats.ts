@@ -108,7 +108,10 @@ router.route("/:domain/projects/:projectName/stats/:statsId/counters/:counter")
 
 router.route("/:domain/projects/:projectName/stats/:statsId/counters")
 .get((req: Request, res: Response, next: NextFunction) => {
-  return Project.getStatsCounters(req.token.usr, req.domain, req.project, req.statsId)
+  const option  = (req.query.option && (req.query.option === "nonzero" || req.query.option === "vitality"))
+                ? req.query.option
+                : "all"
+  return Project.getStatsCounterList(req.token.usr, req.domain, req.project, req.statsId, option)
   .then((counters: any) => {
     // OK
     return res.status(200).json({

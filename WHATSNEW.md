@@ -1,3 +1,21 @@
+Version: **0.24.0** [2022/10/03]
+
+New Features:
+  - node version 16 or later needed
+
+Enhanced Features:
+  - Supported to get nonzero and vitality counters
+
+Bug Fixes:
+  - File search aborts with large file in log bundle
+  - statslib don't work with pyrhon 2.7
+  - Viewer crashed after opening large file
+  - Specific server timeout is defined
+  - cannot build pdfmake
+  - Vulnerary modules
+
+***
+
 Version: **0.23.0** [2022/03/07]
 
 New Features:

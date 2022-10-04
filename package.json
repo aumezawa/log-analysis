@@ -1,11 +1,12 @@
 {
   "name": "log-analysis",
-  "version": "0.23.0",
+  "version": "0.24.0",
   "description": "log analysis tools",
   "config": {
     "domains": "public,private",
     "http_port": "3000",
     "https_port": "3443",
+    "server_timeout": "1800000",
     "num_workers": "4",
     "token_period": "1h",
     "userlist_path": "./local/user/userlist.json",
@@ -15,7 +16,7 @@
     "log_path": "./local/log",
     "storage_path": "../data",
     "console_user": "root",
-    "max_view_size_mb": "150",
+    "max_view_size_mb": "80",
     "date_format": "([0-9]{4}-[0-9]{2}-[0-9]{2}[T ][0-9]{2}:[0-9]{2}:[0-9]{2}.?[0-9]{0,6}Z?):?[ |]"
   },
   "scripts": {
@@ -28,7 +29,7 @@
     "build:server": "tsc -p ./tsconfig.server.json && node ./bin/setup.js",
     "build:client": "webpack",
     "build:test": "tsc -p ./tsconfig.test.json && cpx ./src/test/script/* ./dist/test/script && cpx ./src/test/data/* ./dist/test/data",
-    "build:pdfmake": "mkdirp ./node_modules/pdfmake/examples/fonts && cpx \"./lib/font/*\" ./node_modules/pdfmake/examples/fonts && cd ./node_modules/pdfmake && npm i --legacy-peer-deps && npm run build && gulp buildFonts",
+    "build:pdfmake": "mkdirp ./node_modules/pdfmake/examples/fonts && cpx \"./lib/font/*\" ./node_modules/pdfmake/examples/fonts && cd ./node_modules/pdfmake && npm i --legacy-peer-deps && cd ./node_modules/pdfkit && npm i fontkit@latest && cd ../.. && npm run build && gulp buildFonts",
     "clean": "node ./bin/cleaner.js",
     "clean:once": "node ./bin/cleaner.js 0h",
     "start": "node ./bin/www-master",
