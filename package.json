@@ -20,7 +20,6 @@
     "date_format": "([0-9]{4}-[0-9]{2}-[0-9]{2}[T ][0-9]{2}:[0-9]{2}:[0-9]{2}.?[0-9]{0,6}Z?):?[ |]"
   },
   "scripts": {
-    "preinstall": "npm i --global gulp",
     "add:user": "node ./bin/add-localuser.js",
     "init:user": "node ./bin/init-localuser.js",
     "build": "npm run build:server && npm run build:client",
