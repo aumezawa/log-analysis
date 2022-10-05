@@ -21,8 +21,10 @@ function execStatsSync(file: string, mode: string, type?: string, target?: strin
               : (mode === "get")      ? file
               : null
   if (mode === "get") {
-    options[3]  = (type === "counters") ? "-ac"
-                : (type === "data")     ? "-sd"
+    options[3]  = (type === "all-counters")       ? "-ac"
+                : (type === "nonzero-counters")   ? "-nc"
+                : (type === "vitality-counters")  ? "-vc"
+                : (type === "data")               ? "-sd"
                 : null
   }
   if (type === "data") {
@@ -69,7 +71,17 @@ export function convertStatsSync(file: string): string {
 }
 
 export function getAllCountersSync(file: string): any {
-  const result = execStatsSync(file, "get", "counters")
+  const result = execStatsSync(file, "get", "all-counters")
+  return (result !== null) ? result.counters : null
+}
+
+export function getNonZeroCountersSync(file: string): any {
+  const result = execStatsSync(file, "get", "nonzero-counters")
+  return (result !== null) ? result.counters : null
+}
+
+export function getVitalityCountersSync(file: string): any {
+  const result = execStatsSync(file, "get", "vitality-counters")
   return (result !== null) ? result.counters : null
 }
 

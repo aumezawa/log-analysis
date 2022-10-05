@@ -2,7 +2,7 @@
 
 ## Requirements
 
-- Nodejs 10
+- Nodejs 16
 - Python 3.6 or later
 
 

@@ -373,9 +373,23 @@ function convertStats(file: string): Promise<string> {
   })
 }
 
-function getStatsAllCountersSync(file: string): any {
+function getStatsCountersSync(file: string, option?: string): any {
   try {
-    const counters = StatsTool.getAllCountersSync(file)
+    let counters: any
+    switch (option) {
+      case "nonzero":
+        counters = StatsTool.getNonZeroCountersSync(file)
+        break
+
+      case "vitality":
+        counters = StatsTool.getVitalityCountersSync(file)
+        break
+
+      case "all":
+      default:
+        counters = StatsTool.getAllCountersSync(file)
+        break
+    }
     return counters
   } catch (err) {
     (err instanceof Error) && logger.error(`${ err.name }: ${ err.message }`)
@@ -383,12 +397,12 @@ function getStatsAllCountersSync(file: string): any {
   }
 }
 
-function getStatsAllCounters(file: string): Promise<any> {
+function getStatsCounters(file: string, option?: string): Promise<any> {
   return new Promise<any>((resolve: (counters: any) => void, reject: (err? :any) => void) => {
     return setImmediate(() => {
       let err = new Error(`Resource: ${ file } cloudn't be converted.`)
       err.name = "Internal"
-      const counters = getStatsAllCountersSync(file)
+      const counters = getStatsCountersSync(file, option)
       return counters ? resolve(counters) : reject(err)
     })
   })
@@ -1252,7 +1266,7 @@ export function getLogReport(user: string, domain: string, project: string, bund
         return resolve({
           name    : `report-${ bundleName }.pdf`,
           type    : "pdf",
-          modified: new Date().toString(),
+          modified: new Date().toUTCString(),
           content : pdfDoc
         })
       })
@@ -1441,10 +1455,10 @@ export function deleteStatsResource(user: string, domain: string, project: strin
   })
 }
 
-export function getStatsCounters(user: string, domain: string, project: string, statsId: string): Promise<any> {
+export function getStatsCounterList(user: string, domain: string, project: string, statsId: string, option?: string): Promise<any> {
   return new Promise<any>((resolve: (counters: any) => void, reject: (err?: any) => void) => {
     return setImmediate(() => {
-      return getStatsAllCounters(getStatsResourcePathSync(user, domain, project, statsId) + ".db")
+      return getStatsCounters(getStatsResourcePathSync(user, domain, project, statsId) + ".db", option)
       .then((counters: any) => {
         return resolve(counters)
       })

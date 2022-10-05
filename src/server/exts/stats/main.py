@@ -7,7 +7,7 @@ from __future__ import print_function
 
 __all__     = []
 __author__  = 'aumezawa'
-__version__ = '0.0.1'
+__version__ = '0.2.0'
 
 
 ################################################################################
@@ -122,6 +122,16 @@ def GetArgs():
         required=False,
         help='get all counters',
     )
+    group_get.add_argument('-nc', '--nonzero_counters',
+        action='store_true',
+        required=False,
+        help='get non-zero counters',
+    )
+    group_get.add_argument('-vc', '--vitality_counters',
+        action='store_true',
+        required=False,
+        help='get vitality counters',
+    )
     group_get.add_argument('-sd', '--specific_data',
         action='store_true',
         required=False,
@@ -219,9 +229,27 @@ if __name__ == '__main__':
             #
             if args.all_counters:
                 logger.info('Get all counters from db. - %s' % args.database)
-                counters = statslib.getStatsCounters(args.database)
+                counters = statslib.getStatsCounters(args.database, option='nonzero')
                 if counters is None:
                     logger.error('Failed in getting all counters from db. - %s' % args.database)
+                    sys.exit(RET_BAD_FILE)
+                printResult({'msg': 'Succeeded.', 'counters': counters})
+                logger.info('Succeeded.')
+                sys.exit(RET_NORMAL_END)
+            if args.nonzero_counters:
+                logger.info('Get non-zero counters from db. - %s' % args.database)
+                counters = statslib.getStatsCounters(args.database, option='nonzero')
+                if counters is None:
+                    logger.error('Failed in getting non-zero counters from db. - %s' % args.database)
+                    sys.exit(RET_BAD_FILE)
+                printResult({'msg': 'Succeeded.', 'counters': counters})
+                logger.info('Succeeded.')
+                sys.exit(RET_NORMAL_END)
+            if args.vitality_counters:
+                logger.info('Get vitality counters from db. - %s' % args.database)
+                counters = statslib.getStatsCounters(args.database, option='vitality')
+                if counters is None:
+                    logger.error('Failed in getting vitality counters from db. - %s' % args.database)
                     sys.exit(RET_BAD_FILE)
                 printResult({'msg': 'Succeeded.', 'counters': counters})
                 logger.info('Succeeded.')

@@ -21,6 +21,7 @@ app.set("http-port", Number(process.env.npm_package_config_http_port))
 app.set("https-port", Number(process.env.npm_package_config_https_port))
 app.set("server-timeout", Number(process.env.npm_package_config_server_timeout))
 app.set("num-workers", Number(process.env.npm_package_config_num_workers))
+app.set("server-timeout", Number(process.env.npm_package_config_server_timeout))
 app.set("token-key", process.env.npm_package_name)
 app.set("token-period", process.env.npm_package_config_token_period)
 

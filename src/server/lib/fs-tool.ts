@@ -20,29 +20,33 @@ function isSearchInFileSync(node: string, search?: string, date_from?:string, da
   const regex = new RegExp(`^${ dateFormat }(.*)$`)
   const from  = date_from && new Date(date_from)
   const to    = date_to   && new Date(date_to)
-  for (let line of fs.readFileSync(node, "utf8").split(/\r\n|\n|\r/)) {
-    if ((dateFormat !== "") && (date_from || date_to)) {
-      if (search && !line.includes(search)) {
-        continue
-      }
+  try {
+    for (let line of fs.readFileSync(node, "utf8").split(/\r\n|\n|\r/)) {
+      if ((dateFormat !== "") && (date_from || date_to)) {
+        if (search && !line.includes(search)) {
+          continue
+        }
 
-      const match = line.match(regex)
-      if (!match) {
-        continue
-      }
+        const match = line.match(regex)
+        if (!match) {
+          continue
+        }
 
-      const at = new Date(match[1] + (match[1].slice(-1) === "Z" ? "" : "Z"))
-      if (date_from && from > at) {
-        continue
+        const at = new Date(match[1] + (match[1].slice(-1) === "Z" ? "" : "Z"))
+        if (date_from && from > at) {
+          continue
+        }
+        if (date_to   && to   < at) {
+          continue
+        }
+        return true
       }
-      if (date_to   && to   < at) {
-        continue
+      if (search && line.includes(search)) {
+        return true
       }
-      return true
     }
-    if (search && line.includes(search)) {
-      return true
-    }
+  } catch {
+    ;
   }
   return false
 }
