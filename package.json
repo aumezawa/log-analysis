@@ -21,7 +21,6 @@
   },
   "scripts": {
     "preinstall": "npm i --global gulp",
-    "postinstall": "npm run build:pdfmake",
     "add:user": "node ./bin/add-localuser.js",
     "init:user": "node ./bin/init-localuser.js",
     "build": "npm run build:server && npm run build:client",
@@ -29,7 +28,6 @@
     "build:server": "tsc -p ./tsconfig.server.json && node ./bin/setup.js",
     "build:client": "webpack",
     "build:test": "tsc -p ./tsconfig.test.json && cpx ./src/test/script/* ./dist/test/script && cpx ./src/test/data/* ./dist/test/data",
-    "build:pdfmake": "mkdirp ./node_modules/pdfmake/examples/fonts && cpx \"./lib/font/*\" ./node_modules/pdfmake/examples/fonts && cd ./node_modules/pdfmake && npm i --legacy-peer-deps && cd ./node_modules/pdfkit && npm i fontkit@latest && cd ../.. && npm run build && gulp buildFonts",
     "clean": "node ./bin/cleaner.js",
     "clean:once": "node ./bin/cleaner.js 0h",
     "start": "node ./bin/www-master",

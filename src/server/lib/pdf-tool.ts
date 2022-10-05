@@ -1,37 +1,45 @@
-import * as path from "path"
-
-const rootPath: string = process.cwd()
-
 const PdfPrinter = require("pdfmake")
 
 const fonts = {
-  IPAPGothic: {
-    normal:      path.join(rootPath, "lib", "font", "ipagp.ttf"),
-    bold:        path.join(rootPath, "lib", "font", "ipagp.ttf"),
-    italics:     path.join(rootPath, "lib", "font", "ipagp.ttf"),
-    bolditalics: path.join(rootPath, "lib", "font", "ipagp.ttf")
+  Courier: {
+    normal: "Courier",
+    bold: "Courier-Bold",
+    italics: "Courier-Oblique",
+    bolditalics: "Courier-BoldOblique"
   },
-  IPAPMincho: {
-    normal:      path.join(rootPath, "lib", "font", "ipamp.ttf"),
-    bold:        path.join(rootPath, "lib", "font", "ipamp.ttf"),
-    italics:     path.join(rootPath, "lib", "font", "ipamp.ttf"),
-    bolditalics: path.join(rootPath, "lib", "font", "ipamp.ttf")
+  Helvetica: {
+    normal: "Helvetica",
+    bold: "Helvetica-Bold",
+    italics: "Helvetica-Oblique",
+    bolditalics: "Helvetica-BoldOblique"
+  },
+  Times: {
+    normal: "Times-Roman",
+    bold: "Times-Bold",
+    italics: "Times-Italic",
+    bolditalics: "Times-BoldItalic"
+  },
+  Symbol: {
+    normal: "Symbol"
+  },
+  ZapfDingbats: {
+    normal: "ZapfDingbats"
   }
 }
 
 const template = {
   defaultStyle: {
-    font: "IPAPMincho",
+    font: "Courier",
     fontSize: 12
   },
   styles: {
     title: {
-      font: "IPAPGothic",
+      font: "Helvetica",
       fontSize: 16,
       alignment: "center"
     },
     author: {
-      font: "IPAPGothic",
+      font: "Times",
       alignment: "right"
     }
   },
