@@ -1,3 +1,20 @@
+Version: **0.24.0** [2022/10/05]
+
+New Features:
+  - Node 10 and Python 2.7 are out of support
+
+Enhanced Features:
+  - Supported to get nonzero and vitality counters
+
+Bug Fixes:
+  - Specific server timeout is defined
+  - Viewer crashed after opening large file
+  - File search aborts with large file in log bundle
+  - cannot build costom fonts of pdfmake
+  - Updated vulnerary modules
+
+***
+
 Version: **0.23.0** [2022/03/07]
 
 New Features:

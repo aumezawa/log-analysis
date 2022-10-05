@@ -76,7 +76,7 @@ const StatsSelectModal = React.memo<StatsSelectModalProps>(({
     refs.current.list3.current.clear()
 
     if (domain && project && stats) {
-      const uri = `${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project, stats) }/counters`
+      const uri = `${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project, stats) }/counters?option=zonzero`
       Axios.get(uri, {
         headers : { "X-Access-Token": Cookies.get("token") || "" },
         data    : {}
