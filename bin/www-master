@@ -76,7 +76,7 @@ if (cluster.isMaster) {
 		var worker = workers[getWorkerIndex(connection.remoteAddress, num_wokers)];
 		worker.send('sticky-session:http-connection', connection);
 	}).listen(http_port);
-  http_server.timeout = app.get('server-timeout')
+  http_server.timeout = app.get('server-timeout');
 
   logger.info(`master: HTTP server is listening on port port ${ http_port }`)
 
@@ -84,7 +84,7 @@ if (cluster.isMaster) {
 		var worker = workers[getWorkerIndex(connection.remoteAddress, num_wokers)];
 		worker.send('sticky-session:https-connection', connection);
 	}).listen(https_port);
-  https_server.timeout = app.get('server-timeout')
+  https_server.timeout = app.get('server-timeout');
 
   logger.info(`master: HTTPS server is listening on port port ${ https_port }`)
 
@@ -103,13 +103,13 @@ if (cluster.isMaster) {
    */
 
   var http_server = http.createServer(app);
-  http_server.timeout = app.get('server-timeout')
+  http_server.timeout = app.get('server-timeout');
 
   var https_server = https.createServer({
     key : fs.readFileSync(path.join(rootPath, app.get('private-key-path'))),
     cert: fs.readFileSync(path.join(rootPath, app.get('certificate-path')))
   }, app);
-  https_server.timeout = app.get('server-timeout')
+  https_server.timeout = app.get('server-timeout');
 
   /**
    * Connect to Terminal.

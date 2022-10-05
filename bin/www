@@ -40,12 +40,12 @@ var https_server = https.createServer({
  */
 
 http_server.listen(http_port);
-http_server.timeout = app.get('server-timeout')
+http_server.timeout = app.get('server-timeout');
 http_server.on('error', onErrorHttp);
 http_server.on('listening', onListeningHttp);
 
 https_server.listen(https_port);
-https_server.timeout = app.get('server-timeout')
+https_server.timeout = app.get('server-timeout');
 https_server.on('error', onErrorHttps);
 https_server.on('listening', onListeningHttps);
 
