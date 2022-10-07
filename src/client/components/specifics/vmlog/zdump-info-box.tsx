@@ -104,7 +104,7 @@ const ZdumpInfoBox = React.memo<ZdumpInfoBoxProps>(({
       <Table
         key="log"
         className="my-2"
-        title="Kernel Log (latest 3 days)"
+        title="Kernel Log (latest 3 hours)"
         LIcon={ FileText }
         content={ zdumpInfo.current.log.map((line: string) => [line]) }
       />

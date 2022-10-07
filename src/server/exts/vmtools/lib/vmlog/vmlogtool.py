@@ -7,7 +7,7 @@ from __future__ import print_function
 
 __all__     = ['DecompressBundle', 'GetHostList', 'GetHostInfo', 'GetVmList', 'GetVmInfo', 'GetVmLogPath', 'GetVCenterList', 'GetVCenterInfo', 'GetZdumpList' 'GetZdumpInfo']
 __author__  = 'aumezawa'
-__version__ = '0.1.13'
+__version__ = '0.1.14'
 
 
 ################################################################################
@@ -284,11 +284,11 @@ def GetZdumpInfo(dirPath, zdumpName):
         rePanic = re.compile(r"^([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}).*@BlueScreen: (.*)$")
         reUptime = re.compile(r"^.*VMK uptime: ([0-9:.]+)$")
         reTrace = re.compile(r"^.*(0x[0-9a-f]+:\[0x[0-9a-f]+\].*)$")
-        reEnd = re.compile(r"^.*Coredump to disk.*$")
+        reEnd = re.compile(r"^.*Coredump to.*$")
         #
         logFlag = True
         traceFlag = False
-        with open(filePath, 'r') as fp:
+        with open(filePath, 'r', errors='ignore') as fp:
             for line in fp:
                 match = reBuild.match(line)
                 if match:
@@ -319,11 +319,13 @@ def GetZdumpInfo(dirPath, zdumpName):
                 if match:
                     break
         #
-        # for latest 3 days
+        # for latest 3 hours
         pd = dt.strptime(panic_date, '%Y-%m-%dT%H:%M:%S')
         count = 0
         for line in log:
-            if (pd - dt.strptime(line[:19], '%Y-%m-%dT%H:%M:%S')).days <= 2:
+            ld = dt.strptime(line[:19], '%Y-%m-%dT%H:%M:%S')
+            dd = pd - ld
+            if dd.days <= 0 and dd.seconds <= 10800:
                 break
             count = count + 1
         log = log[count:]
