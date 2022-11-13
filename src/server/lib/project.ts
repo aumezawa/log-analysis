@@ -1165,12 +1165,23 @@ export function getVmInfo(user: string, domain: string, project: string, bundleI
   })
 }
 
-export function getVmLogPath(user: string, domain: string, project: string, bundleId: string, vm: string): Promise<string> {
+export function getVmLogList(user: string, domain: string, project: string, bundleId: string, vm: string): Promise<Array<string>> {
+  return new Promise<Array<string>>((resolve: (vmLogList: Array<string>) => void, reject: (err?: any) => void) => {
+    return setImmediate(() => {
+      let err = new Error(`vmtools: An internal error occurred.`)
+      err.name = "Internal"
+      const vmLogList = Vmtools.getVmLogListSync(getBundleResourcePathSync(user, domain, project, bundleId), vm)
+      return vmLogList ? resolve(vmLogList) : reject(err)
+    })
+  })
+}
+
+export function getVmLogPath(user: string, domain: string, project: string, bundleId: string, vm: string, log: string): Promise<string> {
   return new Promise<string>((resolve: (vmLogPath: string) => void, reject: (err?: any) => void) => {
     return setImmediate(() => {
       let err = new Error(`vmtools: An internal error occurred.`)
       err.name = "Internal"
-      const vmLogPath = Vmtools.getVmLogPathSync(getBundleResourcePathSync(user, domain, project, bundleId), vm)
+      const vmLogPath = Vmtools.getVmLogPathSync(getBundleResourcePathSync(user, domain, project, bundleId), vm, log)
       return vmLogPath ? resolve(vmLogPath) : reject(err)
     })
   })

@@ -7,7 +7,7 @@ from __future__ import print_function
 
 __all__     = []
 __author__  = 'aumezawa'
-__version__ = '0.1.6'
+__version__ = '0.1.7'
 
 
 ################################################################################
@@ -130,8 +130,8 @@ def GetArgs():
     group_get.add_argument('-vl', '--vmlog',
         action='store',
         required=False,
-        help='<NAME>: get a specific vm log file path',
-        metavar='<NAME>'
+        help='LIST: get vmware.log list, <NAME>: get a specific vmware.log file path',
+        metavar='LIST | <NAME>'
     )
     group_get.add_argument('-vc', '--vc',
         action='store',
@@ -250,15 +250,20 @@ if __name__ == '__main__':
                 if args.vm == 'LIST':
                     printResult(vmlogtool.GetVmList(args.bundle))
                 else:
+                    if args.vmlog:
+                        logger.info('Get VM Log Path. VM = %s, Log = %s' % (args.vm, args.vmlog))
+                        if args.vmlog == 'LIST':
+                            printResult(vmlogtool.GetVmLogList(args.bundle, args.vm))
+                            logger.info('Succeeded.')
+                            sys.exit(RET_NORMAL_END)
+                        else:
+                            printResult(vmlogtool.GetVmLogPath(args.bundle, args.vm, args.vmlog))
+                            logger.info('Succeeded.')
+                            sys.exit(RET_NORMAL_END)
                     if args.caching:
                         printResult(GetVmInfoWithCache(args.bundle, args.vm))
                     else:
                         printResult(vmlogtool.GetVmInfo(args.bundle, args.vm))
-                logger.info('Succeeded.')
-                sys.exit(RET_NORMAL_END)
-            if args.vmlog:
-                logger.info('Get VM Log Path. VM = %s' % args.vmlog)
-                printResult(vmlogtool.GetVmLogPath(args.bundle, args.vmlog))
                 logger.info('Succeeded.')
                 sys.exit(RET_NORMAL_END)
             if args.vc:

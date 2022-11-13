@@ -5,7 +5,7 @@ import logger = require("../lib/logger")
 
 const rootPath: string = process.cwd()
 
-function execVmtoolsSync(node: string, mode: string, type?: string, target?: string): any {
+function execVmtoolsSync(node: string, mode: string, type?: string, target?: string, subtype?: string, subtarget?: string): any {
   const options: Array<string> = []
   options[0]  = (mode === "get")    ? "-g"
               : (mode === "decomp") ? "-d"
@@ -23,12 +23,19 @@ function execVmtoolsSync(node: string, mode: string, type?: string, target?: str
     options[3]  = (type === "esx")    ? "-e"
                 : (type === "vc")     ? "-vc"
                 : (type === "vm")     ? "-v"
-                : (type === "vmlog")  ? "-vl"
                 : (type === "zdump")  ? "-z"
                 : null
     options[4]  = (target === "LIST") ? "LIST"
                 : target
-    options[5]  = "-c"
+    if (!!subtype) {
+      options[5] = (subtype === "vmlog")  ? "-vl"
+                 : null
+      options[6] = (subtarget === "LIST") ? "LIST"
+                 : subtarget
+      options[7] = "-c"
+    } else {
+      options[5]  = "-c"
+    }
   } else if (mode === "decomp" && type === "preserve") {
     options[3]  = "-p"
   } else if (mode === "report") {
@@ -89,8 +96,12 @@ export function getVmInfoSync(directory: string, vm: string): VmInfo {
   return execVmtoolsSync(directory, "get", "vm", vm) as VmInfo
 }
 
-export function getVmLogPathSync(directory: string, vm: string): string {
-  return execVmtoolsSync(directory, "get", "vmlog", vm) as string
+export function getVmLogListSync(directory: string, vm: string): Array<string> {
+  return execVmtoolsSync(directory, "get", "vm", vm, "vmlog", "LIST") as Array<string>
+}
+
+export function getVmLogPathSync(directory: string, vm: string, log: string): string {
+  return execVmtoolsSync(directory, "get", "vm", vm, "vmlog", log) as string
 }
 
 export function getZdumpListSync(directory: string): Array<string> {

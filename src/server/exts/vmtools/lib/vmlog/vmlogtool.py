@@ -5,9 +5,9 @@
 
 from __future__ import print_function
 
-__all__     = ['DecompressBundle', 'GetHostList', 'GetHostInfo', 'GetVmList', 'GetVmInfo', 'GetVmLogPath', 'GetVCenterList', 'GetVCenterInfo', 'GetZdumpList' 'GetZdumpInfo']
+__all__     = ['DecompressBundle', 'GetHostList', 'GetHostInfo', 'GetVmList', 'GetVmInfo', 'GetVmLogList', 'GetVmLogPath', 'GetVCenterList', 'GetVCenterInfo', 'GetZdumpList' 'GetZdumpInfo']
 __author__  = 'aumezawa'
-__version__ = '0.1.14'
+__version__ = '0.1.15'
 
 
 ################################################################################
@@ -213,11 +213,20 @@ def GetVmInfo(dirPath, vmName):
         return None
 
 
-def GetVmLogPath(dirPath, vmName):
+def GetVmLogList(dirPath, vmName):
     vmxFile = GetVmxPath(dirPath, vmName)
     if not vmxFile:
         return None
-    vmLogPath = os.path.dirname(vmxFile) + '/' + 'vmware.log'
+    vmDirPath = os.path.join(dirPath, os.path.dirname(vmxFile))
+    vmLogList = list(filter(lambda file: os.path.splitext(file)[1] == ".log", os.listdir(vmDirPath)))
+    return vmLogList
+
+
+def GetVmLogPath(dirPath, vmName, logName):
+    vmxFile = GetVmxPath(dirPath, vmName)
+    if not vmxFile:
+        return None
+    vmLogPath = os.path.dirname(vmxFile) + '/' + logName
     return vmLogPath
 
 
