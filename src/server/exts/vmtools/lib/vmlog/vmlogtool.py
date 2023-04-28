@@ -5,9 +5,9 @@
 
 from __future__ import print_function
 
-__all__     = ['DecompressBundle', 'GetHostList', 'GetHostInfo', 'GetVmList', 'GetVmInfo', 'GetVmLogList', 'GetVmLogPath', 'GetVCenterList', 'GetVCenterInfo', 'GetZdumpList' 'GetZdumpInfo']
+__all__     = ['DecompressBundle', 'GetHostList', 'GetHostInfo', 'GetVmList', 'GetVmInfo', 'GetVmVmxPath', 'GetVmLogList', 'GetVmLogPath', 'GetVCenterList', 'GetVCenterInfo', 'GetZdumpList' 'GetZdumpInfo']
 __author__  = 'aumezawa'
-__version__ = '0.1.16'
+__version__ = '0.1.17'
 
 
 ################################################################################
@@ -211,6 +211,11 @@ def GetVmInfo(dirPath, vmName):
     except Exception as e:
         logger.error(e)
         return None
+
+
+def GetVmVmxPath(dirPath, vmName):
+    vmxFile = GetVmxPath(dirPath, vmName)
+    return vmxFile
 
 
 def GetVmLogList(dirPath, vmName):

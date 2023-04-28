@@ -107,6 +107,33 @@ router.route("/:domain/projects/:projectName/bundles/:bundleId/report")
   })
 })
 
+
+router.route("/:domain/projects/:projectName/bundles/:bundleId/vms/:vmName/vmx")
+.get((req: Request, res: Response, next: NextFunction) => {
+  return Project.getVmVmxPath(req.token.usr, req.domain, req.project, req.bundleId, req.params.vmName)
+  .then((vmVmxPath: string) => {
+    // OK
+    return res.status(200).json({
+      msg: "You get a virtual machine vmx path.",
+      vmxpath: vmVmxPath
+    })
+  })
+  .catch((err: any) => {
+    return ((err instanceof Error) && (err.name === "External"))
+      ? // Bad Request
+        res.status(400).json({ msg: err.message })
+      : // Internal Server Error
+        res.status(500).json({ msg: "Contact an administrator." })
+  })
+})
+.all((req: Request, res: Response, next: NextFunction) => {
+  // Method Not Allowed
+  return res.status(405).json({
+    msg: "GET method is only supported."
+  })
+})
+
+
 router.route("/:domain/projects/:projectName/bundles/:bundleId/vms/:vmName/logs/:logName/path")
 .get((req: Request, res: Response, next: NextFunction) => {
   return Project.getVmLogPath(req.token.usr, req.domain, req.project, req.bundleId, req.params.vmName, req.params.logName)

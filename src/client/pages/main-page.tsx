@@ -324,6 +324,16 @@ const MainPage: React.FC<MainPageProps> = ({
       data.current.vmname = value
       ref.current.vm.current.click()
     }
+    if (action === "vmx") {
+      data.current.filepath = value
+      data.current.filename = Path.basename(value)
+      data.current.line = null
+      data.current.filter = null
+      data.current.sensitive = true
+      data.current.date_from = null
+      data.current.date_to = null
+      ref.current.viewer.current.click()
+    }
     if (action === "vmlog") {
       data.current.filepath = value
       data.current.filename = Path.basename(value)

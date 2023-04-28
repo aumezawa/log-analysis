@@ -7,7 +7,7 @@ from __future__ import print_function
 
 __all__     = []
 __author__  = 'aumezawa'
-__version__ = '0.1.7'
+__version__ = '0.1.8'
 
 
 ################################################################################
@@ -126,6 +126,11 @@ def GetArgs():
         required=False,
         help='LIST: get vm list, <NAME>: get a specific vm information',
         metavar='LIST | <NAME>'
+    )
+    group_get.add_argument('-vx', '--vmx',
+        action='store_true',
+        required=False,
+        help='get a vmx file path',
     )
     group_get.add_argument('-vl', '--vmlog',
         action='store',
@@ -250,6 +255,10 @@ if __name__ == '__main__':
                 if args.vm == 'LIST':
                     printResult(vmlogtool.GetVmList(args.bundle))
                 else:
+                    if args.vmx:
+                        printResult(vmlogtool.GetVmVmxPath(args.bundle, args.vm))
+                        logger.info('Succeeded.')
+                        sys.exit(RET_NORMAL_END)
                     if args.vmlog:
                         logger.info('Get VM Log Path. VM = %s, Log = %s' % (args.vm, args.vmlog))
                         if args.vmlog == 'LIST':

@@ -27,12 +27,16 @@ function execVmtoolsSync(node: string, mode: string, type?: string, target?: str
                 : null
     options[4]  = (target === "LIST") ? "LIST"
                 : target
-    if (!!subtype) {
-      options[5] = (subtype === "vmlog")  ? "-vl"
-                 : null
-      options[6] = (subtarget === "LIST") ? "LIST"
-                 : subtarget
-      options[7] = "-c"
+    if (!!subtype && !!subtarget) {
+      options[5]  = (subtype === "vmlog")   ? "-vl"
+                  : null
+      options[6]  = (subtarget === "LIST")  ? "LIST"
+                  : subtarget
+      options[7]  = "-c"
+    } else if (!!subtype) {
+      options[5]  = (subtype === "vmx")     ? "-vx"
+                  : null
+      options[6]  = "-c"
     } else {
       options[5]  = "-c"
     }
@@ -56,6 +60,7 @@ function execVmtoolsSync(node: string, mode: string, type?: string, target?: str
 
   if (result.status !== 0) {
     logger.error(`child_process: pid=${ result.pid }, status=${ result.status | 0 }, error=${ result.error }`)  // unsigned to signed
+    logger.error(`error command: ${ [].concat(options) }`)
     return null
   }
 
@@ -94,6 +99,10 @@ export function getVmListSync(directory: string): Array<string> {
 
 export function getVmInfoSync(directory: string, vm: string): VmInfo {
   return execVmtoolsSync(directory, "get", "vm", vm) as VmInfo
+}
+
+export function getVmVmxPathSync(directory: string, vm: string): string {
+  return execVmtoolsSync(directory, "get", "vm", vm, "vmx") as string
 }
 
 export function getVmLogListSync(directory: string, vm: string): Array<string> {

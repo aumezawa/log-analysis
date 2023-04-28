@@ -1,7 +1,7 @@
 import * as React from "react"
 import { useEffect, useRef, useCallback, useReducer } from "react"
 
-import { Box, Display } from "react-bootstrap-icons"
+import { Box, Gear, Display } from "react-bootstrap-icons"
 
 import Axios from "axios"
 import { AxiosResponse, AxiosError } from "axios"
@@ -94,6 +94,25 @@ const VmExplorerBox = React.memo<VmExplorerBoxProps>(({
     }
   }, [onSelect])
 
+  const handleClickSelectVmVmx = useCallback((targetValue: string, parentValue: string) => {
+    const vmName = parentValue.slice(1)   // NOTE: removed leading character '/'
+    data.current.vm = vmName
+    const uri = `${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project, bundle) }/vms/${ data.current.vm }/vmx`
+    Axios.get(uri, {
+      headers : { "X-Access-Token": Cookies.get("token") || "" },
+      data    : {}
+    })
+    .then((res: AxiosResponse) => {
+      if (onSelect) {
+        onSelect("vmx", res.data.vmxpath)
+      }
+      return
+    })
+    .catch((err: AxiosError) => {
+      return
+    })
+  }, [domain, project, bundle, onSelect])
+
   const handleClickSelectVmLog = useCallback((targetValue: string, parentValue: string) => {
     const vmName = parentValue.slice(1)   // NOTE: removed leading character '/'
     data.current.vm = vmName
@@ -170,6 +189,12 @@ const VmExplorerBox = React.memo<VmExplorerBoxProps>(({
             label="show information"
             LIcon={ Box }
             onClick={ handleClickSelectVmInfo }
+          />,
+          <DropdownItem
+            key="vmx"
+            label="open vmx file"
+            LIcon={ Gear }
+            onClick={ handleClickSelectVmVmx }
           />,
           <DropdownItem
             key="log"

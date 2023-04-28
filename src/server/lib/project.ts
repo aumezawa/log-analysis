@@ -1165,6 +1165,17 @@ export function getVmInfo(user: string, domain: string, project: string, bundleI
   })
 }
 
+export function getVmVmxPath(user: string, domain: string, project: string, bundleId: string, vm: string): Promise<string> {
+  return new Promise<string>((resolve: (vmVmxPath: string) => void, reject: (err?: any) => void) => {
+    return setImmediate(() => {
+      let err = new Error(`vmtools: An internal error occurred.`)
+      err.name = "Internal"
+      const vmVmxPath = Vmtools.getVmVmxPathSync(getBundleResourcePathSync(user, domain, project, bundleId), vm)
+      return vmVmxPath ? resolve(vmVmxPath) : reject(err)
+    })
+  })
+}
+
 export function getVmLogList(user: string, domain: string, project: string, bundleId: string, vm: string): Promise<Array<string>> {
   return new Promise<Array<string>>((resolve: (vmLogList: Array<string>) => void, reject: (err?: any) => void) => {
     return setImmediate(() => {
