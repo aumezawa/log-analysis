@@ -68,6 +68,7 @@ type HostCpuInfo = {
   model     : string,
   sockets   : number,
   cores     : number,
+  actualMHz : number,
   htEnable  : boolean
 }
 

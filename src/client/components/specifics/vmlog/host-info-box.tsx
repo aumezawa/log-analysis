@@ -225,16 +225,17 @@ const HostInfoBox = React.memo<HostInfoBoxProps>(({
           LIcon={ Cpu }
           compare={ true }
           content={ [
-            ["machine"             ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.hardware.machine }`)),
-            ["serial number"       ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.hardware.serial }`)),
-            ["bios version"        ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.hardware.bios }`)),
-            ["bmc version"         ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.hardware.bmc }`)),
-            ["cpu - model"         ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.hardware.cpu.model }`)),
-            ["cpu - sockets"       ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.hardware.cpu.sockets }`)),
-            ["cpu - total cores"   ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.hardware.cpu.cores }`)),
-            ["cpu - hyperthreading"].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.hardware.cpu.htEnable }`)),
-            ["memory - total"      ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.hardware.memory } GB`)),
-            ["# of numa nodes"     ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.hardware.numa }`))
+            ["machine"                ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.hardware.machine }`)),
+            ["serial number"          ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.hardware.serial }`)),
+            ["bios version"           ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.hardware.bios }`)),
+            ["bmc version"            ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.hardware.bmc }`)),
+            ["cpu - model"            ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.hardware.cpu.model }`)),
+            ["cpu - sockets"          ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.hardware.cpu.sockets }`)),
+            ["cpu - total cores"      ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.hardware.cpu.cores }`)),
+            ["cpu - actual frequency" ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.hardware.cpu.actualMHz } MHz`)),
+            ["cpu - hyperthreading"   ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.hardware.cpu.htEnable }`)),
+            ["memory - total"         ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.hardware.memory } GB`)),
+            ["# of numa nodes"        ].concat(data.current.hosts.map((hostInfo: HostInfo) => `${ hostInfo.hardware.numa }`))
           ] }
         />
       )

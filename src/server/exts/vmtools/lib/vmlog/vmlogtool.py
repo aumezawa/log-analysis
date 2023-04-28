@@ -7,7 +7,7 @@ from __future__ import print_function
 
 __all__     = ['DecompressBundle', 'GetHostList', 'GetHostInfo', 'GetVmList', 'GetVmInfo', 'GetVmLogList', 'GetVmLogPath', 'GetVCenterList', 'GetVCenterInfo', 'GetZdumpList' 'GetZdumpInfo']
 __author__  = 'aumezawa'
-__version__ = '0.1.15'
+__version__ = '0.1.16'
 
 
 ################################################################################
@@ -1089,6 +1089,7 @@ def GetCpuInfo(dirPath):
         'model'     : model,
         'sockets'   : _int(SearchInXml(filePath, './hardware-info/cpu-info/value[@name="num-packages"]')),
         'cores'     : _int(SearchInXml(filePath, './hardware-info/cpu-info/value[@name="num-cores"]')),
+        'actualMHz' : -(-_int(SearchInXml(filePath, './hardware-info/cpu-info/cpupackages/cpupackage/cpu-cores/cpuimpl/value[@name="cpu-speed"]')) // 1000000), # round-up
         'htEnable'  : SearchInXml(filePath, './hardware-info/cpu-info/value[@name="hyperthreading-active"]') == 'true'
     }
 
