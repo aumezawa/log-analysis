@@ -7,7 +7,7 @@ from __future__ import print_function
 
 __all__     = ['DecompressBundle', 'GetHostList', 'GetHostInfo', 'GetVmList', 'GetVmInfo', 'GetVmVmxPath', 'GetVmLogList', 'GetVmLogPath', 'GetVCenterList', 'GetVCenterInfo', 'GetZdumpList' 'GetZdumpInfo']
 __author__  = 'aumezawa'
-__version__ = '0.1.17'
+__version__ = '0.1.18'
 
 
 ################################################################################
@@ -1125,6 +1125,27 @@ def convertSBDFForHPEServer(sbdf):
     return sbdf
 
 
+def GetVmsUsingPassthruDevice(dirPath, sbdf_hex):
+    vmList = GetVmList(dirPath)
+    vms = []
+    for vmName in vmList:
+        vmxFile = GetVmxPath(dirPath, vmName)
+        vmxPath = os.path.join(dirPath, vmxFile)
+        vmxDict = GetVmxDict(vmxPath)
+        #
+        dpios = GetDpios(vmxDict)
+        for dpio in dpios:
+            if dpio['id'] == sbdf_hex:
+                vms.append(vmName)
+        #
+        vfs = GetVmSriovVfs(vmxDict)
+        for vf in vfs:
+            if vf['pfid'] == sbdf_hex:
+                vms.append(vmName)
+    #
+    return vms
+
+
 def GetPciCards(dirPath):
     filePath = os.path.join(dirPath, 'commands', 'esxcfg-info_-a--F-xml.txt')
     xpath    = './hardware-info/pci-info/all-pci-devices/pci-device'
@@ -1155,7 +1176,8 @@ def GetPciCards(dirPath):
                 'parent'        : convertSBDFForHPEServer(parent),
                 'dpio_enabled'  : sbdf in dpios,
                 'sriov_enabled' : sbdf in sriovs,
-                'sriov_vfs'     : 0 if sbdf not in sriovs else sriovs[sbdf]
+                'sriov_vfs'     : 0 if sbdf not in sriovs else sriovs[sbdf],
+                'using_vms'     : GetVmsUsingPassthruDevice(dirPath, sbdf)
             })
     cards.sort(key=lambda x: x['slot'])
     return cards

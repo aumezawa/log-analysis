@@ -79,7 +79,8 @@ type HostPciCardInfo = {
   parent        : string,
   dpio_enabled  : boolean,
   sriov_enabled : boolean,
-  sriov_vfs     : number
+  sriov_vfs     : number,
+  using_vms     : Array<string>
 }
 
 type HostNetworkInfo = {
