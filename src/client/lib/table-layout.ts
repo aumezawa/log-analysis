@@ -65,6 +65,10 @@ export default (nodes: Array<Array<Datum>>, pkey: string, pvalue?: string, units
               ? (
                   (units && units[key])
                   ? `${ datum[key] } ${ units[key] }`
+                  : (Array.isArray(datum[key]) && datum[key].length === 0)
+                  ? "n/a"
+                  : Array.isArray(datum[key])
+                  ? `${ datum[key].join(", ") }`
                   : `${ datum[key] }`
                 )
               : "n/a"
