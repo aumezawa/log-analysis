@@ -88,6 +88,7 @@ const MainPage: React.FC<MainPageProps> = ({
     line      : null,
     mark      : null,
     filter    : null,
+    search    : null,
     sensitive : true,
     date_from : null,
     date_to   : null
@@ -116,6 +117,7 @@ const MainPage: React.FC<MainPageProps> = ({
       data.current.line,
       data.current.mark,
       data.current.filter,
+      data.current.search,
       data.current.sensitive,
       data.current.date_from,
       data.current.date_to
@@ -131,6 +133,7 @@ const MainPage: React.FC<MainPageProps> = ({
     const line = params.get("line")
     const mark = params.get("mark")
     const filter = params.get("filter")
+    const search = params.get("search")
     const sensitive = params.get("sensitive")
     const date_from = params.get("date_from")
     const date_to = params.get("date_to")
@@ -151,6 +154,7 @@ const MainPage: React.FC<MainPageProps> = ({
         data.current.line       =  domain && project && bundle && filepath && line       && Number(line)
         data.current.mark       =  domain && project && bundle && filepath && mark
         data.current.filter     =  domain && project && bundle && filepath && filter
+        data.current.search     =  domain && project && bundle && filepath && search
         data.current.sensitive  = (domain && project && bundle && filepath && sensitive) ? false : true
         data.current.date_from  =  domain && project && bundle && filepath && date_from
         data.current.date_to    =  domain && project && bundle && filepath && date_to
@@ -203,6 +207,7 @@ const MainPage: React.FC<MainPageProps> = ({
     data.current.focus = null
     data.current.line = null
     data.current.filter = null
+    data.current.search = null
     data.current.sensitive = true
     data.current.date_from = null
     data.current.date_to = null
@@ -224,6 +229,7 @@ const MainPage: React.FC<MainPageProps> = ({
     data.current.focus = null
     data.current.line = null
     data.current.filter = null
+    data.current.search = null
     data.current.sensitive = true
     data.current.date_from = null
     data.current.date_to = null
@@ -244,6 +250,7 @@ const MainPage: React.FC<MainPageProps> = ({
     data.current.focus = null
     data.current.line = null
     data.current.filter = null
+    data.current.search = null
     data.current.sensitive = true
     data.current.date_from = null
     data.current.date_to = null
@@ -280,6 +287,7 @@ const MainPage: React.FC<MainPageProps> = ({
       data.current.filename = Path.basename(value)
       data.current.line = null
       data.current.filter = (option && option.search !== "") ? option.search : null
+      data.current.search = null
       data.current.sensitive = true
       data.current.date_from = (option && option.data_from) || null
       data.current.date_to = (option && option.data_to) || null
@@ -300,6 +308,14 @@ const MainPage: React.FC<MainPageProps> = ({
 
   const handleChangeTableTextFilter = useCallback((textFilter: string, textSensitive: boolean) => {
     data.current.filter = textFilter
+    data.current.search = null
+    data.current.sensitive = textSensitive
+    updateAddressBar()
+  }, [true])
+
+  const handleChangeTableTextSearch = useCallback((textSearch: string, textSensitive: boolean) => {
+    data.current.filter = null
+    data.current.search = textSearch
     data.current.sensitive = textSensitive
     updateAddressBar()
   }, [true])
@@ -466,12 +482,14 @@ const MainPage: React.FC<MainPageProps> = ({
                     line={ data.current.line }
                     mark={ data.current.mark }
                     textFilter={ data.current.filter }
+                    textSearch={ data.current.search }
                     textSensitive={ data.current.sensitive }
                     dateFrom={ data.current.date_from }
                     dateTo={ data.current.date_to }
                     onChangeLine={ handleChangeTableLine }
                     onChangeMark={ handleChangeTableMark }
                     onChangeTextFilter={ handleChangeTableTextFilter }
+                    onChangeTextSearch={ handleChangeTableTextSearch }
                     onChangeDateFilter={ handleChangeTableDateFilter }
                   />,
                   <TerminalBox

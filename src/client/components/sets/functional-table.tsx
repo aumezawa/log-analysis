@@ -25,6 +25,7 @@ type FunctionalTableProps = {
   line?               : number,
   mark?               : string,
   textFilter?         : string,
+  textSearch?         : string,
   textSensitive?      : boolean,
   dateFrom?           : string,
   dateTo?             : string,
@@ -32,6 +33,7 @@ type FunctionalTableProps = {
   onChangeLine?       : (line: number) => void,
   onChangeMark?       : (mark: string) => void,
   onChangeTextFilter? : (textFilter: string, textSensitive: boolean) => void,
+  onChangeTextSearch? : (textSearch: string, textSensitive: boolean) => void,
   onChangeDateFilter? : (dateFrom: string, dateTo: string) => void,
   onClickReload?      : (format: string) => void,
   onClickDownload?    : (textFilter: string, textSensitive: boolean, dateFrom: string, dateTo: string) => void
@@ -46,6 +48,7 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
   line                = null,
   mark                = null,
   textFilter          = null,
+  textSearch          = null,
   textSensitive       = true,
   dateFrom            = null,
   dateTo              = null,
@@ -53,6 +56,7 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
   onChangeLine        = undefined,
   onChangeMark        = undefined,
   onChangeTextFilter  = undefined,
+  onChangeTextSearch  = undefined,
   onChangeDateFilter  = undefined,
   onClickReload       = undefined,
   onClickDownload     = undefined
@@ -119,6 +123,22 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
         } else {
           if (onChangeTextFilter) {
             onChangeTextFilter(null, null)
+          }
+        }
+      }
+      else if (textSearch) {
+        if (Object.keys(content.format.label).includes("Content")) {
+          env.current.searches["Content"] = {
+            type      : "text",
+            mode      : "Be included",
+            sensitive : textSensitive,
+            condition : textSearch,
+            founds    : []
+          }
+          scroll = false
+        } else {
+          if (onChangeTextSearch) {
+            onChangeTextSearch(null, null)
           }
         }
       }
@@ -244,8 +264,14 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
 
       delete env.current.filters[env.current.label]
 
-      if (onChangeTextFilter) {
-        onChangeTextFilter(null, null)
+      if ((env.current.label === "Content") && (mode === "Be included")) {
+        if (onChangeTextSearch) {
+          onChangeTextSearch(condition, sensitive)
+        }
+      } else {
+        if (onChangeTextSearch) {
+          onChangeTextSearch(null, null)
+        }
       }
 
       scrollToLine(Object.keys(env.current.filters).length ? 1 : env.current.line)
@@ -255,6 +281,7 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
   const handleCancelTextFilter = useCallback(() => {
     if (env.current.operation === "filter") {
       delete env.current.filters[env.current.label]
+      delete env.current.searches[env.current.label]
 
       if (onChangeTextFilter) {
         onChangeTextFilter(null, null)
@@ -262,7 +289,12 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
 
       scrollToLine(Object.keys(env.current.filters).length ? 1 : env.current.line)
     } else if (env.current.operation === "search") {
+      delete env.current.filters[env.current.label]
       delete env.current.searches[env.current.label]
+
+      if (onChangeTextSearch) {
+        onChangeTextSearch(null, null)
+      }
     }
   }, [onChangeTextFilter])
 
@@ -717,8 +749,8 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
           body={
             <TextFilterForm
               operation={ env.current.operation }
-              sensitive={ env.current.filters["Content"] && env.current.filters["Content"].sensitive }
-              condition={ env.current.filters["Content"] && env.current.filters["Content"].condition }
+              sensitive={ env.current.filters["Content"] && env.current.filters["Content"].sensitive || env.current.searches["Content"] && env.current.searches["Content"].sensitive }
+              condition={ env.current.filters["Content"] && env.current.filters["Content"].condition || env.current.searches["Content"] && env.current.searches["Content"].condition }
               dismiss="modal"
               onSubmit={ handleSubmitTextFilter }
               onCancel={ handleCancelTextFilter }

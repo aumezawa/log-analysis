@@ -20,6 +20,9 @@ router.route("/:domain/projects/:projectName/bundles/:bundleId/files/*")
   if (req.query.filter) {
     query = `${ query }&filter=${ req.query.filter }`
   }
+  if (req.query.search) {
+    query = `${ query }&search=${ req.query.search }`
+  }
   if (req.query.sensitive) {
     query = `${ query }&sensitive=${ req.query.sensitive }`
   }
