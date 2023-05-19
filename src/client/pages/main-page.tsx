@@ -91,7 +91,8 @@ const MainPage: React.FC<MainPageProps> = ({
     search    : null,
     sensitive : true,
     date_from : null,
-    date_to   : null
+    date_to   : null,
+    merge     : null
   })
 
   const env = useRef({
@@ -120,7 +121,8 @@ const MainPage: React.FC<MainPageProps> = ({
       data.current.search,
       data.current.sensitive,
       data.current.date_from,
-      data.current.date_to
+      data.current.date_to,
+      data.current.merge
     ))
   }
 
@@ -137,6 +139,7 @@ const MainPage: React.FC<MainPageProps> = ({
     const sensitive = params.get("sensitive")
     const date_from = params.get("date_from")
     const date_to = params.get("date_to")
+    const merge = params.get("merge")
 
     if (domain) {
       const uri = `${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project, bundle, filepath) }`
@@ -158,6 +161,7 @@ const MainPage: React.FC<MainPageProps> = ({
         data.current.sensitive  = (domain && project && bundle && filepath && sensitive) ? false : true
         data.current.date_from  =  domain && project && bundle && filepath && date_from
         data.current.date_to    =  domain && project && bundle && filepath && date_to
+        data.current.merge      =  domain && project && bundle && filepath && merge
         if (domain && project && bundle) {
           env.current.state     = "MAIN"
           env.current.menu      = true
@@ -211,6 +215,7 @@ const MainPage: React.FC<MainPageProps> = ({
     data.current.sensitive = true
     data.current.date_from = null
     data.current.date_to = null
+    data.current.merge = null
     env.current.state = "INIT"
     env.current.menu = false
     ref.current.start.current.click()
@@ -233,6 +238,7 @@ const MainPage: React.FC<MainPageProps> = ({
     data.current.sensitive = true
     data.current.date_from = null
     data.current.date_to = null
+    data.current.merge = null
     env.current.state = "INIT"
     env.current.menu = false
     ref.current.start.current.click()
@@ -254,6 +260,7 @@ const MainPage: React.FC<MainPageProps> = ({
     data.current.sensitive = true
     data.current.date_from = null
     data.current.date_to = null
+    data.current.merge = null
     if (bundleId) {
       env.current.state = "MAIN"
       env.current.menu = true
@@ -281,6 +288,13 @@ const MainPage: React.FC<MainPageProps> = ({
       data.current.termpath = value
       data.current.terminal = Path.basename(value)
       env.current.terminal = env.current.terminal + 1
+    } else if (action === "merge") {
+      if (value !== data.current.filename) {
+        ref.current.viewer.current.click()
+        data.current.merge = value
+      } else {
+        alert("Cannot open the same file...")
+      }
     } else {
       ref.current.viewer.current.click()
       data.current.filepath = value
@@ -291,6 +305,7 @@ const MainPage: React.FC<MainPageProps> = ({
       data.current.sensitive = true
       data.current.date_from = (option && option.data_from) || null
       data.current.date_to = (option && option.data_to) || null
+      data.current.merge = null
     }
     updateTitle()
     updateAddressBar()
@@ -442,6 +457,7 @@ const MainPage: React.FC<MainPageProps> = ({
                 project={ data.current.project }
                 bundle={ data.current.bundle }
                 filename={ data.current.filename }
+                merge={ data.current.merge }
                 terminal={ data.current.terminal }
                 focus={ data.current.focus }
                 onChangeMenu={ handleChangeMenu }
@@ -458,10 +474,12 @@ const MainPage: React.FC<MainPageProps> = ({
                 items={ [
                   <FileExplorerBox
                     path={ ProjectPath.strictEncodeFiles(data.current.domain, data.current.project, data.current.bundle) }
+                    viewfile={ data.current.filename }
                     onSelect={ handleSelectFile }
                   />,
                   <FileSearchBox
                     path={ ProjectPath.strictEncodeFiles(data.current.domain, data.current.project, data.current.bundle) }
+                    viewfile={ data.current.filename }
                     onSelect={ handleSelectFile }
                   />
                 ] }
@@ -486,6 +504,7 @@ const MainPage: React.FC<MainPageProps> = ({
                     textSensitive={ data.current.sensitive }
                     dateFrom={ data.current.date_from }
                     dateTo={ data.current.date_to }
+                    merge={ data.current.merge }
                     onChangeLine={ handleChangeTableLine }
                     onChangeMark={ handleChangeTableMark }
                     onChangeTextFilter={ handleChangeTableTextFilter }

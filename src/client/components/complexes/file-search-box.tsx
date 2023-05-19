@@ -25,12 +25,14 @@ import Spinner from "../parts/spinner"
 type FileSearchBoxProps = {
   className?: string,
   path?     : string,
+  viewfile? : string,
   onSelect? : (action: string, value: string, option: any) => void
 }
 
 const FileSearchBox = React.memo<FileSearchBoxProps>(({
   className = "",
   path      = null,
+  viewfile  = null,
   onSelect  = undefined
 }) => {
   const [ignored, forceUpdate] = useReducer(x => x + 1, 0)
@@ -133,6 +135,10 @@ const FileSearchBox = React.memo<FileSearchBoxProps>(({
     }
   }, [path])
 
+  useEffect(() => {
+    forceUpdate()
+  }, [viewfile])
+
   const handleChangeCheckText = useCallback((value: boolean) => {
     data.current.text.enable = value
     forceUpdate()
@@ -220,6 +226,12 @@ const FileSearchBox = React.memo<FileSearchBoxProps>(({
         data_from : (data.current.from.enable) ? data.current.from.date  : null,
         data_to   : (data.current.to.enable)   ? data.current.to.date    : null
       })
+    }
+  }, [onSelect])
+
+  const handleClickMerge = useCallback((targetValue: string, parentValue: string) => {
+    if (onSelect) {
+      onSelect("merge", Escape.root(parentValue), null)
     }
   }, [onSelect])
 
@@ -355,6 +367,13 @@ const FileSearchBox = React.memo<FileSearchBoxProps>(({
                   onClick={ handleClickView }
                 />,
                 <DropdownItem
+                  key="merge"
+                  label="merge"
+                  disabled={ !viewfile }
+                  LIcon={ Display }
+                  onClick={ handleClickMerge }
+                />,
+                  <DropdownItem
                   key="terminal"
                   label="legacy view"
                   LIcon={ Terminal }

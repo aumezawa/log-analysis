@@ -320,6 +320,17 @@ function getFileContentHeadSync(file: string): string {
   }
 }
 
+function getMergedFileContentSync(file1: string, file2: string): string {
+  try {
+    return FSTool.readMergedFileSync(file1, file2)
+  } catch (err) {
+    (err instanceof Error) && logger.error(`${ err.name }: ${ err.message }`)
+    return null
+  }
+}
+
+//--- Statistics Function
+
 function extractStatsNameSync(file: string): string {
   try {
     const basename = StatsTool.extractStatsNameSync(file)
@@ -1009,14 +1020,20 @@ export function getFileResourceSync(user: string, domain: string, project: strin
   return getFileContentSync(getFilePathSync(user, domain, project, bundleId, file))
 }
 
-export function getFileResourceAsBytesSync(user: string, domain: string, project: string, bundleId: string, file: string, filter?: string, sensitive: boolean = true, date_from?: string, date_to?: string, gzip: boolean = false): Buffer {
+export function getFileResourceAsBytesSync(user: string, domain: string, project: string, bundleId: string, file: string, filter?: string, sensitive: boolean = true, date_from?: string, date_to?: string, merge?: string, gzip: boolean = false): Buffer {
   const filePath = getFilePathSync(user, domain, project, bundleId, file)
 
   const regex = new RegExp(`^${ dateFormat }(.*)$`)
 
   const hasDate = (dateFormat !== "") && !!getFileContentHeadSync(filePath).match(regex)
 
-  let content = getFileContentSync(filePath)
+  let content: string
+  if (merge) {
+    const mergeFilePath = getFilePathSync(user, domain, project, bundleId, merge)
+    content = getMergedFileContentSync(filePath, mergeFilePath)
+  } else {
+    content = getFileContentSync(filePath)
+  }
 
   if (filter) {
     content = content.split(/\r\n|\n|\r/)
@@ -1027,7 +1044,7 @@ export function getFileResourceAsBytesSync(user: string, domain: string, project
   if (hasDate && (date_from || date_to)) {
     content = content.split(/\r\n|\n|\r/)
       .filter((line: string) => {
-        const match = line.match(regex)
+        const match = merge ? line.split(":").slice(2).join(":").match(regex) : line.match(regex)
         if (!match) {
           return false
         }
@@ -1075,9 +1092,49 @@ export function getFileResourceAsJsonSync(user: string, domain: string, project:
       label     : hasDate ? { Date: "date", Content: "text" } : { Content: "text" },
       hasHeader : true,
       hasIndex  : true,
-      contentKey: "Content"
-      },
+      contentKey: "Content",
+      files     : [path.basename(file)]
+    },
     data: getFileContentSync(filePath).split(/\r\n|\n|\r/).map(hasDate ? withDate : withoutDate)
+  }
+
+  if (gzip) {
+    return zlib.gzipSync(Buffer.from(JSON.stringify(content), "utf8"))
+  }
+
+  return content
+}
+
+export function getMergedFileResourceAsJsonSync(user: string, domain: string, project: string, bundleId: string, file1: string, file2: string, gzip: boolean = false): TableContent | Buffer {
+  const filePath1 = getFilePathSync(user, domain, project, bundleId, file1)
+  const filePath2 = getFilePathSync(user, domain, project, bundleId, file2)
+
+  const regex = new RegExp(`^${ dateFormat }(.*)$`)
+
+  const splitLine = (line: string) => {
+    const parts = line.split(":")
+    const filename = parts[0]
+    const linenum = parts[1]
+    const content = parts.slice(2).join(":")
+
+    const match = content.match(regex)
+    if (match) {
+      return { File: filename, Line: linenum, Date: match[1] + (match[1].slice(-1) === "Z" ? "" : "Z"), Content: match[2] }
+    } else {
+      return { File: filename, Line: linenum, Content: content }
+    }
+  }
+
+  const content = {
+    format: {
+      title     : `${ path.basename(file1) } + ${ path.basename(file2) }`,
+      label     : { File: "meta", Line: "meta", Date: "date", Content: "text" },
+      hasHeader : true,
+      hasIndex  : true,
+      contentKey: "Content",
+      files     : [path.basename(file1), path.basename(file2)]
+    },
+    data: getMergedFileContentSync(filePath1, filePath2).split(/\r\n|\n|\r/).map(splitLine)
   }
 
   if (gzip) {

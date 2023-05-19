@@ -24,6 +24,7 @@ type FunctionalTableBoxProps = {
   textSensitive?      : boolean,
   dateFrom?           : string,
   dateTo?             : string,
+  merge?              : string,
   onChangeMark?       : (mark: string) => void,
   onChangeLine?       : (line: number) => void,
   onChangeTextFilter? : (textFilter: string, textSensitive: boolean) => void,
@@ -41,6 +42,7 @@ const FunctionalTableBox = React.memo<FunctionalTableBoxProps>(({
   textSensitive       = true,
   dateFrom            = null,
   dateTo              = null,
+  merge               = null,
   onChangeLine        = undefined,
   onChangeMark        = undefined,
   onChangeTextFilter  = undefined,
@@ -59,7 +61,8 @@ const FunctionalTableBox = React.memo<FunctionalTableBoxProps>(({
 
   useEffect(() => {
     if (path) {
-      const uri = `${ Environment.getBaseUrl() }/api/v1/${ Escape.root(path) }?mode=json&format=auto&gzip=true`
+      let uri = `${ Environment.getBaseUrl() }/api/v1/${ Escape.root(path) }?mode=json&format=auto&gzip=true`
+      uri = (merge) ? `${ uri }&merge=${ encodeURIComponent(merge) }` : uri
       status.current.processing = true
       forceUpdate()
       Axios.get(uri, {
@@ -91,7 +94,7 @@ const FunctionalTableBox = React.memo<FunctionalTableBoxProps>(({
       data.current.content = null
       forceUpdate()
     }
-  }, [path])
+  }, [path, merge])
 
   const handleChangeLine = useCallback((line: number) => {
     if (onChangeLine) {
@@ -124,7 +127,8 @@ const FunctionalTableBox = React.memo<FunctionalTableBoxProps>(({
   }, [onChangeDateFilter])
 
   const handleClickReload = useCallback((format: string) => {
-    const uri = `${ Environment.getBaseUrl() }/api/v1/${ Escape.root(path) }?mode=json&format=${ format }&gzip=true`
+    let uri = `${ Environment.getBaseUrl() }/api/v1/${ Escape.root(path) }?mode=json&format=${ format }&gzip=true`
+    uri = (merge) ? `${ uri }&merge=${ encodeURIComponent(merge) }` : uri
     status.current.processing = true
     forceUpdate()
     Axios.get(uri, {
@@ -152,7 +156,7 @@ const FunctionalTableBox = React.memo<FunctionalTableBoxProps>(({
       }
       return
     })
-  }, [path])
+  }, [path, merge])
 
   const handleClickDownload = useCallback((textFilter: string, textSensitive: boolean, dateFrom: string, dateTo: string) => {
     let uri = `${ Environment.getBaseUrl() }/api/v1/${ Escape.root(path) }?mode=download&gzip=true`
@@ -160,6 +164,7 @@ const FunctionalTableBox = React.memo<FunctionalTableBoxProps>(({
     uri = (textSensitive === false) ? `${ uri }&sensitive=false`                             : uri
     uri = (dateFrom)                ? `${ uri }&date_from=${ encodeURIComponent(dateFrom) }` : uri
     uri = (dateTo)                  ? `${ uri }&date_to=${ encodeURIComponent(dateTo) }`     : uri
+    uri = (merge)                   ? `${ uri }&merge=${ encodeURIComponent(merge) }`        : uri
     Axios.get(uri, {
       headers : { "X-Access-Token": Cookies.get("token") || "" },
       data    : {},
@@ -195,7 +200,7 @@ const FunctionalTableBox = React.memo<FunctionalTableBoxProps>(({
       }
       return
     })
-  }, [path])
+  }, [path, merge])
 
   return (
     <>

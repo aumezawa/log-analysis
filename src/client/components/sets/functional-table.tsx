@@ -1,7 +1,7 @@
 import * as React from "react"
 import { useEffect, useRef, useCallback, useReducer } from "react"
 
-import { BookmarksFill, CaretDownFill, CaretUpFill, FunnelFill, Search } from "react-bootstrap-icons"
+import { FileEarmarkText, BookmarksFill, CaretDownFill, CaretUpFill, FunnelFill, Search } from "react-bootstrap-icons"
 import { BookmarkCheck, BookmarkX, Clock, Download, Hash, ListOl, Reply } from "react-bootstrap-icons"
 
 import ModalFrame from "../frames/modal-frame"
@@ -476,7 +476,7 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
     if (content) {
       let header: Array<JSX.Element> = []
       if (content.format.hasHeader) {
-        if (content.format.hasIndex) {
+        if (content.format.hasIndex && content.format.files.length === 1) {
           header.push(
             <th key="index" scope="col" className="text-right">
               #
@@ -492,14 +492,19 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
         for (let label in content.format.label) {
           header.push(
             <th key={ label } scope="col" title={ label }>
-              { label }
-              <EmbeddedIconButton
-                LIcon={ FunnelFill }
-                color={ (label in env.current.filters) ? "success" : "light" }
-                toggle="modal"
-                target={ content.format.label[label] === "text" ? id.current.textFilter : id.current.dateFilter }
-                onClick={ handleClickFilter }
-              />
+              {
+                label
+              }
+              {
+                (content.format.label[label] === "text" || content.format.label[label] === "date") &&
+                <EmbeddedIconButton
+                  LIcon={ FunnelFill }
+                  color={ (label in env.current.filters) ? "success" : "light" }
+                  toggle="modal"
+                  target={ content.format.label[label] === "text" ? id.current.textFilter : id.current.dateFilter }
+                  onClick={ handleClickFilter }
+                />
+              }
               {
                 (content.format.label[label] === "text") &&
                 <EmbeddedIconButton
@@ -567,7 +572,7 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
         }
 
         let row: Array<JSX.Element> = []
-        if (content.format.hasIndex) {
+        if (content.format.hasIndex && content.format.files.length === 1) {
           row.push(<th key="index" className="text-right" scope="row">{ `${ index + 1 }:` }</th>)
         }
         for (let label in content.format.label) {
@@ -575,7 +580,7 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
             <td
               key={ label }
               title=""
-              className={ `${ (label === content.format.contentKey) ? "table-main-content" : "table-sub-content" }` }
+              className={ `${ (label === content.format.contentKey) ? "table-main-content" : "table-sub-content" } ${ (label === "File") ? "text-center font-italic" : "" } ${ (label === "Line") ? "text-center font-weight-bold" : "" }` }
               onClick={ handleClickContent }
               onDoubleClick={ handleDoubleClickContent }
             >
@@ -587,8 +592,11 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
           <tr
             key={ "row" + index }
             className={ `${
-              env.current.marks.includes(index + 1) ? "table-warning" :
-              (index + 1 === env.current.line)     ? "table-success" : ""
+              env.current.marks.includes(index + 1)               ? "table-warning"   :
+              (index + 1 === env.current.line)                    ? "table-success"   :
+              (Object.keys(content.format.label).includes("File")
+               && datum["File"] === content.format.files[1])      ? "table-secondary" :
+                                                                    ""
             }` }
             title={ `${ index + 1 }` }
           >

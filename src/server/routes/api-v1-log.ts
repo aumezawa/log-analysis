@@ -3,6 +3,7 @@ import { Router, Request, Response, NextFunction } from "express"
 
 import * as multer from "multer"
 import * as os from "os"
+import * as path from "path"
 
 import logger = require("../lib/logger")
 
@@ -93,26 +94,31 @@ router.route("/:domain/projects/:projectName/bundles/:bundleId/files/*")
         files: fileInfo.children
       })
     } else {
+      const filter    = (typeof(req.query.filter)    === "string") ? decodeURIComponent(req.query.filter)              : null
+      const sensitive = (typeof(req.query.sensitive) === "string") ? (req.query.sensitive === "false" ? false : true ) : true
+      const date_from = (typeof(req.query.date_from) === "string") ? decodeURIComponent(req.query.date_from)           : null
+      const date_to   = (typeof(req.query.date_to)   === "string") ? decodeURIComponent(req.query.date_to)             : null
+      const merge     = (typeof(req.query.merge)     === "string") ? decodeURIComponent(req.query.merge)               : null
+      const format    = (typeof(req.query.format)    === "string") ? decodeURIComponent(req.query.format)              : "auto"
+      const gzip      = (typeof(req.query.gzip)      === "string") ? (req.query.gzip === "true" ? true : false)        : false
+      const now       = (new Date()).toISOString()
       if (req.query.mode && req.query.mode === "plain") {
         // OK
         return res.status(200).sendFile(fileInfo.path)
       } else if (req.query.mode && req.query.mode === "download") {
-        const filter    = (typeof(req.query.filter)    === "string") ? decodeURIComponent(req.query.filter)              : null
-        const sensitive = (typeof(req.query.sensitive) === "string") ? (req.query.sensitive === "false" ? false : true ) : true
-        const date_from = (typeof(req.query.date_from) === "string") ? decodeURIComponent(req.query.date_from)           : null
-        const date_to   = (typeof(req.query.date_to)   === "string") ? decodeURIComponent(req.query.date_to)             : null
-        const gzip      = (typeof(req.query.gzip)      === "string") ? (req.query.gzip === "true" ? true : false)        : false
         // OK
-        const filename  = gzip ? fileInfo.name + ".gz" : fileInfo.name
+        let filename: string
+        filename = merge ? `MergedFile_${ fileInfo.name }+${ path.basename(merge) }.txt` : fileInfo.name
+        filename = gzip  ? filename + ".gz"                                              : filename
         return res.status(200)
           .set({
             "Content-Disposition" : `attachment; filename="${ filename }"`,
             "Accept-Ranges"       : "bytes",
             "Cache-Control"       : "public, max-age=0",
-            "Last-Modified"       : `${ fileInfo.mtime }`,
+            "Last-Modified"       : `${ merge ? now : fileInfo.mtime }`,
             "Content-Type"        : "application/octet-stream"
           })
-          .send(Project.getFileResourceAsBytesSync(req.token.usr, req.domain, req.project, req.bundleId, file, filter, sensitive, date_from, date_to, gzip))
+          .send(Project.getFileResourceAsBytesSync(req.token.usr, req.domain, req.project, req.bundleId, file, filter, sensitive, date_from, date_to, merge, gzip))
       } else if (req.query.mode && req.query.mode === "json") {
         if (fileInfo.size >= (req.app.get("max-view-size") * 1024 * 1024)) {
           // Service Unavailable
@@ -120,16 +126,25 @@ router.route("/:domain/projects/:projectName/bundles/:bundleId/files/*")
             msg: "This file's size is too large. Please use legacy view."
           })
         } else {
-          // OK
-          const format = (typeof(req.query.format) === "string") ? decodeURIComponent(req.query.format)       : "auto"
-          const gzip   = (typeof(req.query.gzip)   === "string") ? (req.query.gzip === "true" ? true : false) : false
-          return res.status(200).json({
-            msg: `You get a file content of path /${ file } of project ${ req.project } bundle ID = ${ req.bundleId }.`,
-            content: Project.getFileResourceAsJsonSync(req.token.usr, req.domain, req.project, req.bundleId, file, format, gzip),
-            size: fileInfo.size,
-            mtime: fileInfo.mtime,
-            compression: `${ gzip ? "gzip" : "none" }`
-          })
+          if (merge) {
+            // OK
+            return res.status(200).json({
+              msg: `You get a merged file content of path /${ file } with ${ path.basename(merge) } of project ${ req.project } bundle ID = ${ req.bundleId }.`,
+              content: Project.getMergedFileResourceAsJsonSync(req.token.usr, req.domain, req.project, req.bundleId, file, merge, gzip),
+              size: fileInfo.size,
+              mtime: `${ req.query.merge ? now : fileInfo.mtime }`,
+              compression: `${ gzip ? "gzip" : "none" }`
+            })
+          } else {
+            // OK
+            return res.status(200).json({
+              msg: `You get a file content of path /${ file } of project ${ req.project } bundle ID = ${ req.bundleId }.`,
+              content: Project.getFileResourceAsJsonSync(req.token.usr, req.domain, req.project, req.bundleId, file, format, gzip),
+              size: fileInfo.size,
+              mtime: fileInfo.mtime,
+              compression: `${ gzip ? "gzip" : "none" }`
+            })
+          }
         }
       } else if (req.query.mode && req.query.mode === "term") {
         const cmd = os.platform() === "win32"              ? `more ${ fileInfo.path }` :
