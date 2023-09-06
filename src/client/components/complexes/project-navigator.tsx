@@ -1,7 +1,7 @@
 import * as React from "react"
 import { useRef, useCallback, useReducer } from "react"
 
-import { CaretRightFill, Dot, Tools } from "react-bootstrap-icons"
+import { CaretRightFill, Dot, PlusLg, Tools } from "react-bootstrap-icons"
 import { House } from "react-bootstrap-icons"
 import { FolderCheck, FolderPlus, FolderX, Folder, Folder2Open } from "react-bootstrap-icons"
 import { JournalArrowDown, JournalArrowUp, JournalCheck, JournalX, Journal } from "react-bootstrap-icons"
@@ -34,6 +34,7 @@ type ProjectNavigatorProps = {
   project         : string,
   bundle          : string,
   filename        : string,
+  merge           : string,
   terminal        : string,
   focus           : string,
   onChangeMenu?   : (enabled: boolean) => void,
@@ -51,6 +52,7 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
   project         = null,
   bundle          = null,
   filename        = null,
+  merge           = null,
   terminal        = null,
   focus           = null,
   onChangeMenu    = undefined,
@@ -289,6 +291,19 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
             <div className="borderable">
               <Button
                 label={ filename }
+                LIcon={ FileEarmarkText }
+                color="success"
+                noAction={ true }
+              />
+            </div>
+          </>
+        }
+        { focus === "filename" && filename && merge &&
+          <>
+            <PlusLg />
+            <div className="borderable">
+              <Button
+                label={ merge }
                 LIcon={ FileEarmarkText }
                 color="success"
                 noAction={ true }

@@ -327,3 +327,88 @@ export function decompressZip(file: string, cwd: string, preserve: boolean, call
 
   return callback ? promise.then(callback, callback) && undefined : promise
 }
+
+
+export function readMergedFileSync(file1: string, file2: string, filename: boolean = true, line: boolean = true): string {
+  const output: Array<string> = []
+  const regex = new RegExp(`^${ dateFormat }(.*)$`)
+
+  const addOptions = (str: string, file: string, idx: number) => {
+    return `${ filename ? path.basename(file) + ":" : "" }${ line ? idx + ":" : "" }${ str }`
+  }
+
+  const fc1 = fs.readFileSync(file1, "utf8").split(/\r\n|\n|\r/)
+  const fc2 = fs.readFileSync(file2, "utf8").split(/\r\n|\n|\r/)
+
+  let idx1: number = 0, idx2: number = 0
+  let line1: string | null = null, line2: string | null = null
+  let date1: Date | null = null, date2: Date | null = null
+
+  while (idx1 < fc1.length || idx2 < fc2.length) {
+
+    while (line1 === null && idx1 < fc1.length) {
+      line1 = fc1[idx1++]
+      if (line1 === "") {
+        line1 = null
+        continue
+      }
+
+      const match = line1.match(regex)
+      if (match) {
+        date1 = new Date(match[1] + (match[1].slice(-1) === "Z" ? "" : "Z"))
+        break
+      } else {
+        output.push(addOptions(line1, file1, idx1))
+        line1 = null
+        continue
+      }
+    }
+
+    while (line2 === null && idx2 < fc2.length) {
+      line2 = fc2[idx2++]
+      if (line2 === "") {
+        line2 = null
+        continue
+      }
+
+      const match = line2.match(regex)
+      if (match) {
+        date2 = new Date(match[1] + (match[1].slice(-1) === "Z" ? "" : "Z"))
+        break
+      } else {
+        output.push(addOptions(line2, file2, idx2))
+        line2 = null
+        continue
+      }
+    }
+
+    if (date1 === null) {
+      line2 && output.push(addOptions(line2, file2, idx2))
+      line2 = null
+      date2 = null
+      continue
+    }
+
+    if (date2 === null) {
+      line1 && output.push(addOptions(line1, file1, idx1))
+      line1 = null
+      date1 = null
+      continue
+    }
+
+    if (date1 < date2) {
+      line1 && output.push(addOptions(line1, file1, idx1))
+      line1 = null
+      date1 = null
+      continue
+    } else {
+      line2 && output.push(addOptions(line2, file2, idx2))
+      line2 = null
+      date2 = null
+      continue
+    }
+
+  }
+
+  return output.join("\n")
+}

@@ -20,12 +20,15 @@ type FunctionalTableBoxProps = {
   line?               : number,
   mark?               : string,
   textFilter?         : string,
+  textSearch?         : string,
   textSensitive?      : boolean,
   dateFrom?           : string,
   dateTo?             : string,
+  merge?              : string,
   onChangeMark?       : (mark: string) => void,
   onChangeLine?       : (line: number) => void,
   onChangeTextFilter? : (textFilter: string, textSensitive: boolean) => void,
+  onChangeTextSearch? : (textSearch: string, textSensitive: boolean) => void,
   onChangeDateFilter? : (dateFrom: string, dateTo: string) => void
 }
 
@@ -35,12 +38,15 @@ const FunctionalTableBox = React.memo<FunctionalTableBoxProps>(({
   line                = null,
   mark                = null,
   textFilter          = null,
+  textSearch          = null,
   textSensitive       = true,
   dateFrom            = null,
   dateTo              = null,
+  merge               = null,
   onChangeLine        = undefined,
   onChangeMark        = undefined,
   onChangeTextFilter  = undefined,
+  onChangeTextSearch  = undefined,
   onChangeDateFilter  = undefined
 }) => {
   const [ignored, forceUpdate] = useReducer(x => x + 1, 0)
@@ -55,7 +61,8 @@ const FunctionalTableBox = React.memo<FunctionalTableBoxProps>(({
 
   useEffect(() => {
     if (path) {
-      const uri = `${ Environment.getBaseUrl() }/api/v1/${ Escape.root(path) }?mode=json&format=auto&gzip=true`
+      let uri = `${ Environment.getBaseUrl() }/api/v1/${ Escape.root(path) }?mode=json&format=auto&gzip=true`
+      uri = (merge) ? `${ uri }&merge=${ encodeURIComponent(merge) }` : uri
       status.current.processing = true
       forceUpdate()
       Axios.get(uri, {
@@ -87,7 +94,7 @@ const FunctionalTableBox = React.memo<FunctionalTableBoxProps>(({
       data.current.content = null
       forceUpdate()
     }
-  }, [path])
+  }, [path, merge])
 
   const handleChangeLine = useCallback((line: number) => {
     if (onChangeLine) {
@@ -107,6 +114,12 @@ const FunctionalTableBox = React.memo<FunctionalTableBoxProps>(({
     }
   }, [onChangeTextFilter])
 
+  const handleChangeTextSearch = useCallback((textSearch: string, textSensitive: boolean) => {
+    if (onChangeTextSearch) {
+      onChangeTextSearch(textSearch, textSensitive)
+    }
+  }, [onChangeTextSearch])
+
   const handleChangeDateFilter = useCallback((dateFrom: string, dateTo: string) => {
     if (onChangeDateFilter) {
       onChangeDateFilter(dateFrom, dateTo)
@@ -114,7 +127,8 @@ const FunctionalTableBox = React.memo<FunctionalTableBoxProps>(({
   }, [onChangeDateFilter])
 
   const handleClickReload = useCallback((format: string) => {
-    const uri = `${ Environment.getBaseUrl() }/api/v1/${ Escape.root(path) }?mode=json&format=${ format }&gzip=true`
+    let uri = `${ Environment.getBaseUrl() }/api/v1/${ Escape.root(path) }?mode=json&format=${ format }&gzip=true`
+    uri = (merge) ? `${ uri }&merge=${ encodeURIComponent(merge) }` : uri
     status.current.processing = true
     forceUpdate()
     Axios.get(uri, {
@@ -142,7 +156,7 @@ const FunctionalTableBox = React.memo<FunctionalTableBoxProps>(({
       }
       return
     })
-  }, [path])
+  }, [path, merge])
 
   const handleClickDownload = useCallback((textFilter: string, textSensitive: boolean, dateFrom: string, dateTo: string) => {
     let uri = `${ Environment.getBaseUrl() }/api/v1/${ Escape.root(path) }?mode=download&gzip=true`
@@ -150,6 +164,7 @@ const FunctionalTableBox = React.memo<FunctionalTableBoxProps>(({
     uri = (textSensitive === false) ? `${ uri }&sensitive=false`                             : uri
     uri = (dateFrom)                ? `${ uri }&date_from=${ encodeURIComponent(dateFrom) }` : uri
     uri = (dateTo)                  ? `${ uri }&date_to=${ encodeURIComponent(dateTo) }`     : uri
+    uri = (merge)                   ? `${ uri }&merge=${ encodeURIComponent(merge) }`        : uri
     Axios.get(uri, {
       headers : { "X-Access-Token": Cookies.get("token") || "" },
       data    : {},
@@ -185,7 +200,7 @@ const FunctionalTableBox = React.memo<FunctionalTableBoxProps>(({
       }
       return
     })
-  }, [path])
+  }, [path, merge])
 
   return (
     <>
@@ -198,12 +213,14 @@ const FunctionalTableBox = React.memo<FunctionalTableBoxProps>(({
           line={ line }
           mark={ mark }
           textFilter={ textFilter }
+          textSearch={ textSearch }
           textSensitive={ textSensitive }
           dateFrom={ dateFrom }
           dateTo={ dateTo }
           onChangeLine={ handleChangeLine }
           onChangeMark={ handleChangeMark }
           onChangeTextFilter={ handleChangeTextFilter }
+          onChangeTextSearch={ handleChangeTextSearch }
           onChangeDateFilter={ handleChangeDateFilter }
           onClickReload={ handleClickReload }
           onClickDownload={ handleClickDownload }

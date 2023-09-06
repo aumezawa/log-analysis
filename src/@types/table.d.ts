@@ -12,7 +12,8 @@ type TableContent = {
     label       : TableLabel,
     hasHeader?  : boolean,
     hasIndex?   : boolean,
-    contentKey? : string
+    contentKey? : string,
+    files?      : Array<string>
   },
   data: Array<TableData>
 }

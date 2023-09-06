@@ -106,6 +106,7 @@ const FileUploadForm = React.memo<FileUploadFormProps>(({
           ref={ refs.current.prs }
           className="mb-3"
           label="Preserve the original file"
+          disabled={ disabled }
           defaultChecked={ false }
           onChange={ handleChangePreserved }
         />

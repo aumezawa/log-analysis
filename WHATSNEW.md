@@ -1,3 +1,18 @@
+Version: **0.25.0** [2023/09/06]
+
+New Features:
+  - Supported simultaneously opening two files on the viewer
+
+Enhanced Features:
+  - Updated the way to display the values of array in table
+
+Bug Fixes:
+  - author is blank
+  - checkbox for presering is still changeble during uploading
+  - cannot preserve the search condition in url
+
+***
+
 Version: **0.24.0** [2022/10/05]
 
 New Features:
