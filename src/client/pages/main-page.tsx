@@ -104,9 +104,11 @@ const MainPage: React.FC<MainPageProps> = ({
     line      : null,
     mark      : null,
     filter    : null,
+    search    : null,
     sensitive : true,
     date_from : null,
-    date_to   : null
+    date_to   : null,
+    merge     : null
   })
 
   const env = useRef({
@@ -132,9 +134,11 @@ const MainPage: React.FC<MainPageProps> = ({
       data.current.line,
       data.current.mark,
       data.current.filter,
+      data.current.search,
       data.current.sensitive,
       data.current.date_from,
-      data.current.date_to
+      data.current.date_to,
+      data.current.merge
     ))
   }
 
@@ -147,9 +151,11 @@ const MainPage: React.FC<MainPageProps> = ({
     const line = params.get("line")
     const mark = params.get("mark")
     const filter = params.get("filter")
+    const search = params.get("search")
     const sensitive = params.get("sensitive")
     const date_from = params.get("date_from")
     const date_to = params.get("date_to")
+    const merge = params.get("merge")
 
     if (domain) {
       const uri1 = `${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project, bundle, filepath) }`
@@ -180,9 +186,11 @@ const MainPage: React.FC<MainPageProps> = ({
         data.current.line       =  domain && project && bundle && filepath && line       && Number(line)
         data.current.mark       =  domain && project && bundle && filepath && mark
         data.current.filter     =  domain && project && bundle && filepath && filter
+        data.current.search     =  domain && project && bundle && filepath && search
         data.current.sensitive  = (domain && project && bundle && filepath && sensitive) ? false : true
         data.current.date_from  =  domain && project && bundle && filepath && date_from
         data.current.date_to    =  domain && project && bundle && filepath && date_to
+        data.current.merge      =  domain && project && bundle && filepath && merge
         if (domain && project && bundle) {
           env.current.state     = "MAIN"
           env.current.menu      = true
@@ -238,9 +246,11 @@ const MainPage: React.FC<MainPageProps> = ({
     data.current.focus = null
     data.current.line = null
     data.current.filter = null
+    data.current.search = null
     data.current.sensitive = true
     data.current.date_from = null
     data.current.date_to = null
+    data.current.merge = null
     env.current.state = "INIT"
     env.current.menu = false
     ref.current.start.current.click()
@@ -264,9 +274,11 @@ const MainPage: React.FC<MainPageProps> = ({
     data.current.focus = null
     data.current.line = null
     data.current.filter = null
+    data.current.search = null
     data.current.sensitive = true
     data.current.date_from = null
     data.current.date_to = null
+    data.current.merge = null
     env.current.state = "INIT"
     env.current.menu = false
     ref.current.start.current.click()
@@ -289,9 +301,11 @@ const MainPage: React.FC<MainPageProps> = ({
     data.current.focus = null
     data.current.line = null
     data.current.filter = null
+    data.current.search = null
     data.current.sensitive = true
     data.current.date_from = null
     data.current.date_to = null
+    data.current.merge = null
     if (bundleId) {
       env.current.state = "MAIN"
       env.current.menu = true
@@ -367,15 +381,24 @@ const MainPage: React.FC<MainPageProps> = ({
       data.current.termpath = value
       data.current.terminal = Path.basename(value)
       env.current.terminal = env.current.terminal + 1
+    } else if (action === "merge") {
+      if (value !== data.current.filename) {
+        ref.current.viewer.current.click()
+        data.current.merge = value
+      } else {
+        alert("Cannot open the same file...")
+      }
     } else {
       ref.current.viewer.current.click()
       data.current.filepath = value
       data.current.filename = Path.basename(value)
       data.current.line = null
       data.current.filter = (option && option.search !== "") ? option.search : null
+      data.current.search = null
       data.current.sensitive = true
       data.current.date_from = (option && option.data_from) || null
       data.current.date_to = (option && option.data_to) || null
+      data.current.merge = null
     }
     updateTitle()
     updateAddressBar()
@@ -393,6 +416,14 @@ const MainPage: React.FC<MainPageProps> = ({
 
   const handleChangeTableTextFilter = useCallback((textFilter: string, textSensitive: boolean) => {
     data.current.filter = textFilter
+    data.current.search = null
+    data.current.sensitive = textSensitive
+    updateAddressBar()
+  }, [true])
+
+  const handleChangeTableTextSearch = useCallback((textSearch: string, textSensitive: boolean) => {
+    data.current.filter = null
+    data.current.search = textSearch
     data.current.sensitive = textSensitive
     updateAddressBar()
   }, [true])
@@ -534,6 +565,7 @@ const MainPage: React.FC<MainPageProps> = ({
                 project={ data.current.project }
                 bundle={ data.current.bundle }
                 filename={ data.current.filename }
+                merge={ data.current.merge }
                 terminal={ data.current.terminal }
                 host={ data.current.type === "vm-support" ? "ESXi Server" : "vCenter Server" }
                 vm={ data.current.vmname }
@@ -555,10 +587,12 @@ const MainPage: React.FC<MainPageProps> = ({
                 items={ [
                   <FileExplorerBox
                     path={ ProjectPath.strictEncodeFiles(data.current.domain, data.current.project, data.current.bundle) }
+                    viewfile={ data.current.filename }
                     onSelect={ handleSelectFile }
                   />,
                   <FileSearchBox
                     path={ ProjectPath.strictEncodeFiles(data.current.domain, data.current.project, data.current.bundle) }
+                    viewfile={ data.current.filename }
                     onSelect={ handleSelectFile }
                   />,
                   <VmExplorerBox
@@ -612,12 +646,15 @@ const MainPage: React.FC<MainPageProps> = ({
                     line={ data.current.line }
                     mark={ data.current.mark }
                     textFilter={ data.current.filter }
+                    textSearch={ data.current.search }
                     textSensitive={ data.current.sensitive }
                     dateFrom={ data.current.date_from }
                     dateTo={ data.current.date_to }
+                    merge={ data.current.merge }
                     onChangeLine={ handleChangeTableLine }
                     onChangeMark={ handleChangeTableMark }
                     onChangeTextFilter={ handleChangeTableTextFilter }
+                    onChangeTextSearch={ handleChangeTableTextSearch }
                     onChangeDateFilter={ handleChangeTableDateFilter }
                   />,
                   <TerminalBox

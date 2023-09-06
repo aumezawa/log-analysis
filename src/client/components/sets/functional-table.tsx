@@ -1,7 +1,7 @@
 import * as React from "react"
 import { useEffect, useRef, useCallback, useReducer } from "react"
 
-import { BookmarksFill, CaretDownFill, CaretUpFill, FunnelFill, Search } from "react-bootstrap-icons"
+import { FileEarmarkText, BookmarksFill, CaretDownFill, CaretUpFill, FunnelFill, Search } from "react-bootstrap-icons"
 import { BookmarkCheck, BookmarkX, Clock, Download, Hash, ListOl, Reply } from "react-bootstrap-icons"
 
 import ModalFrame from "../frames/modal-frame"
@@ -25,6 +25,7 @@ type FunctionalTableProps = {
   line?               : number,
   mark?               : string,
   textFilter?         : string,
+  textSearch?         : string,
   textSensitive?      : boolean,
   dateFrom?           : string,
   dateTo?             : string,
@@ -32,6 +33,7 @@ type FunctionalTableProps = {
   onChangeLine?       : (line: number) => void,
   onChangeMark?       : (mark: string) => void,
   onChangeTextFilter? : (textFilter: string, textSensitive: boolean) => void,
+  onChangeTextSearch? : (textSearch: string, textSensitive: boolean) => void,
   onChangeDateFilter? : (dateFrom: string, dateTo: string) => void,
   onClickReload?      : (format: string) => void,
   onClickDownload?    : (textFilter: string, textSensitive: boolean, dateFrom: string, dateTo: string) => void
@@ -46,6 +48,7 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
   line                = null,
   mark                = null,
   textFilter          = null,
+  textSearch          = null,
   textSensitive       = true,
   dateFrom            = null,
   dateTo              = null,
@@ -53,6 +56,7 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
   onChangeLine        = undefined,
   onChangeMark        = undefined,
   onChangeTextFilter  = undefined,
+  onChangeTextSearch  = undefined,
   onChangeDateFilter  = undefined,
   onClickReload       = undefined,
   onClickDownload     = undefined
@@ -119,6 +123,22 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
         } else {
           if (onChangeTextFilter) {
             onChangeTextFilter(null, null)
+          }
+        }
+      }
+      else if (textSearch) {
+        if (Object.keys(content.format.label).includes("Content")) {
+          env.current.searches["Content"] = {
+            type      : "text",
+            mode      : "Be included",
+            sensitive : textSensitive,
+            condition : textSearch,
+            founds    : []
+          }
+          scroll = false
+        } else {
+          if (onChangeTextSearch) {
+            onChangeTextSearch(null, null)
           }
         }
       }
@@ -244,8 +264,14 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
 
       delete env.current.filters[env.current.label]
 
-      if (onChangeTextFilter) {
-        onChangeTextFilter(null, null)
+      if ((env.current.label === "Content") && (mode === "Be included")) {
+        if (onChangeTextSearch) {
+          onChangeTextSearch(condition, sensitive)
+        }
+      } else {
+        if (onChangeTextSearch) {
+          onChangeTextSearch(null, null)
+        }
       }
 
       scrollToLine(Object.keys(env.current.filters).length ? 1 : env.current.line)
@@ -255,6 +281,7 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
   const handleCancelTextFilter = useCallback(() => {
     if (env.current.operation === "filter") {
       delete env.current.filters[env.current.label]
+      delete env.current.searches[env.current.label]
 
       if (onChangeTextFilter) {
         onChangeTextFilter(null, null)
@@ -262,7 +289,12 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
 
       scrollToLine(Object.keys(env.current.filters).length ? 1 : env.current.line)
     } else if (env.current.operation === "search") {
+      delete env.current.filters[env.current.label]
       delete env.current.searches[env.current.label]
+
+      if (onChangeTextSearch) {
+        onChangeTextSearch(null, null)
+      }
     }
   }, [onChangeTextFilter])
 
@@ -444,7 +476,7 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
     if (content) {
       let header: Array<JSX.Element> = []
       if (content.format.hasHeader) {
-        if (content.format.hasIndex) {
+        if (content.format.hasIndex && content.format.files.length === 1) {
           header.push(
             <th key="index" scope="col" className="text-right">
               #
@@ -460,14 +492,19 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
         for (let label in content.format.label) {
           header.push(
             <th key={ label } scope="col" title={ label }>
-              { label }
-              <EmbeddedIconButton
-                LIcon={ FunnelFill }
-                color={ (label in env.current.filters) ? "success" : "light" }
-                toggle="modal"
-                target={ content.format.label[label] === "text" ? id.current.textFilter : id.current.dateFilter }
-                onClick={ handleClickFilter }
-              />
+              {
+                label
+              }
+              {
+                (content.format.label[label] === "text" || content.format.label[label] === "date") &&
+                <EmbeddedIconButton
+                  LIcon={ FunnelFill }
+                  color={ (label in env.current.filters) ? "success" : "light" }
+                  toggle="modal"
+                  target={ content.format.label[label] === "text" ? id.current.textFilter : id.current.dateFilter }
+                  onClick={ handleClickFilter }
+                />
+              }
               {
                 (content.format.label[label] === "text") &&
                 <EmbeddedIconButton
@@ -535,7 +572,7 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
         }
 
         let row: Array<JSX.Element> = []
-        if (content.format.hasIndex) {
+        if (content.format.hasIndex && content.format.files.length === 1) {
           row.push(<th key="index" className="text-right" scope="row">{ `${ index + 1 }:` }</th>)
         }
         for (let label in content.format.label) {
@@ -543,7 +580,7 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
             <td
               key={ label }
               title=""
-              className={ `${ (label === content.format.contentKey) ? "table-main-content" : "table-sub-content" }` }
+              className={ `${ (label === content.format.contentKey) ? "table-main-content" : "table-sub-content" } ${ (label === "File") ? "text-center font-italic" : "" } ${ (label === "Line") ? "text-center font-weight-bold" : "" }` }
               onClick={ handleClickContent }
               onDoubleClick={ handleDoubleClickContent }
             >
@@ -555,8 +592,11 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
           <tr
             key={ "row" + index }
             className={ `${
-              env.current.marks.includes(index + 1) ? "table-warning" :
-              (index + 1 === env.current.line)     ? "table-success" : ""
+              env.current.marks.includes(index + 1)               ? "table-warning"   :
+              (index + 1 === env.current.line)                    ? "table-success"   :
+              (Object.keys(content.format.label).includes("File")
+               && datum["File"] === content.format.files[1])      ? "table-secondary" :
+                                                                    ""
             }` }
             title={ `${ index + 1 }` }
           >
@@ -717,8 +757,8 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
           body={
             <TextFilterForm
               operation={ env.current.operation }
-              sensitive={ env.current.filters["Content"] && env.current.filters["Content"].sensitive }
-              condition={ env.current.filters["Content"] && env.current.filters["Content"].condition }
+              sensitive={ env.current.filters["Content"] && env.current.filters["Content"].sensitive || env.current.searches["Content"] && env.current.searches["Content"].sensitive }
+              condition={ env.current.filters["Content"] && env.current.filters["Content"].condition || env.current.searches["Content"] && env.current.searches["Content"].condition }
               dismiss="modal"
               onSubmit={ handleSubmitTextFilter }
               onCancel={ handleCancelTextFilter }

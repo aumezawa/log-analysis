@@ -20,6 +20,9 @@ router.route("/:domain/projects/:projectName/bundles/:bundleId/files/*")
   if (req.query.filter) {
     query = `${ query }&filter=${ req.query.filter }`
   }
+  if (req.query.search) {
+    query = `${ query }&search=${ req.query.search }`
+  }
   if (req.query.sensitive) {
     query = `${ query }&sensitive=${ req.query.sensitive }`
   }
@@ -28,6 +31,9 @@ router.route("/:domain/projects/:projectName/bundles/:bundleId/files/*")
   }
   if (req.query.date_to) {
     query = `${ query }&date_to=${ req.query.date_to }`
+  }
+  if (req.query.merge) {
+    query = `${ query }&merge=${ req.query.merge }`
   }
   return res.status(200).send(
     ReactDomServer.renderToString(React.createElement(IndexPage, { user: req.token.usr, alias: req.token.als, privilege: req.token.prv, domains: req.app.get("domains"), page: "main", query: query }))

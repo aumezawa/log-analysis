@@ -20,12 +20,14 @@ import DropdownItem from "../parts/dropdown-item"
 type FileExplorerBoxProps = {
   className?: string,
   path?     : string,
+  viewfile? : string,
   onSelect? : (action: string, value: string, option: any) => void
 }
 
 const FileExplorerBox = React.memo<FileExplorerBoxProps>(({
   className = "",
   path      = null,
+  viewfile  = null,
   onSelect  = undefined
 }) => {
   const [ignored, forceUpdate] = useReducer(x => x + 1, 0)
@@ -76,6 +78,10 @@ const FileExplorerBox = React.memo<FileExplorerBoxProps>(({
     }
   }, [path])
 
+  useEffect(() => {
+    forceUpdate()
+  }, [viewfile])
+
   const handleChangeFilter = useCallback((value: string) => {
     if (value.length !== 1) {
       data.current.filter = value
@@ -86,6 +92,12 @@ const FileExplorerBox = React.memo<FileExplorerBoxProps>(({
   const handleClickView = useCallback((targetValue: string, parentValue: string) => {
     if (onSelect) {
       onSelect("view", Escape.root(parentValue), null)
+    }
+  }, [onSelect])
+
+  const handleClickMerge = useCallback((targetValue: string, parentValue: string) => {
+    if (onSelect) {
+      onSelect("merge", Escape.root(parentValue), null)
     }
   }, [onSelect])
 
@@ -156,6 +168,13 @@ const FileExplorerBox = React.memo<FileExplorerBoxProps>(({
               label="view"
               LIcon={ Display }
               onClick={ handleClickView }
+            />,
+            <DropdownItem
+              key="merge"
+              label="merge"
+              disabled={ !viewfile }
+              LIcon={ Display }
+              onClick={ handleClickMerge }
             />,
             <DropdownItem
               key="terminal"
