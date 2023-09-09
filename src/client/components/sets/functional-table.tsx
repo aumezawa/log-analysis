@@ -793,6 +793,7 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
           LIcon={ Clock }
           type="btn-outline"
           color="secondary"
+          disabled={ content.format.files.length !== 1 }
           onClick={ handleClickReload }
         />
         <SelectForm
