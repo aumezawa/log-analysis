@@ -39,8 +39,8 @@ type FunctionalTableProps = {
   onClickDownload?    : (textFilter: string, textSensitive: boolean, dateFrom: string, dateTo: string) => void
 }
 
-const DEFAULT_ROW = 100
-const ROWS = [String(DEFAULT_ROW), "500", "1000", "5000"]
+const DEFAULT_ROW = 1000
+const ROWS = ["100", "500", "1000", "5000"]
 
 const FunctionalTable = React.memo<FunctionalTableProps>(({
   className           = "",
