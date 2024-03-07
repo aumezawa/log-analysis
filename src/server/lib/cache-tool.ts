@@ -16,7 +16,7 @@ export function readCache(file: string, key: string): any {
   return null
 }
 
-export function writeCache(file: string, key: string, value: any): void {
+export function writeCache(file: string, key: string, value: any): boolean {
   let data: any
   try {
     data = JSON.parse(fs.readFileSync(file, "utf8"))
@@ -35,8 +35,31 @@ export function writeCache(file: string, key: string, value: any): void {
   try {
     fs.writeFileSync(file, JSON.stringify(data))
   } catch {
-    ;
+    return false
   }
 
-  return
+  return true
+}
+
+export function deleteCache(file: string, key: string): boolean {
+  let data: any
+  try {
+    data = JSON.parse(fs.readFileSync(file, "utf8"))
+  } catch {
+    return false
+  }
+
+  if (key in data) {
+    delete data[key]
+  } else {
+    return true
+  }
+
+  try {
+    fs.writeFileSync(file, JSON.stringify(data))
+  } catch {
+    return false
+  }
+
+  return true
 }

@@ -68,7 +68,7 @@ function createResource(path: string): Promise<void> {
 
 function deleteResourceSync(path: string): boolean {
   try {
-    FSTool.rmRecursiveSync(path)
+    FSTool.rmRecursiveCacheSync(path)
     return true
   } catch (err) {
     (err instanceof Error) && logger.error(`${ err.name }: ${ err.message }`)
