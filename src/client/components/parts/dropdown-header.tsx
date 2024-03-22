@@ -9,7 +9,7 @@ type DropdownHeaderProrps = {
 
 const DropdownHeader: React.FC<DropdownHeaderProrps> = ({
   label = "No label",
-  LIcon = null
+  LIcon = undefined
 }) => (
   <h6 className="dropdown-header">
     { LIcon && <LIcon className="mr-2" size="1rem" /> }{ label }

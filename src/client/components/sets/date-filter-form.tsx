@@ -63,28 +63,28 @@ const DateFilterForm = React.memo<DateFilterFormProps>(({
       data.current.from.valid = true
       data.current.from.enable = true
       data.current.from.date = LocalDate.localize(from, 0)
-      ref.current.from.enable.current.checked = true
-      ref.current.from.date.current.value = LocalDate.toInputFormat(from, local)
+      ref.current.from.enable.current!.checked = true
+      ref.current.from.date.current!.value = LocalDate.toInputFormat(from, local)
     } else {
       data.current.from.valid = false
       data.current.from.enable = false
-      data.current.from.date = null
-      ref.current.from.enable.current.checked = false
-      ref.current.from.date.current.value = ""
+      data.current.from.date = ""
+      ref.current.from.enable.current!.checked = false
+      ref.current.from.date.current!.value = ""
     }
 
     if (LocalDate.isDate(to)) {
       data.current.to.valid = true
       data.current.to.enable = true
       data.current.to.date = LocalDate.localize(to, 0)
-      ref.current.to.enable.current.checked = true
-      ref.current.to.date.current.value = LocalDate.toInputFormat(to, local)
+      ref.current.to.enable.current!.checked = true
+      ref.current.to.date.current!.value = LocalDate.toInputFormat(to, local)
     } else {
       data.current.to.valid = false
       data.current.to.enable = false
-      data.current.to.date = null
-      ref.current.to.enable.current.checked = false
-      ref.current.to.date.current.value = ""
+      data.current.to.date = ""
+      ref.current.to.enable.current!.checked = false
+      ref.current.to.date.current!.value = ""
     }
 
     forceUpdate()
@@ -113,8 +113,8 @@ const DateFilterForm = React.memo<DateFilterFormProps>(({
   }, [local])
 
   const handleSubmit = useCallback(() => {
-    const from = data.current.from.enable ? data.current.from.date : null
-    const to   = data.current.to.enable   ? data.current.to.date   : null
+    const from = data.current.from.enable ? data.current.from.date : ""
+    const to   = data.current.to.enable   ? data.current.to.date   : ""
     if (onSubmit) {
       onSubmit(from, to)
     }
@@ -140,7 +140,7 @@ const DateFilterForm = React.memo<DateFilterFormProps>(({
         <DateForm
           ref={ ref.current.from.date }
           className="col-10"
-          label={ null }
+          label=""
           valid={ data.current.from.valid }
           disabled={ disabled || !data.current.from.enable }
           defaultValue={ LocalDate.toInputFormat(data.current.from.date) }
@@ -159,7 +159,7 @@ const DateFilterForm = React.memo<DateFilterFormProps>(({
         <DateForm
           ref={ ref.current.to.date }
           className="col-10"
-          label={ null }
+          label=""
           valid={ data.current.to.valid }
           disabled={ disabled || !data.current.to.enable }
           defaultValue={ LocalDate.toInputFormat(data.current.to.date) }

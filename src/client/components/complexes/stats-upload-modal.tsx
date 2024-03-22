@@ -24,9 +24,9 @@ type StatsUploadBoxProps = {
 const defaultMessage = `Please select a upload file (.csv) and input a stats "description".`
 
 const StatsUploadBox = React.memo<StatsUploadBoxProps>(({
-  id        = null,
-  domain    = null,
-  project   = null,
+  id        = "",
+  domain    = "",
+  project   = "",
   onSubmit  = undefined
 }) => {
   const [ignored, forceUpdate]  = useReducer(x => x + 1, 0)
@@ -52,7 +52,7 @@ const StatsUploadBox = React.memo<StatsUploadBoxProps>(({
     clearFrom()
   }, [true])
 
-  const handleSubmit = useCallback((name: string, obj: any, description: string, preserve: boolean) => {
+  const handleSubmit = useCallback((name: string, obj: any, description: string, preserve: boolean = false) => {
     const uri = `${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project) }/stats`
     const params = new FormData()
     params.append("stats", obj)
@@ -87,7 +87,7 @@ const StatsUploadBox = React.memo<StatsUploadBoxProps>(({
     })
     .catch((err: Error | AxiosError) => {
       if (Axios.isAxiosError(err)) {
-        data.current.message = err.response.data.msg
+        data.current.message = err.response!.data.msg
       } else {
         data.current.message = "An error on the client occurred."
         console.log(err)

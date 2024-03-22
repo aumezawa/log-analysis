@@ -18,7 +18,7 @@ const MultiSelectForm = React.memo(React.forwardRef<MultiSelectFormReference, Mu
 
   const refs = useRef(labels.map(() => React.createRef<HTMLButtonElement>()))
 
-  const data = useRef({
+  const data = useRef<{[label: string]: string[]}>({
     actives : []
   })
 
@@ -84,7 +84,7 @@ const MultiSelectForm = React.memo(React.forwardRef<MultiSelectFormReference, Mu
   )
 }), (prevProps: MultiSelectFormProps, nextProps: MultiSelectFormProps) => (
   (prevProps.className === nextProps.className)
-  && (prevProps.labels.toString() === nextProps.labels.toString())
+  && (prevProps.labels?.toString() === nextProps.labels?.toString())
   && (prevProps.limit === nextProps.limit)
   && (prevProps.onChange === nextProps.onChange)
 ))

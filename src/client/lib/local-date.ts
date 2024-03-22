@@ -16,7 +16,7 @@ export function isDate(date: string | Date): boolean {
 
 export function shiftDate(date: string | Date, future: boolean, day: number = 0, hour: number = 0, minute: number = 0, second: number = 0): string {
   if (!isDate(date)) {
-    return null
+    return ""
   }
 
   const at = new Date(date)
@@ -39,7 +39,7 @@ export function shiftDate(date: string | Date, future: boolean, day: number = 0,
 
 export function localize(date: string | Date, offset: number = getOffset()): string {
   if (!isDate(date)) {
-    return null
+    return ""
   }
 
   if (offset === 0) {
@@ -50,7 +50,6 @@ export function localize(date: string | Date, offset: number = getOffset()): str
   const sign   = direction ? "+"    : "-"
   const scalar = direction ? offset : -offset
   return shiftDate(date, direction, 0, scalar).replace("Z", sign) + scalar.toString().padStart(2, '0') + ":00"
-
 }
 
 export function now(local: boolean = false, offset: number = getOffset()): string {
@@ -60,7 +59,7 @@ export function now(local: boolean = false, offset: number = getOffset()): strin
 
 export function toInputFormat(date: string | Date, local: boolean = false, offset: number = getOffset()): string {
   if (!isDate(date)) {
-    return null
+    return ""
   }
 
   return localize(date, local ? offset : 0).slice(0, 19)
@@ -68,7 +67,7 @@ export function toInputFormat(date: string | Date, local: boolean = false, offse
 
 export function fromInputFormat(date: string, local: boolean = false, offset: number = getOffset()): string {
   if (!isDate(date)) {
-    return null
+    return ""
   }
 
   if (local) {

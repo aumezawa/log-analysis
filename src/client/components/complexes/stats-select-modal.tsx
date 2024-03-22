@@ -28,10 +28,10 @@ type StatsSelectModalProps = {
 }
 
 const StatsSelectModal = React.memo<StatsSelectModalProps>(({
-  id        = null,
-  domain    = null,
-  project   = null,
-  stats     = null,
+  id        = "",
+  domain    = "",
+  project   = "",
+  stats     = "",
   action    = "open",
   reload    = 0,
   onSubmit  = undefined,
@@ -46,8 +46,8 @@ const StatsSelectModal = React.memo<StatsSelectModalProps>(({
 
   const data = useRef({
     filter      : "",
-    statsId     : null,
-    statsName   : null,
+    statsId     : "",
+    statsName   : "",
     statsList   : []
   })
 
@@ -57,9 +57,9 @@ const StatsSelectModal = React.memo<StatsSelectModalProps>(({
 
   useEffect(() => {
     reloadStats()
-    data.current.filter = refs.current.text.current.value = ""
-    data.current.statsId = null
-    data.current.statsName = null
+    data.current.filter = refs.current.text.current!.value = ""
+    data.current.statsId = ""
+    data.current.statsName = ""
     refs.current.list.current.clear()
   }, [domain, project, reload])
 
@@ -71,11 +71,15 @@ const StatsSelectModal = React.memo<StatsSelectModalProps>(({
         data    : {}
       })
       .then((res: AxiosResponse) => {
-        onUpdate(res.data.name)
+        if (onUpdate) {
+          onUpdate(res.data.name)
+        }
         return
       })
       .catch((err: Error | AxiosError) => {
-        onSubmit(null, null)
+        if (onSubmit) {
+          onSubmit("", "")
+        }
         if (Axios.isAxiosError(err)) {
           // nop
         } else {
@@ -102,7 +106,7 @@ const StatsSelectModal = React.memo<StatsSelectModalProps>(({
         data.current.statsList = []
         forceUpdate()
         if (Axios.isAxiosError(err)) {
-          alert(err.response.data.msg)
+          alert(err.response!.data.msg)
         } else {
           console.log(err)
         }
@@ -122,7 +126,7 @@ const StatsSelectModal = React.memo<StatsSelectModalProps>(({
   }, [true])
 
   const handleSelectStats = useCallback((value: string) => {
-    data.current.statsId = data.current.statsList.find((stat: StatsInfo) => (stat.name === value.split(" ")[0])).id.toString()
+    data.current.statsId = (data.current.statsList.find((stat: StatsInfo) => (stat.name === value.split(" ")[0])) as StatsInfo).id.toString()
     data.current.statsName = value.split(" ")[0]
     forceUpdate()
   }, [true])
@@ -148,15 +152,15 @@ const StatsSelectModal = React.memo<StatsSelectModalProps>(({
         if (onSubmit) {
           onSubmit(data.current.statsId, data.current.statsName)
         }
-        data.current.statsId = null
-        data.current.statsName = null
+        data.current.statsId = ""
+        data.current.statsName = ""
         status.current.processing = false
         reloadStats()
         return
       })
       .catch((err: Error | AxiosError) => {
         if (Axios.isAxiosError(err)) {
-          alert(err.response.data.msg)
+          alert(err.response!.data.msg)
         } else {
           console.log(err)
         }
@@ -206,7 +210,7 @@ const StatsSelectModal = React.memo<StatsSelectModalProps>(({
         <ButtonSet
           submit={ `${ action.charAt(0).toUpperCase() + action.slice(1) } Bundle` }
           cancel="Close"
-          valid={ data.current.statsId && !status.current.processing }
+          valid={ data.current.statsId ? !status.current.processing : false }
           dismiss="modal"
           keep={ action !== "open" }
           onSubmit={ handleSubmit }

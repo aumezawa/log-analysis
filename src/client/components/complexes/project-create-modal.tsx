@@ -22,8 +22,8 @@ type ProjectCreateModalProps = {
 const defaultMessage = `Please input a new project "name" and "description". (characters with [0-9a-zA-Z#@_+-])`
 
 const ProjectCreateModal = React.memo<ProjectCreateModalProps>(({
-  id        = null,
-  domain    = null,
+  id        = "",
+  domain    = "",
   onSubmit  = undefined
 }) => {
   const [ignored, forceUpdate] = useReducer(x => x + 1, 0)
@@ -67,7 +67,7 @@ const ProjectCreateModal = React.memo<ProjectCreateModalProps>(({
     })
     .catch((err: Error | AxiosError) => {
       if (Axios.isAxiosError(err)) {
-        data.current.message = err.response.data.msg
+        data.current.message = err.response!.data.msg
       } else {
         data.current.message = "An error on the client occurred."
         console.log(err)

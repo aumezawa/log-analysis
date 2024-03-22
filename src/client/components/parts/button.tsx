@@ -19,7 +19,7 @@ type ButtonProps = {
 const Button = React.memo<ButtonProps>(({
   className = "",
   label     = "no label",
-  LIcon     = null,
+  LIcon     = undefined,
   type      = "btn",
   color     = "primary",
   noAction  = false,
@@ -36,7 +36,7 @@ const Button = React.memo<ButtonProps>(({
 
   return (
     <button
-      className={ `btn ${ type }-${ color } ${ noAction && "btn-no-action" } ${ className } ` }
+      className={ `btn ${ type }-${ color } ${ noAction ? "btn-no-action" : "" } ${ className } ` }
       type="button"
       disabled={ disabled }
       data-toggle={ toggle }

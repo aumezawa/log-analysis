@@ -20,7 +20,7 @@ type ThreeButtonsProps = {
 const ThreeButtons = React.memo<ThreeButtonsProps>(({
   className     = "",
   label         = "no label",
-  LIcon         = null,
+  LIcon         = undefined,
   type          = "btn",
   color         = "primary",
   direction     = "horizontal",
@@ -70,7 +70,7 @@ const ThreeButtons = React.memo<ThreeButtonsProps>(({
         className={ `btn ${ type }-${ color }` }
         type="button"
         disabled={ disabled }
-        onClick={ onClickRight }
+        onClick={ handleClickRight }
       >
         { (direction === "vertical")   && <CaretDownFill />  }
         { (direction === "horizontal") && <CaretRightFill /> }

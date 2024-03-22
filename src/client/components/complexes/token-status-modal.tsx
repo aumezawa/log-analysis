@@ -17,7 +17,7 @@ type TokenStatusModalProps = {
 }
 
 const TokenStatusModal = React.memo<TokenStatusModalProps>(({
-  id      = undefined,
+  id      = "",
   reload  = 0
 }) => {
   const [ignored, forceUpdate] = useReducer(x => x + 1, 0)
@@ -44,7 +44,7 @@ const TokenStatusModal = React.memo<TokenStatusModalProps>(({
       data.current.exp = null
       forceUpdate()
       if (Axios.isAxiosError(err)) {
-        alert(err.response.data.msg)
+        alert(err.response!.data.msg)
       } else {
         console.log(err)
       }

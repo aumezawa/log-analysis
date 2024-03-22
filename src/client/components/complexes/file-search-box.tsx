@@ -31,8 +31,8 @@ type FileSearchBoxProps = {
 
 const FileSearchBox = React.memo<FileSearchBoxProps>(({
   className = "",
-  path      = null,
-  viewfile  = null,
+  path      = "",
+  viewfile  = "",
   onSelect  = undefined
 }) => {
   const [ignored, forceUpdate] = useReducer(x => x + 1, 0)
@@ -82,12 +82,12 @@ const FileSearchBox = React.memo<FileSearchBoxProps>(({
 
   useEffect(() => {
     data.current.text.valid = false
-    data.current.text.enable = refs.current.text.enable.current.checked = false
-    data.current.text.input = refs.current.text.input.current.value = ""
+    data.current.text.enable = refs.current.text.enable.current!.checked = false
+    data.current.text.input = refs.current.text.input.current!.value = ""
     data.current.from.valid = false
-    data.current.from.enable = refs.current.from.enable.current.checked = false
+    data.current.from.enable = refs.current.from.enable.current!.checked = false
     data.current.to.valid = false
-    data.current.to.enable = refs.current.to.enable.current.checked = false
+    data.current.to.enable = refs.current.to.enable.current!.checked = false
     data.current.files.name = ""
     data.current.files.file = false
     data.current.files.children = []
@@ -104,20 +104,20 @@ const FileSearchBox = React.memo<FileSearchBoxProps>(({
       .then((res: AxiosResponse) => {
         data.current.from.valid = true
         data.current.from.date = LocalDate.shiftDate(res.data.date, false, 3)
-        refs.current.from.date.current.value = LocalDate.toInputFormat(data.current.from.date)
+        refs.current.from.date.current!.value = LocalDate.toInputFormat(data.current.from.date)
         data.current.to.valid = true
         data.current.to.date = res.data.date
-        refs.current.to.date.current.value = LocalDate.toInputFormat(data.current.to.date)
+        refs.current.to.date.current!.value = LocalDate.toInputFormat(data.current.to.date)
         forceUpdate()
         return
       })
       .catch((err: Error | AxiosError) => {
         data.current.from.valid = true
         data.current.from.date = LocalDate.shiftDate(LocalDate.now(), false, 3)
-        refs.current.from.date.current.value = LocalDate.toInputFormat(data.current.from.date)
+        refs.current.from.date.current!.value = LocalDate.toInputFormat(data.current.from.date)
         data.current.to.valid = true
         data.current.to.date = LocalDate.now()
-        refs.current.to.date.current.value = LocalDate.toInputFormat(data.current.to.date)
+        refs.current.to.date.current!.value = LocalDate.toInputFormat(data.current.to.date)
         forceUpdate()
         if (Axios.isAxiosError(err)) {
           // nop
@@ -127,10 +127,10 @@ const FileSearchBox = React.memo<FileSearchBoxProps>(({
         return
       })
     } else {
-      data.current.from.date = null
-      refs.current.from.date.current.value = null
-      data.current.to.date = null
-      refs.current.to.date.current.value = null
+      data.current.from.date = ""
+      refs.current.from.date.current!.value = ""
+      data.current.to.date = ""
+      refs.current.to.date.current!.value = ""
       forceUpdate()
     }
   }, [path])
@@ -211,7 +211,7 @@ const FileSearchBox = React.memo<FileSearchBoxProps>(({
       status.current.processing = false
       forceUpdate()
       if (Axios.isAxiosError(err)) {
-        alert(err.response.data.msg)
+        alert(err.response!.data.msg)
       } else {
         console.log(err)
       }
@@ -272,7 +272,7 @@ const FileSearchBox = React.memo<FileSearchBoxProps>(({
     })
     .catch((err: Error | AxiosError) => {
       if (Axios.isAxiosError(err)) {
-        alert(err.response.data.msg)
+        alert(err.response!.data.msg)
       } else {
         console.log(err)
       }
@@ -296,7 +296,7 @@ const FileSearchBox = React.memo<FileSearchBoxProps>(({
             <TextForm
               ref={ refs.current.text.input }
               className="col-9"
-              label={ null }
+              label=""
               valid={ !data.current.text.enable || data.current.text.valid }
               disabled={ !path || !status.current.done || !data.current.text.enable }
               onChange={ handleChangeText }
@@ -313,7 +313,7 @@ const FileSearchBox = React.memo<FileSearchBoxProps>(({
             <DateForm
               ref={ refs.current.from.date }
               className="col-9"
-              label={ null }
+              label=""
               valid={ !data.current.from.enable || data.current.from.valid }
               disabled={ !path || !status.current.done || !data.current.from.enable }
               defaultValue={ LocalDate.toInputFormat(data.current.from.date) }
@@ -331,7 +331,7 @@ const FileSearchBox = React.memo<FileSearchBoxProps>(({
             <DateForm
               ref={ refs.current.to.date }
               className="col-9"
-              label={ null }
+              label=""
               valid={ !data.current.to.enable || data.current.to.valid }
               disabled={ !path || !status.current.done || !data.current.to.enable }
               defaultValue={ LocalDate.toInputFormat(data.current.to.date) }

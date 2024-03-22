@@ -78,21 +78,21 @@ const MainPage: React.FC<MainPageProps> = ({
 
   const data = useRef({
     domain    : domains.split(",")[0],
-    project   : null,
-    bundle    : null,
-    filepath  : null,
-    filename  : null,
-    termpath  : null,
-    terminal  : null,
-    focus     : null,
-    line      : null,
-    mark      : null,
-    filter    : null,
-    search    : null,
+    project   : "",
+    bundle    : "",
+    filepath  : "",
+    filename  : "",
+    termpath  : "",
+    terminal  : "",
+    focus     : "",
+    line      : 0,
+    mark      : "",
+    filter    : "",
+    search    : "",
     sensitive : true,
-    date_from : null,
-    date_to   : null,
-    merge     : null
+    date_from : "",
+    date_to   : "",
+    merge     : ""
   })
 
   const env = useRef({
@@ -127,19 +127,18 @@ const MainPage: React.FC<MainPageProps> = ({
   }
 
   useEffect(() => {
-    const params = new URLSearchParams(decodeURIComponent(query))
-    const domain = params.get("domain")
-    const project = params.get("project")
-    const bundle = params.get("bundle")
-    const filepath = params.get("filepath")
-    const line = params.get("line")
-    const mark = params.get("mark")
-    const filter = params.get("filter")
-    const search = params.get("search")
-    const sensitive = params.get("sensitive")
-    const date_from = params.get("date_from")
-    const date_to = params.get("date_to")
-    const merge = params.get("merge")
+    const domain    = Environment.getUrlParam(query, "domain")
+    const project   = Environment.getUrlParam(query, "project")
+    const bundle    = Environment.getUrlParam(query, "bundle")
+    const filepath  = Environment.getUrlParam(query, "filepath")
+    const line      = Environment.getUrlParam(query, "line")
+    const mark      = Environment.getUrlParam(query, "mark")
+    const filter    = Environment.getUrlParam(query, "filter")
+    const search    = Environment.getUrlParam(query, "search")
+    const sensitive = Environment.getUrlParam(query, "sensitive")
+    const date_from = Environment.getUrlParam(query, "date_from")
+    const date_to   = Environment.getUrlParam(query, "date_to")
+    const merge     = Environment.getUrlParam(query, "merge")
 
     if (domain) {
       const uri = `${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project, bundle, filepath) }`
@@ -154,7 +153,7 @@ const MainPage: React.FC<MainPageProps> = ({
         data.current.bundle     =  domain && project && bundle
         data.current.filepath   =  domain && project && bundle && filepath
         data.current.filename   =  domain && project && bundle && filepath && Path.basename(filepath)
-        data.current.line       =  domain && project && bundle && filepath && line       && Number(line)
+        data.current.line       = (domain && project && bundle && filepath && line) ? Number(line) : 0
         data.current.mark       =  domain && project && bundle && filepath && mark
         data.current.filter     =  domain && project && bundle && filepath && filter
         data.current.search     =  domain && project && bundle && filepath && search
@@ -167,8 +166,8 @@ const MainPage: React.FC<MainPageProps> = ({
           env.current.menu      = true
         }
         if (filepath) {
-          ref.current.files.current.click()
-          ref.current.viewer.current.click()
+          ref.current.files.current && ref.current.files.current.click()
+          ref.current.viewer.current && ref.current.viewer.current.click()
         }
         forceUpdate()
         updateTitle()
@@ -187,7 +186,7 @@ const MainPage: React.FC<MainPageProps> = ({
     }
 
     if ((Cookies.get("whatsnew") || "") !== "false") {
-      ref.current.whatsnew.current.click()
+      ref.current.whatsnew.current?.click()
     }
   }, [true])
 
@@ -202,23 +201,23 @@ const MainPage: React.FC<MainPageProps> = ({
 
   const handleChangeDomain = useCallback((domainName: string) => {
     data.current.domain = domainName
-    data.current.project = null
-    data.current.bundle = null
-    data.current.filepath = null
-    data.current.filename = null
-    data.current.termpath = null
-    data.current.terminal = null
-    data.current.focus = null
-    data.current.line = null
-    data.current.filter = null
-    data.current.search = null
+    data.current.project = ""
+    data.current.bundle = ""
+    data.current.filepath = ""
+    data.current.filename = ""
+    data.current.termpath = ""
+    data.current.terminal = ""
+    data.current.focus = ""
+    data.current.line = 0
+    data.current.filter = ""
+    data.current.search = ""
     data.current.sensitive = true
-    data.current.date_from = null
-    data.current.date_to = null
-    data.current.merge = null
+    data.current.date_from = ""
+    data.current.date_to = ""
+    data.current.merge = ""
     env.current.state = "INIT"
     env.current.menu = false
-    ref.current.start.current.click()
+    ref.current.start.current?.click()
     forceUpdate()
     updateTitle()
     updateAddressBar()
@@ -226,22 +225,22 @@ const MainPage: React.FC<MainPageProps> = ({
 
   const handleChangeProject = useCallback((projectName: string) => {
     data.current.project = projectName
-    data.current.bundle = null
-    data.current.filepath = null
-    data.current.filename = null
-    data.current.termpath = null
-    data.current.terminal = null
-    data.current.focus = null
-    data.current.line = null
-    data.current.filter = null
-    data.current.search = null
+    data.current.bundle = ""
+    data.current.filepath = ""
+    data.current.filename = ""
+    data.current.termpath = ""
+    data.current.terminal = ""
+    data.current.focus = ""
+    data.current.line = 0
+    data.current.filter = ""
+    data.current.search = ""
     data.current.sensitive = true
-    data.current.date_from = null
-    data.current.date_to = null
-    data.current.merge = null
+    data.current.date_from = ""
+    data.current.date_to = ""
+    data.current.merge = ""
     env.current.state = "INIT"
     env.current.menu = false
-    ref.current.start.current.click()
+    ref.current.start.current?.click()
     forceUpdate()
     updateTitle()
     updateAddressBar()
@@ -249,26 +248,26 @@ const MainPage: React.FC<MainPageProps> = ({
 
   const handleChangeBundle = useCallback((bundleId: string) => {
     data.current.bundle = bundleId
-    data.current.filepath = null
-    data.current.filename = null
-    data.current.termpath = null
-    data.current.terminal = null
-    data.current.focus = null
-    data.current.line = null
-    data.current.filter = null
-    data.current.search = null
+    data.current.filepath = ""
+    data.current.filename = ""
+    data.current.termpath = ""
+    data.current.terminal = ""
+    data.current.focus = ""
+    data.current.line = 0
+    data.current.filter = ""
+    data.current.search = ""
     data.current.sensitive = true
-    data.current.date_from = null
-    data.current.date_to = null
-    data.current.merge = null
+    data.current.date_from = ""
+    data.current.date_to = ""
+    data.current.merge = ""
     if (bundleId) {
       env.current.state = "MAIN"
       env.current.menu = true
-      ref.current.viewer.current.click()
+      ref.current.viewer.current?.click()
     } else {
       env.current.state = "INIT"
       env.current.menu = false
-      ref.current.start.current.click()
+      ref.current.start.current?.click()
     }
     forceUpdate()
     updateTitle()
@@ -276,36 +275,36 @@ const MainPage: React.FC<MainPageProps> = ({
   }, [true])
 
   const handleClickOpenConsole = useCallback(() => {
-    ref.current.terminal.current.click()
-    data.current.termpath = null
+    ref.current.terminal.current?.click()
+    data.current.termpath = ""
     data.current.terminal = "Console"
     env.current.terminal = env.current.terminal + 1
   }, [true])
 
   const handleSelectFile = useCallback((action: string, value: string, option: any) => {
     if (action === "terminal") {
-      ref.current.terminal.current.click()
+      ref.current.terminal.current?.click()
       data.current.termpath = value
       data.current.terminal = Path.basename(value)
       env.current.terminal = env.current.terminal + 1
     } else if (action === "merge") {
       if (value !== data.current.filename) {
-        ref.current.viewer.current.click()
+        ref.current.viewer.current?.click()
         data.current.merge = value
       } else {
         alert("Cannot open the same file...")
       }
     } else {
-      ref.current.viewer.current.click()
+      ref.current.viewer.current?.click()
       data.current.filepath = value
       data.current.filename = Path.basename(value)
-      data.current.line = null
-      data.current.filter = (option && option.search !== "") ? option.search : null
-      data.current.search = null
+      data.current.line = 0
+      data.current.filter = (option && option.search !== "") ? option.search : ""
+      data.current.search = ""
       data.current.sensitive = true
-      data.current.date_from = (option && option.data_from) || null
-      data.current.date_to = (option && option.data_to) || null
-      data.current.merge = null
+      data.current.date_from = (option && option.data_from) || ""
+      data.current.date_to = (option && option.data_to) || ""
+      data.current.merge = ""
     }
     updateTitle()
     updateAddressBar()
@@ -323,13 +322,13 @@ const MainPage: React.FC<MainPageProps> = ({
 
   const handleChangeTableTextFilter = useCallback((textFilter: string, textSensitive: boolean) => {
     data.current.filter = textFilter
-    data.current.search = null
+    data.current.search = ""
     data.current.sensitive = textSensitive
     updateAddressBar()
   }, [true])
 
   const handleChangeTableTextSearch = useCallback((textSearch: string, textSensitive: boolean) => {
-    data.current.filter = null
+    data.current.filter = ""
     data.current.search = textSearch
     data.current.sensitive = textSensitive
     updateAddressBar()
@@ -450,7 +449,7 @@ const MainPage: React.FC<MainPageProps> = ({
           <TFrame
             head={
               <ProjectNavigator
-                menu={ env.current.menu ? "on" : "off" }
+                menu={ env.current.menu }
                 privilege={ privilege }
                 domains={ domains }
                 domain={ data.current.domain }
@@ -521,7 +520,7 @@ const MainPage: React.FC<MainPageProps> = ({
                 ] }
                 refs={ [ref.current.start, ref.current.viewer, ref.current.terminal] }
                 hiddens={ [env.current.state !== "INIT", env.current.state !== "MAIN", env.current.state !== "MAIN"] }
-                onClicks={ [null, handleClickViewer, handleClickTerminal] }
+                onClicks={ [() => {}, handleClickViewer, handleClickTerminal] }
               />
             }
             hiddenL={ !env.current.menu }

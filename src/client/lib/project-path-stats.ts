@@ -1,6 +1,6 @@
 export default {
-  encode: (domain: string = null, project: string = null, stats: string = null, counter: string = null, date_from: string = null, date_to: string = null) => {
-    let path: string = null
+  encode: (domain: string = "", project: string = "", stats: string = "", counter: string = "", date_from: string = "", date_to: string = ""): string => {
+    let path = ""
     if (domain) {
       path = `stats/${ encodeURIComponent(domain) }`
       if (project) {
@@ -9,7 +9,7 @@ export default {
           path = `${ path }/stats/${ encodeURIComponent(stats) }`
           if (counter) {
             path = `${ path }/counters/${ encodeURIComponent(counter) }`
-            let firstParam: boolean = true
+            let firstParam = true
             if (date_from) {
               path = `${ path }${ firstParam ? "?" : "&" }date_from=${ encodeURIComponent(date_from) }`
               firstParam = false

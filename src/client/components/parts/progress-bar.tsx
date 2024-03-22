@@ -12,7 +12,7 @@ const ProgressBar = React.memo<ProgressBarProps>(({
 }) => (
   <div className={ `progress ${ className }` }>
     <div
-      className={ `progress-bar progress-bar-striped ${ (progress !== 100) && "progress-bar-animated" }` }
+      className={ `progress-bar progress-bar-striped ${ (progress === 100) ? "" : "progress-bar-animated" }` }
       role="progressbar"
       aria-valuenow={ progress }
       aria-valuemin={ 0 }

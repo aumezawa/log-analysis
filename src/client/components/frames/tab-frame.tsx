@@ -23,11 +23,11 @@ type TabFrameProps = {
 
 const TabFrame: React.FC<TabFrameProps> = ({
   className = "",
-  labels    = undefined,
+  labels    = [],
   LIcons    = [],
-  items     = undefined,
-  refs      = undefined,
-  hiddens   = null,
+  items     = [],
+  refs      = [],
+  hiddens   = [],
   show      = 0,
   overflow  = true,
   inmodal   = false,
@@ -50,14 +50,14 @@ const TabFrame: React.FC<TabFrameProps> = ({
               LIcon={ LIcons[index] }
               labelId={ id.current.label + index }
               itemId={ id.current.item + index }
-              hidden={ hiddens && hiddens[index] }
+              hidden={ hiddens[index] }
               active={ index === show }
               onClick={ onClicks[index] }
             />
           ))
         }
       </ul>
-      <div className={ `tab-content ${ !inmodal && "flex-main-area" } ${ overflow && "flex-main-overflow" }` }>
+      <div className={ `tab-content ${ inmodal ? "" : "flex-main-area" } ${ overflow ? "flex-main-overflow" : "" }` }>
         {
           items.map((item: JSX.Element, index: number) => (
             <TabItem
@@ -65,7 +65,7 @@ const TabFrame: React.FC<TabFrameProps> = ({
               item={ item }
               labelId={ id.current.label + index }
               itemId={ id.current.item + index }
-              hidden={ hiddens && hiddens[index] }
+              hidden={ hiddens[index] }
               active={ index === show }
             />
           ))

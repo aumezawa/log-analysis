@@ -23,8 +23,10 @@ const EmbeddedIconButton = React.memo<EmbeddedIconButtonProps>(({
   onClick   = undefined
 }) => {
   const handleClick = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
-    if (!disabled && onClick) {
-      onClick((e.currentTarget as HTMLElement).title, (e.currentTarget.parentNode as HTMLElement).title)
+    if (!disabled) {
+      if (onClick) {
+        onClick((e.currentTarget as HTMLElement).title, (e.currentTarget.parentNode as HTMLElement).title)
+      }
     }
   }, [disabled, onClick])
 

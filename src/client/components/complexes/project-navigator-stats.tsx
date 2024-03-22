@@ -42,10 +42,10 @@ type ProjectNavigatorProps = {
 const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
   privilege       = "none",
   domains         = "public,private",
-  domain          = null,
-  project         = null,
-  stats           = null,
-  counter         = null,
+  domain          = "",
+  project         = "",
+  stats           = "",
+  counter         = "",
   onChangeDomain  = undefined,
   onChangeProject = undefined,
   onChangeStats   = undefined,
@@ -67,7 +67,7 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
 
   const data = useRef({
     action    : "open",
-    statsName : null
+    statsName : ""
   })
 
   const handleChangeDomain = useCallback((domainName: string) => {
@@ -84,7 +84,7 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
     }
     if ((data.current.action === "delete" || data.current.action === "close") && (projectName === project)) {
       if (onChangeProject) {
-        onChangeProject(null)
+        onChangeProject("")
       }
     }
   }, [project, onChangeProject])
@@ -97,9 +97,9 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
       }
     }
     if ((data.current.action === "delete") && (statsId === stats)) {
-      data.current.statsName = null
+      data.current.statsName = ""
       if (onChangeStats) {
-        onChangeStats(null)
+        onChangeStats("")
       }
     }
   }, [stats, onChangeStats])
@@ -117,7 +117,7 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
 
   const handleDeleteCounter = useCallback((cntr: string) => {
     if (onChangeCounter) {
-      onChangeCounter(counter ? counter.split(",").filter((cnt: string) => (cnt !== cntr)).join(",") : null)
+      onChangeCounter(counter ? counter.split(",").filter((cnt: string) => (cnt !== cntr)).join(",") : "")
     }
   }, [counter, onChangeCounter])
 

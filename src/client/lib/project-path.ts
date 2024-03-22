@@ -1,6 +1,6 @@
 export default {
-  encode: (domain: string = null, project: string = null, bundle: string = null, filepath: string = null, line: number = null, mark: string = null, filter: string = null, search: string = null, sensitive: boolean = true, date_from: string = null, date_to: string = null, merge: string = null) => {
-    let path: string = null
+  encode: (domain: string = "", project: string = "", bundle: string = "", filepath: string = "", line: number = 0, mark: string = "", filter: string = "", search: string = "", sensitive: boolean = true, date_from: string = "", date_to: string = "", merge: string = ""): string => {
+    let path = ""
     if (domain) {
       path = `log/${ encodeURIComponent(domain) }`
       if (project) {
@@ -9,8 +9,8 @@ export default {
           path = `${ path }/bundles/${ encodeURIComponent(bundle) }`
           if (filepath) {
             path = `${ path }/files/${ filepath.split("/").map((node: string) => encodeURIComponent(node)).join("/") }`
-            let firstParam: boolean = true
-            if (line) {
+            let firstParam = true
+            if (line > 0) {
               path = `${ path }${ firstParam ? "?" : "&" }line=${ encodeURIComponent(line) }`
               firstParam = false
             }
@@ -49,11 +49,11 @@ export default {
     return path
   },
 
-  strictEncodeFiles: (domain: string, project: string, bundle: string) => {
+  strictEncodeFiles: (domain: string, project: string, bundle: string): string => {
     return domain && project && bundle && `log/${ encodeURIComponent(domain) }/projects/${ encodeURIComponent(project) }/bundles/${ encodeURIComponent(bundle) }/files`
   },
 
-  strictEncodeFilepath: (domain: string, project: string, bundle: string, filepath: string) => {
+  strictEncodeFilepath: (domain: string, project: string, bundle: string, filepath: string): string => {
     return domain && project && bundle && filepath && `log/${ encodeURIComponent(domain) }/projects/${ encodeURIComponent(project) }/bundles/${ encodeURIComponent(bundle) }/files/${ filepath.split("/").map((node: string) => encodeURIComponent(node)).join("/") }`
   }
 }

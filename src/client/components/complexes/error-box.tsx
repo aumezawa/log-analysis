@@ -55,7 +55,7 @@ const ErrorBox = React.memo<ErrorBoxProps>(({
       />
       <ButtonSet
         submit="Login Page"
-        cancel={ null }
+        cancel=""
         valid={ true }
         onSubmit={ handleSubmit }
       />
