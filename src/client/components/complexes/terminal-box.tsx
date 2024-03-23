@@ -50,7 +50,12 @@ const TerminalBox = React.memo<TerminalBoxProps>(({
       .then((res: AxiosResponse) => {
         terminal.loadAddon(fitAddon)
         terminal.open(ref.current as HTMLElement)
-        fitAddon.fit()
+        try {
+          // workaround for error in xterm.js
+          fitAddon.fit()
+        } catch (err) {
+          // nop
+        }
 
         socket = data.current.socket = require("socket.io-client")(`?cmd=${ encodeURIComponent(res.data.cmd) }&cols=${ terminal.cols }&rows=${ terminal.rows }`, { path: "/terminal" })
 
