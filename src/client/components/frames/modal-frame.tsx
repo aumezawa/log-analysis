@@ -13,7 +13,7 @@ type ModalFrameProps = {
   foot?   : JSX.Element
 }
 
-const ModalFrame: React.FC<ModalFrameProps> = ({
+const ModalFrame = React.memo(React.forwardRef<HTMLButtonElement, ModalFrameProps>(({
   id      = undefined,
   title   = "Title",
   message = "No message",
@@ -21,7 +21,7 @@ const ModalFrame: React.FC<ModalFrameProps> = ({
   size    = "",
   body    = <>No content</>,
   foot    = <button className="btn btn-secondary" type="button" data-dismiss="modal">Close</button>
-}) => {
+}, ref) => {
   const localId = useRef({
     label: "label-" + UniqueId()
   })
@@ -35,7 +35,7 @@ const ModalFrame: React.FC<ModalFrameProps> = ({
               <p className="h5">{ title }</p>
               <p className="h6 text-monospace text-wrap text-break">{ message }</p>
             </div>
-            <button className="close" type="button" data-dismiss="modal" aria-label="Close">
+            <button ref={ ref } className="close" type="button" data-dismiss="modal" aria-label="Close">
               <span aria-hidden="true">&times;</span>
             </button>
           </div>
@@ -49,6 +49,6 @@ const ModalFrame: React.FC<ModalFrameProps> = ({
       </div>
     </div>
   )
-}
+}))
 
 export default ModalFrame

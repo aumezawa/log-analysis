@@ -18,6 +18,7 @@ type BundleUploadBoxProps = {
   id        : string,
   domain?   : string
   project?  : string,
+  autoClose?: number,
   onSubmit? : (bundleId: string, bundleName: string) => void
 }
 
@@ -27,10 +28,15 @@ const BundleUploadBox = React.memo<BundleUploadBoxProps>(({
   id        = "",
   domain    = "",
   project   = "",
+  autoClose = 3,
   onSubmit  = undefined
 }) => {
   const [ignored, forceUpdate]  = useReducer(x => x + 1, 0)
   const [formKey, clearFrom]    = useReducer(x => x + 1, 0)
+
+  const refs = useRef({
+    btn : React.createRef<HTMLButtonElement>(),
+  })
 
   const data = useRef({
     message   : defaultMessage
@@ -84,6 +90,9 @@ const BundleUploadBox = React.memo<BundleUploadBoxProps>(({
         onSubmit(String(res.data.id), res.data.name)
       }
       clearFrom()
+      if (autoClose >= 0 && autoClose <= 10) {
+        setTimeout(() => refs.current.btn.current?.click(), autoClose * 1000)
+      }
       return
     })
     .catch((err: Error | AxiosError) => {
@@ -113,6 +122,7 @@ const BundleUploadBox = React.memo<BundleUploadBoxProps>(({
 
   return (
     <ModalFrame
+      ref= { refs.current.btn }
       id={ id }
       title="Log Bundle"
       message="Upload a log bundle."

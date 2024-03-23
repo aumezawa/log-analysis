@@ -18,6 +18,7 @@ type StatsUploadBoxProps = {
   id        : string,
   domain?   : string
   project?  : string,
+  autoClose?: number,
   onSubmit? : (statsId: string, statsName: string) => void
 }
 
@@ -27,10 +28,15 @@ const StatsUploadBox = React.memo<StatsUploadBoxProps>(({
   id        = "",
   domain    = "",
   project   = "",
+  autoClose = 3,
   onSubmit  = undefined
 }) => {
   const [ignored, forceUpdate]  = useReducer(x => x + 1, 0)
   const [formKey, clearFrom]    = useReducer(x => x + 1, 0)
+
+  const refs = useRef({
+    btn : React.createRef<HTMLButtonElement>(),
+  })
 
   const data = useRef({
     message   : defaultMessage
@@ -83,6 +89,9 @@ const StatsUploadBox = React.memo<StatsUploadBoxProps>(({
         onSubmit(String(res.data.id), res.data.name)
       }
       clearFrom()
+      if (autoClose >= 0 && autoClose <= 10) {
+        setTimeout(() => refs.current.btn.current?.click(), autoClose * 1000)
+      }
       return
     })
     .catch((err: Error | AxiosError) => {
@@ -112,6 +121,7 @@ const StatsUploadBox = React.memo<StatsUploadBoxProps>(({
 
   return (
     <ModalFrame
+      ref={ refs.current.btn }
       id={ id }
       title="Stats"
       message="Upload a performance data."
