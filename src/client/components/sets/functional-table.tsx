@@ -181,12 +181,12 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
   }
 
   const scrollToLine = (line: number) => {
-    env.current.page = Math.ceil((line < 1 ? 1 : line) / env.current.maxRow)
+    env.current.page = Math.ceil((line || 1) / env.current.maxRow)
     forceUpdate()
     setTimeout(() => {
-      const lines = ref.current.table.current!.tBodies[0].childNodes
-      const toLine = (line - 1) % env.current.maxRow
-      const offsetTop = (toLine > 0 && toLine < lines.length) ? (lines[toLine - 1] as HTMLElement).offsetTop : 0
+      const lines = ref.current.table.current?.tBodies[0].childNodes
+      const toLine = ((line || 1) - 1) % env.current.maxRow
+      const offsetTop = (lines && toLine > 0 && toLine < (lines.length || 0)) ? (lines[toLine - 1] as HTMLElement).offsetTop : 0
       ref.current.parent.current?.scrollTo(0, offsetTop)
     }, 0)
   }
@@ -208,7 +208,7 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
   const handleClickMarkFilter = useCallback(() => {
     if ("Mark" in env.current.filters) {
       delete env.current.filters["Mark"]
-      scrollToLine(Object.keys(env.current.filters).length ? 1 : env.current.line)
+      scrollToLine(Object.keys(env.current.filters).length ? 0 : env.current.line)
     } else {
       env.current.filters["Mark"] = {
         type  : "mark",
@@ -216,7 +216,7 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
         head  : env.current.marks[0],
         tail  : env.current.marks.slice(-1)[0]
       }
-      scrollToLine(1)
+      scrollToLine(0)
     }
   }, [true])
 
@@ -253,7 +253,7 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
         }
       }
 
-      scrollToLine(1)
+      scrollToLine(0)
     } else if (env.current.operation === "search") {
       env.current.searches[env.current.label] = {
         type      : "text",
@@ -275,7 +275,7 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
         }
       }
 
-      scrollToLine(Object.keys(env.current.filters).length ? 1 : env.current.line)
+      scrollToLine(Object.keys(env.current.filters).length ? 0 : env.current.line)
     }
   }, [onChangeTextFilter])
 
@@ -288,7 +288,7 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
         onChangeTextFilter("", true)
       }
 
-      scrollToLine(Object.keys(env.current.filters).length ? 1 : env.current.line)
+      scrollToLine(Object.keys(env.current.filters).length ? 0 : env.current.line)
     } else if (env.current.operation === "search") {
       delete env.current.filters[env.current.label]
       delete env.current.searches[env.current.label]
@@ -323,7 +323,7 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
         onChangeDateFilter("", "")
       }
 
-      scrollToLine(Object.keys(env.current.filters).length ? 1 : env.current.line)
+      scrollToLine(Object.keys(env.current.filters).length ? 0 : env.current.line)
     }
   }, [onChangeDateFilter])
 
@@ -395,7 +395,7 @@ const FunctionalTable = React.memo<FunctionalTableProps>(({
 
   const handleChangeMaxRow = useCallback((value: string) => {
     env.current.maxRow = Number(value)
-    scrollToLine(Object.keys(env.current.filters).length ? 1 : env.current.line)
+    scrollToLine(Object.keys(env.current.filters).length ? 0 : env.current.line)
   }, [true])
 
   const handleChangePage = useCallback((value: string) => {
