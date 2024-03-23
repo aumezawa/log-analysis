@@ -101,15 +101,7 @@ const MainPage: React.FC<MainPageProps> = ({
     terminal  : 0
   })
 
-  const updateTitle = () => {
-    let append: string
-    append = (data.current.filename) ? ` - ${ data.current.filename }`            : ""
-    append = (data.current.bundle)   ? `${ append } - ${ data.current.bundle }`   : append
-    append = (data.current.project)  ? `${ append } - ${ data.current.project }`  : append
-    Environment.updateTitle(project + append)
-  }
-
-  const updateAddressBar = () => {
+  const updateAddressBar = (sticky: boolean = true) => {
     Environment.updateAddressBar("/main/" + ProjectPath.encode(
       data.current.domain,
       data.current.project,
@@ -123,7 +115,66 @@ const MainPage: React.FC<MainPageProps> = ({
       data.current.date_from,
       data.current.date_to,
       data.current.merge
-    ))
+    ), !sticky)
+
+    if (sticky) {
+      Environment.updateTitle(`${ Environment.getSubPath() } - ${ project }`)
+    }
+  }
+
+  const updatePage = () => {
+    const domain    = ProjectPath.decode(Environment.getSubPath(), Environment.getParams(), "domain")
+    const project   = ProjectPath.decode(Environment.getSubPath(), Environment.getParams(), "project")
+    const bundle    = ProjectPath.decode(Environment.getSubPath(), Environment.getParams(), "bundle")
+    const filepath  = ProjectPath.decode(Environment.getSubPath(), Environment.getParams(), "filepath")
+    const line      = ProjectPath.decode(Environment.getSubPath(), Environment.getParams(), "line")
+    const mark      = ProjectPath.decode(Environment.getSubPath(), Environment.getParams(), "mark")
+    const filter    = ProjectPath.decode(Environment.getSubPath(), Environment.getParams(), "filter")
+    const search    = ProjectPath.decode(Environment.getSubPath(), Environment.getParams(), "search")
+    const sensitive = ProjectPath.decode(Environment.getSubPath(), Environment.getParams(), "sensitive")
+    const date_from = ProjectPath.decode(Environment.getSubPath(), Environment.getParams(), "date_from")
+    const date_to   = ProjectPath.decode(Environment.getSubPath(), Environment.getParams(), "date_to")
+    const merge     = ProjectPath.decode(Environment.getSubPath(), Environment.getParams(), "merge")
+
+    if (domain) {
+      const uri = `${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project, bundle, filepath) }`
+
+      Axios.get(uri, {
+        headers : { "X-Access-Token": Cookies.get("token") || "" },
+        data    : {}
+      })
+      .then((res: AxiosResponse) => {
+        data.current.domain     =  domain
+        data.current.project    =  domain && project
+        data.current.bundle     =  domain && project && bundle
+        data.current.filepath   =  domain && project && bundle && filepath
+        data.current.filename   =  domain && project && bundle && filepath && Path.basename(filepath)
+        data.current.line       = (domain && project && bundle && filepath && line) ? Number(line) : 0
+        data.current.mark       =  domain && project && bundle && filepath && mark
+        data.current.filter     =  domain && project && bundle && filepath && filter
+        data.current.search     =  domain && project && bundle && filepath && search
+        data.current.sensitive  = (domain && project && bundle && filepath && sensitive) ? false : true
+        data.current.date_from  =  domain && project && bundle && filepath && date_from
+        data.current.date_to    =  domain && project && bundle && filepath && date_to
+        data.current.merge      =  domain && project && bundle && filepath && merge
+        if (domain && project && bundle) {
+          env.current.state     = "MAIN"
+          env.current.menu      = true
+        }
+        if (filepath) {
+          ref.current.files.current && ref.current.files.current.click()
+          ref.current.viewer.current && ref.current.viewer.current.click()
+        }
+        forceUpdate()
+        return
+      })
+      .catch((err: Error | AxiosError) => {
+        alert(`No resource: ${ uri }`)
+        return
+      })
+    } else {
+      alert(`Unexpected error...`)
+    }
   }
 
   useEffect(() => {
@@ -170,23 +221,26 @@ const MainPage: React.FC<MainPageProps> = ({
           ref.current.viewer.current && ref.current.viewer.current.click()
         }
         forceUpdate()
-        updateTitle()
         updateAddressBar()
         return
       })
       .catch((err: Error | AxiosError) => {
         alert(`No resource: ${ uri }`)
-        updateTitle()
         updateAddressBar()
         return
       })
     } else {
-      updateTitle()
       updateAddressBar()
     }
 
     if ((Cookies.get("whatsnew") || "") !== "false") {
       ref.current.whatsnew.current?.click()
+    }
+
+    Environment.addPageBackForwardEvent(updatePage)
+
+    return () => {
+      Environment.removePageBackForwardEvent(updatePage)
     }
   }, [true])
 
@@ -209,6 +263,7 @@ const MainPage: React.FC<MainPageProps> = ({
     data.current.terminal = ""
     data.current.focus = ""
     data.current.line = 0
+    data.current.mark = ""
     data.current.filter = ""
     data.current.search = ""
     data.current.sensitive = true
@@ -219,7 +274,6 @@ const MainPage: React.FC<MainPageProps> = ({
     env.current.menu = false
     ref.current.start.current?.click()
     forceUpdate()
-    updateTitle()
     updateAddressBar()
   }, [true])
 
@@ -232,6 +286,7 @@ const MainPage: React.FC<MainPageProps> = ({
     data.current.terminal = ""
     data.current.focus = ""
     data.current.line = 0
+    data.current.mark = ""
     data.current.filter = ""
     data.current.search = ""
     data.current.sensitive = true
@@ -242,7 +297,6 @@ const MainPage: React.FC<MainPageProps> = ({
     env.current.menu = false
     ref.current.start.current?.click()
     forceUpdate()
-    updateTitle()
     updateAddressBar()
   }, [true])
 
@@ -254,6 +308,7 @@ const MainPage: React.FC<MainPageProps> = ({
     data.current.terminal = ""
     data.current.focus = ""
     data.current.line = 0
+    data.current.mark = ""
     data.current.filter = ""
     data.current.search = ""
     data.current.sensitive = true
@@ -270,7 +325,6 @@ const MainPage: React.FC<MainPageProps> = ({
       ref.current.start.current?.click()
     }
     forceUpdate()
-    updateTitle()
     updateAddressBar()
   }, [true])
 
@@ -290,6 +344,13 @@ const MainPage: React.FC<MainPageProps> = ({
     } else if (action === "merge") {
       if (value !== data.current.filename) {
         ref.current.viewer.current?.click()
+        data.current.line = 0
+        data.current.mark = ""
+        data.current.filter = ""
+        data.current.search = ""
+        data.current.sensitive = true
+        data.current.date_from = ""
+        data.current.date_to = ""
         data.current.merge = value
       } else {
         alert("Cannot open the same file...")
@@ -299,45 +360,45 @@ const MainPage: React.FC<MainPageProps> = ({
       data.current.filepath = value
       data.current.filename = Path.basename(value)
       data.current.line = 0
+      data.current.mark = ""
       data.current.filter = (option && option.search !== "") ? option.search : ""
       data.current.search = ""
       data.current.sensitive = true
       data.current.date_from = (option && option.data_from) || ""
       data.current.date_to = (option && option.data_to) || ""
       data.current.merge = ""
+      updateAddressBar()
     }
-    updateTitle()
-    updateAddressBar()
   }, [true])
 
   const handleChangeTableLine = useCallback((line: number) => {
     data.current.line = line
-    updateAddressBar()
+    updateAddressBar(false)
   }, [true])
 
   const handleChangeTableMark = useCallback((mark: string) => {
     data.current.mark = mark
-    updateAddressBar()
+    updateAddressBar(false)
   }, [true])
 
   const handleChangeTableTextFilter = useCallback((textFilter: string, textSensitive: boolean) => {
     data.current.filter = textFilter
     data.current.search = ""
     data.current.sensitive = textSensitive
-    updateAddressBar()
+    updateAddressBar(false)
   }, [true])
 
   const handleChangeTableTextSearch = useCallback((textSearch: string, textSensitive: boolean) => {
     data.current.filter = ""
     data.current.search = textSearch
     data.current.sensitive = textSensitive
-    updateAddressBar()
+    updateAddressBar(false)
   }, [true])
 
   const handleChangeTableDateFilter = useCallback((dateFrom: string, dateTo: string) => {
     data.current.date_from = dateFrom
     data.current.date_to = dateTo
-    updateAddressBar()
+    updateAddressBar(false)
   }, [true])
 
   const handleClickLogout = useCallback((targetValue: string, parentValue: string) => {

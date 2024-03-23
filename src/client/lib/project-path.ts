@@ -49,6 +49,50 @@ export default {
     return path
   },
 
+  decode: (subPath: string, param: string, name: string): string => {
+    const elems = subPath.split("/")
+    const params = new URLSearchParams(decodeURIComponent(param))
+
+    switch(name) {
+      case "domain":
+        if (elems[1] === "main" && elems[2] === "log") {
+          return elems[3] || ""
+        }
+        return ""
+
+      case "project":
+        if (elems[1] === "main" && elems[2] === "log" && elems[4] === "projects") {
+          return elems[5] || ""
+        }
+        return ""
+
+      case "bundle":
+        if (elems[1] === "main" && elems[2] === "log" && elems[4] === "projects" && elems[6] === "bundles") {
+          return elems[7] || ""
+        }
+        return ""
+
+      case "filepath":
+        if (elems[1] === "main" && elems[2] === "log" && elems[4] === "projects" && elems[6] === "bundles" && elems[8] === "files") {
+          return elems.slice(9).join("/")
+        }
+        return ""
+
+      case "line":
+      case "mark":
+      case "filter":
+      case "search":
+      case "sensitive":
+      case "date_from":
+      case "date_to":
+      case "merge":
+        return params.get(name) || ""
+
+      default:
+        return ""
+    }
+  },
+
   strictEncodeFiles: (domain: string, project: string, bundle: string): string => {
     return domain && project && bundle && `log/${ encodeURIComponent(domain) }/projects/${ encodeURIComponent(project) }/bundles/${ encodeURIComponent(bundle) }/files`
   },
