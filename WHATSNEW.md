@@ -1,3 +1,20 @@
+Version: **0.26.0** [2024/03/24]
+
+New Features:
+  - Supported back and forward buttons on browser
+  - Supported docker build with multi-stage builds
+
+Enhanced Features:
+  - Changed default value of displaynig rows to 1000
+  - Automatically close modal window after creating project or uploading
+
+Bug Fixes:
+  - Unvisibling date button on functinal table is still enabled when multi files are opened
+  - cache data remains after deleting bundle
+  -  Workaround for error in xterm.js
+
+***
+
 Version: **0.25.0** [2023/09/06]
 
 New Features:

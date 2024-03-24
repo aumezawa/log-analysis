@@ -8,12 +8,12 @@ type TableData = {
 
 type TableContent = {
   format: {
-    title?      : string,
+    title       : string,
     label       : TableLabel,
-    hasHeader?  : boolean,
-    hasIndex?   : boolean,
-    contentKey? : string,
-    files?      : Array<string>
+    hasHeader   : boolean,
+    hasIndex    : boolean,
+    contentKey  : string,
+    files       : Array<string>
   },
   data: Array<TableData>
 }
@@ -23,12 +23,12 @@ type FilterSettings = {
 }
 
 type FilterSetting = {
-  type?         : string,
+  type          : string,
   mode?         : string,
   sensitive?    : boolean,
   condition?    : string,
-  from?         : Date,
-  to?           : Date,
+  from?         : string,
+  to?           : string,
   head?         : number,
   tail?         : number
 }
@@ -38,9 +38,9 @@ type SearchSettings = {
 }
 
 type SearchSetting = {
-  type?         : string,
-  mode?         : string,
-  sensitive?    : boolean,
-  condition?    : string,
-  founds?       : Array<number>
+  type          : string,
+  mode          : string,
+  sensitive     : boolean,
+  condition     : string,
+  founds        : Array<number>
 }

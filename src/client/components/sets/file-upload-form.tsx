@@ -19,10 +19,10 @@ type FileUploadFormProps = {
 
 const FileUploadForm = React.memo<FileUploadFormProps>(({
   className   = "",
-  auxiliary   = null,
+  auxiliary   = "",
   disabled    = false,
   button      = "Upload",
-  accept      = null,
+  accept      = undefined,
   preservable = false,
   onSubmit    = undefined,
   onCancel    = undefined
@@ -46,12 +46,16 @@ const FileUploadForm = React.memo<FileUploadFormProps>(({
     data.current.name = name
     data.current.obj  = obj
 
-    setValid(false)
-    accept.split(",").forEach((ext: string) => {
-      if (!!name.match(new RegExp(`^.+${ ext }$`))) {
-        setValid(true)
-      }
-    })
+    if (accept) {
+      setValid(false)
+      accept.split(",").forEach((ext: string) => {
+        if (!!name.match(new RegExp(`^.+${ ext }$`))) {
+          setValid(true)
+        }
+      })
+    } else {
+      setValid(true)
+    }
   }, [accept])
 
   const handleChangeDescription = useCallback((value: string) => {
@@ -69,10 +73,10 @@ const FileUploadForm = React.memo<FileUploadFormProps>(({
   }, [onSubmit])
 
   const handleCancel = useCallback(() => {
-    data.current.name = refs.current.file.current.value  = ""
+    data.current.name = refs.current.file.current!.value  = ""
     data.current.obj  = null
-    data.current.aux  = refs.current.aux.current.value   = ""
-    data.current.prs  = refs.current.prs.current.checked = false
+    data.current.aux  = refs.current.aux.current!.value   = ""
+    data.current.prs  = refs.current.prs.current!.checked = false
     setValid(false)
     if (onCancel) {
       onCancel()

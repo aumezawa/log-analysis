@@ -42,6 +42,9 @@ const ListForm = React.memo(React.forwardRef<ListFormReference, ListFormProps>((
 
   const handleClick = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
     refs.current.forEach((ref: React.RefObject<HTMLButtonElement>, index: number) => {
+      if (!ref.current) {
+        return
+      }
       if (index === labels.indexOf(e.currentTarget.value)) {
         ref.current.className = ref.current.className + " active"
       } else {
@@ -73,7 +76,7 @@ const ListForm = React.memo(React.forwardRef<ListFormReference, ListFormProps>((
   )
 }), (prevProps: ListFormProps, nextProps: ListFormProps) => (
   (prevProps.className === nextProps.className)
-  && (prevProps.labels.toString() === nextProps.labels.toString())
+  && (prevProps.labels?.toString() === nextProps.labels?.toString())
   && (prevProps.onChange === nextProps.onChange)
 ))
 

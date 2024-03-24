@@ -27,8 +27,8 @@ type ProjectSelectModalProps = {
 
 const ProjectSelectModal = React.memo<ProjectSelectModalProps>(({
   privilege = "none",
-  id        = null,
-  domain    = null,
+  id        = "",
+  domain    = "",
   action    = "open",
   reload    = 0,
   onSubmit  = undefined
@@ -42,7 +42,7 @@ const ProjectSelectModal = React.memo<ProjectSelectModalProps>(({
 
   const data = useRef({
     filter      : "",
-    project     : null,
+    project     : "",
     projects    : []
   })
 
@@ -55,8 +55,8 @@ const ProjectSelectModal = React.memo<ProjectSelectModalProps>(({
       return
     }
     reloadProject()
-    data.current.filter = refs.current.text.current.value = ""
-    data.current.project = null
+    data.current.filter = refs.current.text.current!.value = ""
+    data.current.project = ""
     refs.current.list.current.clear()
   }, [privilege, domain, action, reload])
 
@@ -76,7 +76,7 @@ const ProjectSelectModal = React.memo<ProjectSelectModalProps>(({
         data.current.projects = []
         forceUpdate()
         if (Axios.isAxiosError(err)) {
-          alert(err.response.data.msg)
+          alert(err.response!.data.msg)
         } else {
           console.log(err)
         }
@@ -121,7 +121,7 @@ const ProjectSelectModal = React.memo<ProjectSelectModalProps>(({
         if (onSubmit) {
           onSubmit(data.current.project)
         }
-        data.current.project = null
+        data.current.project = ""
         status.current.processing = false
         reloadProject()
         return
@@ -130,7 +130,7 @@ const ProjectSelectModal = React.memo<ProjectSelectModalProps>(({
         status.current.processing = false
         forceUpdate()
         if (Axios.isAxiosError(err)) {
-          alert(err.response.data.msg)
+          alert(err.response!.data.msg)
         } else {
           console.log(err)
         }
@@ -149,7 +149,7 @@ const ProjectSelectModal = React.memo<ProjectSelectModalProps>(({
         if (onSubmit) {
           onSubmit(data.current.project)
         }
-        data.current.project = null
+        data.current.project = ""
         status.current.processing = false
         reloadProject()
         return
@@ -158,7 +158,7 @@ const ProjectSelectModal = React.memo<ProjectSelectModalProps>(({
         status.current.processing = false
         forceUpdate()
         if (Axios.isAxiosError(err)) {
-          alert(err.response.data.msg)
+          alert(err.response!.data.msg)
         } else {
           console.log(err)
         }

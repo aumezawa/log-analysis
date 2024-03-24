@@ -1,6 +1,6 @@
 {
   "name": "log-analysis",
-  "version": "0.25.0",
+  "version": "0.26.0",
   "description": "log analysis tools",
   "config": {
     "domains": "public,private",
@@ -29,7 +29,7 @@
     "build:test": "tsc -p ./tsconfig.test.json && cpx ./src/test/script/* ./dist/test/script && cpx ./src/test/data/* ./dist/test/data",
     "clean": "node ./bin/cleaner.js",
     "clean:once": "node ./bin/cleaner.js 0h",
-    "start": "node ./bin/www-master",
+    "start": "cross-env STORAGE_PATH=$npm_config_storage_path node ./bin/www-master",
     "debug": "cross-env LOGLEVEL=debug node ./bin/www-master",
     "debug:single": "cross-env LOGLEVEL=debug LOGOUT=console node ./bin/www",
     "debug:multi": "cross-env LOGLEVEL=debug LOGOUT=console node ./bin/www-master",
@@ -53,6 +53,7 @@
     "body-parser": "^1.19.0",
     "bootstrap": "^4.4.1",
     "cookie-parser": "^1.4.5",
+    "cross-env": "^7.0.2",
     "express": "^4.17.1",
     "farmhash": "^3.2.2",
     "helmet": "^3.22.0",
@@ -103,7 +104,6 @@
     "browserify-zlib": "^0.2.0",
     "buffer": "^6.0.3",
     "cpx": "^1.5.0",
-    "cross-env": "^7.0.2",
     "crypto-browserify": "^3.12.0",
     "css-loader": "^3.5.3",
     "fibers": "^5.0.0",

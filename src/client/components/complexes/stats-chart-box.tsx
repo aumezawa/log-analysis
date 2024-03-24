@@ -32,19 +32,19 @@ type StatsChartBoxProps = {
 }
 
 const StatsChartBox = React.memo<StatsChartBoxProps>(({
-  domain        = null,
-  project       = null,
-  stats         = null,
-  counter       = null,
-  date_from     = null,
-  date_to       = null,
+  domain        = "",
+  project       = "",
+  stats         = "",
+  counter       = "",
+  date_from     = "",
+  date_to       = "",
   onChangeRange = undefined
 }) => {
   const [ignored, forceUpdate] = useReducer(x => x + 1, 0)
 
   const data = useRef({
-    start       : null,
-    end         : null,
+    start       : 0,
+    end         : 0,
     data        : [] as Array<CounterData>
   })
 
@@ -70,8 +70,8 @@ const StatsChartBox = React.memo<StatsChartBoxProps>(({
       })
       .catch((err: Error | AxiosError) => {
         data.current.data = []
-        data.current.start = null
-        data.current.end = null
+        data.current.start = 0
+        data.current.end = 0
         if (Axios.isAxiosError(err)) {
           // nop
         } else {
@@ -82,15 +82,15 @@ const StatsChartBox = React.memo<StatsChartBoxProps>(({
       })
     } else {
       data.current.data = []
-      data.current.start = null
-      data.current.end = null
+      data.current.start = 0
+      data.current.end = 0
     forceUpdate()
     }
   }, [domain, project, stats, counter])
 
   const handleChangeBrush = useCallback((newIndex: any) => {
-    const start = (newIndex as BrushStartEndIndex).startIndex
-    const end = (newIndex as BrushStartEndIndex).endIndex
+    const start = (newIndex as BrushStartEndIndex).startIndex!
+    const end = (newIndex as BrushStartEndIndex).endIndex!
     if (onChangeRange) {
       onChangeRange(data.current.data[start].date as string, data.current.data[end].date as string)
     }

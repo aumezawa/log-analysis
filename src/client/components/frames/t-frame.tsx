@@ -34,10 +34,10 @@ const TFrame: React.FC<TFrameProps> = ({
     <div className="flex-main-area flex-area-bottom">
       <div className="flex-main-inner">
         <div className="grid-container-center row">
-          <div className={ `grid-area-left ${ hiddenL && "d-none" } ${ !hiddenR ? "col-3" : "col-12" } ${ overflowXL && "grid-area-overflow-x" } ${ overflowYL && "grid-area-overflow-y" } ${ border && !hiddenR && "border-right" }` }>
+          <div className={ `grid-area-left ${ hiddenL ? "d-none" : "" } ${ !hiddenR ? "col-3" : "col-12" } ${ overflowXL ? "grid-area-overflow-x" : "" } ${ overflowYL ? "grid-area-overflow-y" : "" } ${ (border && !hiddenR) ? "border-right" :"" }` }>
             { left }
           </div>
-          <div className={ `grid-area-right ${ hiddenR && "d-none" } ${ !hiddenL ? "col-9" : "col-12" } ${ overflowXR && "grid-area-overflow-x" } ${ overflowYR && "grid-area-overflow-y" } ${ border && !hiddenL && "border-left" }` }>
+          <div className={ `grid-area-right ${ hiddenR ? "d-none" : "" } ${ !hiddenL ? "col-9" : "col-12" } ${ overflowXR ? "grid-area-overflow-x" : "" } ${ overflowYR ? "grid-area-overflow-y" : "" } ${ (border && !hiddenL) ? "border-left" : "" }` }>
             { right }
           </div>
         </div>

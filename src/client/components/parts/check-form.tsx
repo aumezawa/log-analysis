@@ -23,7 +23,7 @@ const CheckForm = React.memo(React.forwardRef<HTMLInputElement, CheckFormProps>(
   }, [onChange])
 
   const handleClick = useCallback(() => {
-    (ref as React.RefObject<HTMLInputElement>).current.click()
+    (ref as React.RefObject<HTMLInputElement>).current?.click()
   }, [true])
 
   return (

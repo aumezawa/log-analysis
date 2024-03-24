@@ -21,7 +21,7 @@ const LayerFrame: React.FC<LayerFrameProps> = ({
     <>
       { head }
     </>
-    <div className={ `${ !inmodal && "flex-main-area" } ${ overflow && "flex-main-overflow" }` }>
+    <div className={ `${ inmodal ? "" : "flex-main-area" } ${ overflow ? "flex-main-overflow" : "" }` }>
       <div className="flex-main-inner">
         { body }
       </div>

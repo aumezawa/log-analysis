@@ -15,8 +15,8 @@ type StatsDeleteModalProps = {
 }
 
 const StatsDeleteModal = React.memo<StatsDeleteModalProps>(({
-  id        = null,
-  counter   = null,
+  id        = "",
+  counter   = "",
   onSubmit  = undefined
 }) => {
   const [ignored, forceUpdate] = useReducer(x => x + 1, 0)
@@ -28,12 +28,12 @@ const StatsDeleteModal = React.memo<StatsDeleteModalProps>(({
 
   const data = useRef({
     filter      : "",
-    counter     : null
+    counter     : ""
   })
 
   useEffect(() => {
-    data.current.filter = refs.current.text.current.value = ""
-    data.current.counter = null
+    data.current.filter = refs.current.text.current!.value = ""
+    data.current.counter = ""
     refs.current.list.current.clear()
     forceUpdate()
   }, [counter])

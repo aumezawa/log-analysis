@@ -23,7 +23,7 @@ const defaultMessage = `Please input your "username" and "password". (between 4 
 
 const LoginBox = React.memo<LoginBoxProps>(({
   className = "",
-  username  = null,
+  username  = "",
   redirect  = true,
   onDone    = undefined
 }) => {
@@ -44,7 +44,7 @@ const LoginBox = React.memo<LoginBoxProps>(({
   })
 
   useEffect(() => {
-    if (Environment.getUrlParam("anonymous") === "true") {
+    if (Environment.getUrlParam("", "anonymous") === "true") {
       data.current.anonymous = true
       forceUpdate()
     }
@@ -89,7 +89,7 @@ const LoginBox = React.memo<LoginBoxProps>(({
     })
     .catch((err: Error | AxiosError) => {
       if (Axios.isAxiosError(err)) {
-        data.current.message = err.response.data.msg
+        data.current.message = err.response!.data.msg
       } else {
         data.current.message = "An error on the client occurred."
         console.log(err)

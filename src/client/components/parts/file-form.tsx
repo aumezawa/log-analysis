@@ -21,7 +21,7 @@ const FileForm = React.memo(React.forwardRef<HTMLInputElement, FileFormProps>(({
   filename  = "",
   valid     = undefined,
   disabled  = false,
-  accept    = null,
+  accept    = undefined,
   onChange  = undefined
 }, ref) => {
   const id = useRef({
@@ -29,8 +29,10 @@ const FileForm = React.memo(React.forwardRef<HTMLInputElement, FileFormProps>(({
   })
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    if (onChange) {
-      onChange(Path.basename(e.currentTarget.value.replace(/\\/g, "/")), e.currentTarget.files[0])
+    if (e.currentTarget.files) {
+      if (onChange) {
+        onChange(Path.basename(e.currentTarget.value.replace(/\\/g, "/")), e.currentTarget.files[0])
+      }
     }
   }, [onChange])
 
@@ -43,7 +45,7 @@ const FileForm = React.memo(React.forwardRef<HTMLInputElement, FileFormProps>(({
         <div className="custom-file">
           <input
             ref={ ref }
-            className={ `custom-file-input ${ !valid && "is-invalid" }` }
+            className={ `custom-file-input ${ valid ? "" : "is-invalid" }` }
             type="file"
             id={ id.current.form }
             disabled={ disabled }

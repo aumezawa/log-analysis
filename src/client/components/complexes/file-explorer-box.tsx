@@ -26,8 +26,8 @@ type FileExplorerBoxProps = {
 
 const FileExplorerBox = React.memo<FileExplorerBoxProps>(({
   className = "",
-  path      = null,
-  viewfile  = null,
+  path      = "",
+  viewfile  = "",
   onSelect  = undefined
 }) => {
   const [ignored, forceUpdate] = useReducer(x => x + 1, 0)
@@ -46,7 +46,7 @@ const FileExplorerBox = React.memo<FileExplorerBoxProps>(({
   })
 
   useEffect(() => {
-    data.current.filter = refs.current.text.current.value = ""
+    data.current.filter = refs.current.text.current!.value = ""
     data.current.files = {
       name    : "Empty",
       file    : false,
@@ -67,7 +67,7 @@ const FileExplorerBox = React.memo<FileExplorerBoxProps>(({
       .catch((err: Error | AxiosError) => {
         forceUpdate()
         if (Axios.isAxiosError(err)) {
-          alert(err.response.data.msg)
+          alert(err.response!.data.msg)
         } else {
           console.log(err)
         }
@@ -138,7 +138,7 @@ const FileExplorerBox = React.memo<FileExplorerBoxProps>(({
     })
     .catch((err: Error | AxiosError) => {
       if (Axios.isAxiosError(err)) {
-        alert(err.response.data.msg)
+        alert(err.response!.data.msg)
       } else {
         console.log(err)
       }

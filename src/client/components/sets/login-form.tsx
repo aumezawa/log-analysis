@@ -19,8 +19,8 @@ type LoginFormProps = {
 
 const LoginForm = React.memo<LoginFormProps>(({
   className   = "",
-  username    = null,
-  domain      = null,
+  username    = "",
+  domain      = "",
   disabled    = false,
   acceptUser  = /^[0-9a-zA-Z]{4,16}$/,
   acceptPass  = /^[0-9a-zA-Z]{4,16}$/,
@@ -45,7 +45,7 @@ const LoginForm = React.memo<LoginFormProps>(({
 
   useEffect(() => {
     if (username) {
-      data.current.username = refs.current.username.current.value = username
+      data.current.username = refs.current.username.current!.value = username
       setValidUser(!!username.match(acceptUser))
     }
   }, [username])
@@ -78,12 +78,12 @@ const LoginForm = React.memo<LoginFormProps>(({
 
   const handleCancel = useCallback(() => {
     if (!username) {
-      data.current.username = refs.current.username.current.value = ""
+      data.current.username = refs.current.username.current!.value = ""
       setValidUser(false)
     }
-    data.current.password = refs.current.password.current.value = ""
+    data.current.password = refs.current.password.current!.value = ""
     setValidPass(false)
-    refs.current.anonymous.current.checked = false
+    refs.current.anonymous.current!.checked = false
     setAnonymous(false)
     if (onCancel) {
       onCancel()

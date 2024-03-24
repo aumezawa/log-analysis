@@ -16,7 +16,7 @@ type TableProps = {
 const Table: React.FC<TableProps> = ({
   className = "my-2",
   title     = "No Title",
-  LIcon     = null,
+  LIcon     = undefined,
   label     = true,
   compare   = false,
   content   = [[]]
@@ -30,11 +30,14 @@ const Table: React.FC<TableProps> = ({
           content.map((line: Array<string>, index: number) => (
             <tr
               key={ `${ index }` }
-              className={ `${ compare && !Compare(line.slice(label ? 1 : 0)) && "table-warning" }` }
+              className={ `${ (compare && !Compare(line.slice(label ? 1 : 0))) ? "table-warning" : "" }` }
             >
               {
                 line.map((cell: string, index: number) => (
-                  <td key={ `${ index }` } className="table-main-content">
+                  <td
+                    key={ `${ index }` }
+                    className="table-main-content"
+                  >
                     { cell }
                   </td>
                 ))

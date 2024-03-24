@@ -30,7 +30,7 @@ const TerminalBox = React.memo<TerminalBoxProps>(({
 }) => {
   const ref = React.createRef<HTMLDivElement>()
 
-  const data = useRef({
+  const data = useRef<{[label: string]: any}>({
     terminal: null,
     fitAddon: null,
     socket  : null
@@ -39,7 +39,7 @@ const TerminalBox = React.memo<TerminalBoxProps>(({
   useEffect(() => {
     const terminal = data.current.terminal = new Terminal({ cursorBlink: true, cursorStyle: "underline" })
     const fitAddon = data.current.fitAddon = new FitAddon()
-    let socket: SocketIOClient.Socket = null
+    let socket: SocketIOClient.Socket | null = null
 
     if (path && !disabled) {
       const uri = `${ Environment.getBaseUrl() }/api/v1/${ Escape.root(path) }?mode=${ app }`
@@ -49,26 +49,31 @@ const TerminalBox = React.memo<TerminalBoxProps>(({
       })
       .then((res: AxiosResponse) => {
         terminal.loadAddon(fitAddon)
-        terminal.open(ref.current)
-        fitAddon.fit()
+        terminal.open(ref.current as HTMLElement)
+        try {
+          // workaround for error in xterm.js
+          fitAddon.fit()
+        } catch (err) {
+          // nop
+        }
 
         socket = data.current.socket = require("socket.io-client")(`?cmd=${ encodeURIComponent(res.data.cmd) }&cols=${ terminal.cols }&rows=${ terminal.rows }`, { path: "/terminal" })
 
         terminal.onData((data: string) => {
-          socket.emit("request", data)
+          socket?.emit("request", data)
         })
 
-        socket.on("response", (data: string) => {
+        socket?.on("response", (data: string) => {
           terminal.write(data)
         })
 
-        socket.on("disconnect", (reason: string) => {
+        socket?.on("disconnect", (reason: string) => {
         })
         return
       })
       .catch((err: Error | AxiosError) => {
         if (Axios.isAxiosError(err)) {
-          alert(err.response.data.msg)
+          alert(err.response!.data.msg)
         } else {
           console.log(err)
         }

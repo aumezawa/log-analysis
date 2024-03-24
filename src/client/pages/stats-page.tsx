@@ -46,11 +46,11 @@ const StatsPage = React.memo<StatsPageProps>(({
 
   const data = useRef({
     domain    : domains.split(",")[0],
-    project   : null,
-    stats     : null,
-    counter   : null,
-    date_from : null,
-    date_to   : null
+    project   : "",
+    stats     : "",
+    counter   : "",
+    date_from : "",
+    date_to   : ""
   })
 
   const updateTitle = () => {
@@ -72,13 +72,12 @@ const StatsPage = React.memo<StatsPageProps>(({
   }
 
   useEffect(() => {
-    const params = new URLSearchParams(decodeURIComponent(query))
-    const domain = params.get("domain")
-    const project = params.get("project")
-    const stats = params.get("stats")
-    const counter = params.get("counter")
-    const date_from = params.get("date_from")
-    const date_to = params.get("date_to")
+    const domain    = Environment.getUrlParam(query, "domain")
+    const project   = Environment.getUrlParam(query, "project")
+    const stats     = Environment.getUrlParam(query, "stats")
+    const counter   = Environment.getUrlParam(query, "counter")
+    const date_from = Environment.getUrlParam(query, "date_from")
+    const date_to   = Environment.getUrlParam(query, "date_to")
 
     if (domain) {
       const uri = `${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project, stats, counter) }`
@@ -113,11 +112,11 @@ const StatsPage = React.memo<StatsPageProps>(({
 
   const handleChangeDomain = useCallback((domainName: string) => {
     data.current.domain = domainName
-    data.current.project = null
-    data.current.stats = null
-    data.current.counter = null
-    data.current.date_from = null
-    data.current.date_to = null
+    data.current.project = ""
+    data.current.stats = ""
+    data.current.counter = ""
+    data.current.date_from = ""
+    data.current.date_to = ""
     updateTitle()
     updateAddressBar()
     forceUpdate()
@@ -125,10 +124,10 @@ const StatsPage = React.memo<StatsPageProps>(({
 
   const handleChangeProject = useCallback((projectName: string) => {
     data.current.project = projectName
-    data.current.stats = null
-    data.current.counter = null
-    data.current.date_from = null
-    data.current.date_to = null
+    data.current.stats = ""
+    data.current.counter = ""
+    data.current.date_from = ""
+    data.current.date_to = ""
     forceUpdate()
     updateTitle()
     updateAddressBar()
@@ -136,9 +135,9 @@ const StatsPage = React.memo<StatsPageProps>(({
 
   const handleChangeStats = useCallback((statsId: string) => {
     data.current.stats = statsId
-    data.current.counter = null
-    data.current.date_from = null
-    data.current.date_to = null
+    data.current.counter = ""
+    data.current.date_from = ""
+    data.current.date_to = ""
     forceUpdate()
     updateTitle()
     updateAddressBar()

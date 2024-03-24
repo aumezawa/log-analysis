@@ -26,7 +26,7 @@ const TextFilterForm = React.memo<TextFilterFormProps>(({
   operation = operations[0],
   mode      = options[0],
   sensitive = true,
-  condition = null,
+  condition = "",
   disabled  = false,
   dismiss   = "",
   onSubmit  = undefined,
@@ -35,15 +35,15 @@ const TextFilterForm = React.memo<TextFilterFormProps>(({
   const [valid, setValid] = useState<boolean>(false)
 
   useEffect(() => {
-    if (mode && typeof(sensitive) === "boolean" && condition) {
-      data.current.mode       = ref.current.mode.current.value         = mode
-      data.current.sensitive  = ref.current.sensitive.current.checked  = sensitive
-      data.current.condition  = ref.current.condition.current.value    = condition
+    if (options.includes(mode) && typeof(sensitive) === "boolean") {
+      data.current.mode       = ref.current.mode.current!.value         = mode
+      data.current.sensitive  = ref.current.sensitive.current!.checked  = sensitive
+      data.current.condition  = ref.current.condition.current!.value    = condition
       setValid(data.current.condition !== "")
     } else {
-      data.current.mode       = ref.current.mode.current.value         = options[0]
-      data.current.sensitive  = ref.current.sensitive.current.checked  = true
-      data.current.condition  = ref.current.condition.current.value    = ""
+      data.current.mode       = ref.current.mode.current!.value         = options[0]
+      data.current.sensitive  = ref.current.sensitive.current!.checked  = true
+      data.current.condition  = ref.current.condition.current!.value    = ""
       setValid(false)
     }
   }, [mode, sensitive, condition])
@@ -87,9 +87,9 @@ const TextFilterForm = React.memo<TextFilterFormProps>(({
   }, [onSubmit])
 
   const handleCancel = useCallback(() => {
-    data.current.mode       = ref.current.mode.current.value         = options[0]
-    data.current.sensitive  = ref.current.sensitive.current.checked  = true
-    data.current.condition  = ref.current.condition.current.value    = ""
+    data.current.mode       = ref.current.mode.current!.value         = options[0]
+    data.current.sensitive  = ref.current.sensitive.current!.checked  = true
+    data.current.condition  = ref.current.condition.current!.value    = ""
     setValid(false)
     if (onCancel) {
       onCancel()
@@ -103,7 +103,7 @@ const TextFilterForm = React.memo<TextFilterFormProps>(({
         className="mb-3"
         label="Mode"
         options={ options }
-        disabled={ disabled || operation === "search" }
+        disabled={ disabled || (operation === "search") }
         onChange={ handleChangeMode }
       />
       <CheckForm

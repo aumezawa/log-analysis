@@ -16,8 +16,8 @@ type TokenUpdateModalProps = {
 }
 
 const TokenUpdateModal = React.memo<TokenUpdateModalProps>(({
-  id        = undefined,
-  user      = null,
+  id        = "",
+  user      = "",
   onDone    = undefined
 }) => {
   const handleDone = useCallback(() => {

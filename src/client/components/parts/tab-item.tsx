@@ -18,7 +18,7 @@ const TabItem: React.FC<TabItemProps> = ({
   active    = false
 }) => (
   <div
-    className={ `tab-pane fade ${ hidden && "d-none" } ${ active && "show active" } ${ className }` }
+    className={ `tab-pane fade ${ hidden ? "d-none" : "" } ${ active ? "show active" : "" } ${ className }` }
     id={ itemId }
     role="tabpanel"
     aria-labelledby={ labelId }

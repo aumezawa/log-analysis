@@ -34,15 +34,15 @@ type FunctionalTableBoxProps = {
 
 const FunctionalTableBox = React.memo<FunctionalTableBoxProps>(({
   className           = "",
-  path                = null,
-  line                = null,
-  mark                = null,
-  textFilter          = null,
-  textSearch          = null,
+  path                = "",
+  line                = 0,
+  mark                = "",
+  textFilter          = "",
+  textSearch          = "",
   textSensitive       = true,
-  dateFrom            = null,
-  dateTo              = null,
-  merge               = null,
+  dateFrom            = "",
+  dateTo              = "",
+  merge               = "",
   onChangeLine        = undefined,
   onChangeMark        = undefined,
   onChangeTextFilter  = undefined,
@@ -84,7 +84,7 @@ const FunctionalTableBox = React.memo<FunctionalTableBoxProps>(({
         status.current.processing = false
         forceUpdate()
         if (Axios.isAxiosError(err)) {
-          alert(err.response.data.msg)
+          alert(err.response!.data.msg)
         } else {
           console.log(err)
         }
@@ -150,7 +150,7 @@ const FunctionalTableBox = React.memo<FunctionalTableBoxProps>(({
       status.current.processing = false
       forceUpdate()
       if (Axios.isAxiosError(err)) {
-        alert(err.response.data.msg)
+        alert(err.response!.data.msg)
       } else {
         console.log(err)
       }
@@ -194,7 +194,7 @@ const FunctionalTableBox = React.memo<FunctionalTableBoxProps>(({
     })
     .catch((err: Error | AxiosError) => {
       if (Axios.isAxiosError(err)) {
-        alert(err.response.data.msg)
+        alert(err.response!.data.msg)
       } else {
         console.log(err)
       }
