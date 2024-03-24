@@ -3,7 +3,7 @@ var fs = require('fs');
 var log4js = require('log4js');
 
 var rootPath = process.cwd();
-var configPath = process.env.npm_package_config_storage_path;
+var configPath = process.env.STORAGE_PATH ? path.join(process.env.STORAGE_PATH, "data") : process.env.npm_package_config_storage_path;
 var storagePath = (configPath.slice(0, 1) === '/' || configPath.slice(1, 3) === ':\\') ? configPath : path.join(rootPath, configPath);
 
 if (!fs.existsSync(storagePath)) {

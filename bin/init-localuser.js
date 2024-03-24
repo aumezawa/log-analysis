@@ -8,9 +8,13 @@ var filePath = path.join(rootPath, process.env.npm_package_config_userlist_path)
 var dirPath = path.dirname(filePath);
 
 var override = false;
+var force = false;
 process.argv.forEach(function(arg) {
   if (arg === '-o' || arg === '--override') {
     override = true;
+  }
+  if (arg === '-f' || arg === '--force') {
+    force = true
   }
 });
 
@@ -31,6 +35,28 @@ if (!override) {
     console.log('Info : If you want to re-create, use "-o" or "--override" option.');
     process.exit(0);
   }
+}
+
+
+// Note: forcely create a new file
+if (force) {
+  var writeData = JSON.stringify([{
+    'username'  : 'root',
+    'password'  : crypto.createHash('sha256').update('rootpassword', 'utf8').digest('hex'),
+    'privilege' : 'root',
+    'alias'     : 'root'
+  }]);
+  try {
+    if (!fs.existsSync(dirPath)) {
+      fs.mkdirSync(dirPath, { recursive: true })
+    }
+    fs.writeFileSync(filePath, writeData);
+    console.log('Info : User database file was forcely created successfully.');
+    console.log('Info : Path = ' + filePath);
+  } catch {
+    console.log('Error: Failed in writing a user database file...');
+  }
+  process.exit(0);
 }
 
 

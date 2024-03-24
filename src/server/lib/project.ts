@@ -12,7 +12,7 @@ import * as StatsTool from "./stats-tool"
 const rootPath: string = process.cwd()
 
 function getStoragePathSync(): string {
-  const configPath = process.env.npm_package_config_storage_path || null
+  const configPath = process.env.STORAGE_PATH ? path.join(process.env.STORAGE_PATH, "data") : (process.env.npm_package_config_storage_path || "")
   return configPath && ((configPath.slice(0, 1) === "/" || configPath.slice(1, 3) === ":\\") ? configPath : path.join(rootPath, configPath))
 }
 
