@@ -23,9 +23,9 @@ type MultiSelectModalProps = {
 }
 
 const MultiSelectModal = React.memo<MultiSelectModalProps>(({
-  id        = null,
-  domain    = null,
-  project   = null,
+  id        = "",
+  domain    = "",
+  project   = "",
   mode      = "hosts",
   reload    = 0,
   onSubmit  = undefined
@@ -38,7 +38,7 @@ const MultiSelectModal = React.memo<MultiSelectModalProps>(({
 
   const data = useRef({
     list        : [],
-    select      : []
+    select      : ([] as Array<string>)
   })
 
   useEffect(() => {
@@ -65,7 +65,7 @@ const MultiSelectModal = React.memo<MultiSelectModalProps>(({
       .catch((err: AxiosError) => {
         data.current.list = []
         forceUpdate()
-        alert(err.response.data.msg)
+        alert(err.response!.data.msg)
         return
       })
     } else {

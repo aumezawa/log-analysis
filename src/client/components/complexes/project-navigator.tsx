@@ -31,7 +31,7 @@ import DropdownHeader from "../parts/dropdown-header"
 import DropdownItem from "../parts/dropdown-item"
 
 type ProjectNavigatorProps = {
-  menu?           : string,
+  menu?           : boolean,
   privilege?      : string,
   domains         : string,
   domain          : string,
@@ -54,19 +54,19 @@ type ProjectNavigatorProps = {
 }
 
 const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
-  menu            = null,
+  menu            = false,
   privilege       = "none",
   domains         = "public,private",
-  domain          = null,
-  project         = null,
-  bundle          = null,
-  filename        = null,
-  merge           = null,
-  terminal        = null,
-  host            = null,
-  vm              = null,
-  dump            = null,
-  focus           = null,
+  domain          = "",
+  project         = "",
+  bundle          = "",
+  filename        = "",
+  merge           = "",
+  terminal        = "",
+  host            = "",
+  vm              = "",
+  dump            = "",
+  focus           = "",
   onChangeMenu    = undefined,
   onChangeDomain  = undefined,
   onChangeProject = undefined,
@@ -93,7 +93,7 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
   const data = useRef({
     action    : "open",
     mode      : "hosts",
-    bundleName: null
+    bundleName: ""
   })
 
   const handleClickShowMenu = useCallback(() => {
@@ -122,7 +122,7 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
     }
     if ((data.current.action === "delete" || data.current.action === "close") && (projectName === project)) {
       if (onChangeProject) {
-        onChangeProject(null)
+        onChangeProject("")
       }
     }
   }, [project, onChangeProject])
@@ -135,9 +135,9 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
       }
     }
     if ((data.current.action === "delete") && (bundleId === bundle)) {
-      data.current.bundleName = null
+      data.current.bundleName = ""
       if (onChangeBundle) {
-        onChangeBundle(null, null)
+        onChangeBundle("", "")
       }
     }
   }, [bundle, onChangeBundle])
@@ -420,25 +420,25 @@ const ProjectNavigator = React.memo<ProjectNavigatorProps>(({
             LIcon={ Tools }
             align="right"
             items={ [
-              menu && <DropdownHeader
+              <DropdownHeader
                 key="view-setting"
                 label="View Settings"
               />,
-              menu && <DropdownItem
+              <DropdownItem
                 key="view-left-show"
                 label="Show Left Menu"
                 LIcon={ WindowSidebar }
-                disabled={ menu === "on" }
+                disabled={ menu }
                 onClick={ handleClickShowMenu }
               />,
-              menu && <DropdownItem
+              <DropdownItem
                 key="view-left-hide"
                 label="Hide Left Menu"
                 LIcon={ Window }
-                disabled={ menu === "off" }
+                disabled={ !menu }
                 onClick={ handleClickHideMenu }
               />,
-              menu && <DropdownDivider key="divider-0" />,
+              <DropdownDivider key="divider-0" />,
               <DropdownHeader
                 key="project-header"
                 label="Project Operations"

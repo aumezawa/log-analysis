@@ -32,17 +32,17 @@ const OPTIONS = ["All", "System", "Hardware", "Network", "SCSI & Disk", "Softwar
 
 const HostInfoBox = React.memo<HostInfoBoxProps>(({
   className = "px-2",
-  domain    = null,
-  project   = null,
-  bundle    = null,
-  hosts     = null
+  domain    = "",
+  project   = "",
+  bundle    = "",
+  hosts     = ""
 }) => {
   const [ignored, forceUpdate] = useReducer(x => x + 1, 0)
 
   const data = useRef({
     display : OPTIONS[0],
-    bundles : [],
-    hosts   : []
+    bundles : ([] as Array<{[label: string]: any}>),
+    hosts   : ([] as Array<any>)
   })
 
   const status = useRef({
@@ -188,7 +188,7 @@ const HostInfoBox = React.memo<HostInfoBoxProps>(({
     }
 
     if (["All", "System"].includes(data.current.display)) {
-      TableLayout(data.current.hosts.map((hostInfo: HostInfo) => hostInfo.log.config), "name", null, {size: "KB"})
+      TableLayout(data.current.hosts.map((hostInfo: HostInfo) => hostInfo.log.config), "name", undefined, {size: "KB"})
       .forEach((content: Array<Array<string>>, index: number) => {
         tables.push(
           <Table
@@ -257,7 +257,7 @@ const HostInfoBox = React.memo<HostInfoBoxProps>(({
     }
 
     if (["All", "Hardware", "Network"].includes(data.current.display)) {
-      TableLayout(data.current.hosts.map((hostInfo: HostInfo) => hostInfo.network.nics), "name", null, {speed: "Mbps"})
+      TableLayout(data.current.hosts.map((hostInfo: HostInfo) => hostInfo.network.nics), "name", undefined, {speed: "Mbps"})
       .forEach((content: Array<Array<string>>, index: number) => {
         tables.push(
           <Table
@@ -332,7 +332,7 @@ const HostInfoBox = React.memo<HostInfoBoxProps>(({
     }
 
     if (["All", "SCSI & Disk"].includes(data.current.display)) {
-      TableLayout(data.current.hosts.map((hostInfo: HostInfo) => hostInfo.storage.disks), "name", null, {size: "GB"})
+      TableLayout(data.current.hosts.map((hostInfo: HostInfo) => hostInfo.storage.disks), "name", undefined, {size: "GB"})
       .forEach((content: Array<Array<string>>, index: number) => {
         tables.push(
           <Table
@@ -347,7 +347,7 @@ const HostInfoBox = React.memo<HostInfoBoxProps>(({
     }
 
     if (["All", "SCSI & Disk"].includes(data.current.display)) {
-      TableLayout(data.current.hosts.map((hostInfo: HostInfo) => hostInfo.storage.devices), "name", null, {size: "GB"})
+      TableLayout(data.current.hosts.map((hostInfo: HostInfo) => hostInfo.storage.devices), "name", undefined, {size: "GB"})
       .forEach((content: Array<Array<string>>, index: number) => {
         tables.push(
           <Table

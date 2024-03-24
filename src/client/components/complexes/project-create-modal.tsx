@@ -16,18 +16,24 @@ import MultiTextForm from "../sets/multi-text-form"
 type ProjectCreateModalProps = {
   id        : string,
   domain?   : string,
+  autoClose?: number,
   onSubmit? : (projectName: string) => void
 }
 
 const defaultMessage = `Please input a new project "name" and "description". (characters with [0-9a-zA-Z#@_+-])`
 
 const ProjectCreateModal = React.memo<ProjectCreateModalProps>(({
-  id        = null,
-  domain    = null,
+  id        = "",
+  domain    = "",
+  autoClose = 3,
   onSubmit  = undefined
 }) => {
   const [ignored, forceUpdate] = useReducer(x => x + 1, 0)
   const [formKey, clearFrom]   = useReducer(x => x + 1, 0)
+
+  const refs = useRef({
+    btn : React.createRef<HTMLButtonElement>(),
+  })
 
   const data = useRef({
     message : defaultMessage
@@ -63,11 +69,14 @@ const ProjectCreateModal = React.memo<ProjectCreateModalProps>(({
         onSubmit(name)
       }
       clearFrom()
+      if (autoClose >= 0 && autoClose <= 10) {
+        setTimeout(() => refs.current.btn.current?.click(), autoClose * 1000)
+      }
       return
     })
     .catch((err: Error | AxiosError) => {
       if (Axios.isAxiosError(err)) {
-        data.current.message = err.response.data.msg
+        data.current.message = err.response!.data.msg
       } else {
         data.current.message = "An error on the client occurred."
         console.log(err)
@@ -88,6 +97,7 @@ const ProjectCreateModal = React.memo<ProjectCreateModalProps>(({
 
   return (
     <ModalFrame
+      ref={ refs.current.btn }
       id={ id }
       title="Project"
       message="Create a new project."

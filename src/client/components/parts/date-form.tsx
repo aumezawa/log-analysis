@@ -36,7 +36,7 @@ const DateForm = React.memo(React.forwardRef<HTMLInputElement, DateFormProps>(({
         }
         <input
           ref={ ref }
-          className={ `form-control ${ !valid && "is-invalid" }` }
+          className={ `form-control ${ valid ? "" : "is-invalid" }` }
           type="datetime-local"
           step="1"
           disabled={ disabled }

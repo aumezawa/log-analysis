@@ -26,10 +26,10 @@ type ZdumpInfoBoxProps = {
 
 const ZdumpInfoBox = React.memo<ZdumpInfoBoxProps>(({
   className = "px-2",
-  domain    = null,
-  project   = null,
-  bundle    = null,
-  zdump     = null
+  domain    = "",
+  project   = "",
+  bundle    = "",
+  zdump     = ""
 }) => {
   const [ignored, forceUpdate] = useReducer(x => x + 1, 0)
 

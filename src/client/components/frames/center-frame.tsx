@@ -12,7 +12,7 @@ const CenterFrame: React.FC<CenterFrameProps> = ({
   overflow  = true
 }) => (
   <div className={ `grid-container-center row ${ className }` }>
-    <div className={ `grid-area col-6 ${ overflow && "grid-area-overflow-y" }` }>
+    <div className={ `grid-area col-6 ${ overflow ? "grid-area-overflow-y" : "" }` }>
       { body }
     </div>
   </div>

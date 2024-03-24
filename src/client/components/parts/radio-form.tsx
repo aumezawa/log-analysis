@@ -72,7 +72,7 @@ const RadioForm = React.memo(React.forwardRef<RedioFormReference, RadioFormProps
   )
 }), (prevProps: RadioFormProps, nextProps: RadioFormProps) => (
   (prevProps.className === nextProps.className)
-  && (prevProps.labels.toString() === nextProps.labels.toString())
+  && (prevProps.labels?.toString() === nextProps.labels?.toString())
   && (prevProps.onChange === nextProps.onChange)
 ))
 

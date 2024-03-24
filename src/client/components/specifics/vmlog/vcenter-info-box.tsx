@@ -31,16 +31,16 @@ const OPTIONS = ["All", "vSAN"]
 
 const VCenterInfoBox = React.memo<VCenterInfoBoxProps>(({
   className = "px-2",
-  domain    = null,
-  project   = null,
-  bundle    = null
+  domain    = "",
+  project   = "",
+  bundle    = ""
 }) => {
   const [ignored, forceUpdate] = useReducer(x => x + 1, 0)
 
   const data = useRef({
     display : OPTIONS[0],
-    bundles : [],
-    vcs     : []
+    bundles : ([] as Array<{[label: string]: any}>),
+    vcs     : ([] as Array<any>)
   })
 
   const status = useRef({
@@ -177,7 +177,7 @@ const VCenterInfoBox = React.memo<VCenterInfoBoxProps>(({
     }
 
     if (["All", "vSAN"].includes(data.current.display) && vsan) {
-      TableLayout(data.current.vcs.map((vcInfo: VCenterInfo) => vcInfo.vsan.disks), "path", null, {size: "GB", usage: "%"})
+      TableLayout(data.current.vcs.map((vcInfo: VCenterInfo) => vcInfo.vsan.disks), "path", undefined, {size: "GB", usage: "%"})
       .forEach((content: Array<Array<string>>, index: number) => {
         tables.push(
           <Table

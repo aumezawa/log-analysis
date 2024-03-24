@@ -13,7 +13,7 @@ type DomainSelectModalProps = {
 }
 
 const DomainSelectModal = React.memo<DomainSelectModalProps>(({
-  id        = null,
+  id        = "",
   domains   = "public,private",
   domain    = "public",
   onSubmit  = undefined

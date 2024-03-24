@@ -15,7 +15,7 @@ const MessageCard = React.memo<MessageCardProps>(({
   warning   = false,
   failure   = false
 }) => {
-  let color: string = "bg-info"
+  let color = "bg-info"
 
   color = (success) ? "bg-success" : color
   color = (warning) ? "bg-warning" : color

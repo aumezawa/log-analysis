@@ -18,10 +18,10 @@ type MultiTextFormProps = {
 const MultiTextForm = React.memo<MultiTextFormProps>(({
   className = "",
   label     = "No label",
-  auxiliary = null,
+  auxiliary = "",
   button    = "Sumbit",
   disabled  = false,
-  accept    = null,
+  accept    = undefined,
   onSubmit  = undefined,
   onCancel  = undefined
 }) => {
@@ -39,7 +39,11 @@ const MultiTextForm = React.memo<MultiTextFormProps>(({
 
   const handleChangeName = useCallback((value: string) => {
     data.current.name = value
-    setValid(!!value.match(accept))
+    if (accept) {
+      setValid(!!value.match(accept))
+    } else {
+      setValid(true)
+    }
   }, [true])
 
   const handleChangeDescription = useCallback((value: string) => {
@@ -53,8 +57,8 @@ const MultiTextForm = React.memo<MultiTextFormProps>(({
   }, [onSubmit])
 
   const handleCancel = useCallback(() => {
-    data.current.name = ref.current.name.current.value = ""
-    data.current.aux  = ref.current.aux.current.value  = ""
+    data.current.name = ref.current.name.current!.value = ""
+    data.current.aux  = ref.current.aux.current!.value  = ""
     setValid(false)
     if (onCancel) {
       onCancel()

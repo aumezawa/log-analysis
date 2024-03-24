@@ -33,18 +33,18 @@ const OPTIONS = ["All", "System", "Network", "SCSI & Disk", "Passthrough"]
 
 const VmInfoBox = React.memo<VmInfoBoxProps>(({
   className = "px-2",
-  domain    = null,
-  project   = null,
-  bundle    = null,
-  vmname    = null,
-  vms       = null
+  domain    = "",
+  project   = "",
+  bundle    = "",
+  vmname    = "",
+  vms       = ""
 }) => {
   const [ignored, forceUpdate] = useReducer(x => x + 1, 0)
 
   const data = useRef({
     display : OPTIONS[0],
-    bundles : [],
-    vms     : []
+    bundles : ([] as Array<{[lable: string]: any}>),
+    vms     : ([] as Array<any>)
   })
 
   const status = useRef({
@@ -218,7 +218,7 @@ const VmInfoBox = React.memo<VmInfoBoxProps>(({
     }
 
     if (["All", "SCSI & Disk"].includes(data.current.display)) {
-      TableLayout(data.current.vms.map((vmInfo: VmInfo) => vmInfo.disks), "name", null, {size: "GB"})
+      TableLayout(data.current.vms.map((vmInfo: VmInfo) => vmInfo.disks), "name", undefined, {size: "GB"})
       .forEach((content: Array<Array<string>>, index: number) => {
         tables.push(
           <Table

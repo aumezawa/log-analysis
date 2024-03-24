@@ -17,7 +17,7 @@ const config_master: log4js.Configuration = {
     },
     file: {
       type: "file",
-      filename: path.join(rootPath, process.env.npm_package_config_log_path, filename),
+      filename: process.env.STORAGE_PATH ? path.join(process.env.STORAGE_PATH, "log", filename) : path.join(rootPath, process.env.npm_package_config_log_path!, filename),
       maxLogSize: 1 * 1024 * 1024 * 1024,
       backups: 100,
       layout: {

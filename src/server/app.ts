@@ -13,7 +13,7 @@ import apiV1Router from "./routes/api-v1"
 
 const app: express.Express = express()
 const rootPath: string = process.cwd()
-const configPath: string = process.env.npm_package_config_storage_path
+const configPath: string = process.env.STORAGE_PATH ? path.join(process.env.STORAGE_PATH, "data") : (process.env.npm_package_config_storage_path || "")
 const storagePath: string = configPath && ((configPath.slice(0, 1) === "/" || configPath.slice(1, 3) === ":\\") ? configPath : path.join(rootPath, configPath))
 
 app.set("domains", process.env.npm_package_config_domains)

@@ -20,10 +20,10 @@ type DownloadReportModalProps = {
 }
 
 const DownloadReportModal = React.memo<DownloadReportModalProps>(({
-  id        = null,
-  domain    = null,
-  project   = null,
-  bundle    = null
+  id        = "",
+  domain    = "",
+  project   = "",
+  bundle    = ""
 }) => {
   const handleDownload = useCallback(() => {
     Axios.get(`${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project, bundle) }/report`, {
@@ -54,7 +54,7 @@ const DownloadReportModal = React.memo<DownloadReportModalProps>(({
       return
     })
     .catch((err: AxiosError) => {
-      alert(err.response.data.msg)
+      alert(err.response!.data.msg)
       return
     })
   }, [domain, project, bundle])

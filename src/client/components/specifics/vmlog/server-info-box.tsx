@@ -14,11 +14,11 @@ type ServerInfoBoxProps = {
 
 const ServerInfoBox = React.memo<ServerInfoBoxProps>(({
   className = "px-2",
-  domain    = null,
-  project   = null,
-  bundle    = null,
-  type      = null,
-  hosts     = null
+  domain    = "",
+  project   = "",
+  bundle    = "",
+  type      = "",
+  hosts     = ""
 }) => (
   <>
     { type === "vm-support" &&

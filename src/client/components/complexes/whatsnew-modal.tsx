@@ -17,7 +17,7 @@ type WhatsNewModalProps = {
 }
 
 const WhatsNewModal = React.memo<WhatsNewModalProps>(({
-  id  = null
+  id  = ""
 }) => {
   const [ignored, forceUpdate] = useReducer(x => x + 1, 0)
 
@@ -38,7 +38,7 @@ const WhatsNewModal = React.memo<WhatsNewModalProps>(({
     })
     .catch((err: Error | AxiosError) => {
       if (Axios.isAxiosError(err)) {
-        alert(err.response.data.msg)
+        alert(err.response!.data.msg)
       } else {
         console.log(err)
       }

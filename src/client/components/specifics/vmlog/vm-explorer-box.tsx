@@ -29,9 +29,9 @@ type VmExplorerBoxProps = {
 
 const VmExplorerBox = React.memo<VmExplorerBoxProps>(({
   className = "",
-  domain    = null,
-  project   = null,
-  bundle    = null,
+  domain    = "",
+  project   = "",
+  bundle    = "",
   onSelect  = undefined
 }) => {
   const [ignored, forceUpdate] = useReducer(x => x + 1, 0)
@@ -79,7 +79,7 @@ const VmExplorerBox = React.memo<VmExplorerBoxProps>(({
       })
       .catch((err: AxiosError) => {
         forceUpdate()
-        alert(err.response.data.msg)
+        alert(err.response!.data.msg)
         return
       })
     } else {

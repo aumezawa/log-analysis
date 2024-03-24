@@ -15,7 +15,7 @@ const Message = React.memo<MessageProps>(({
   warning   = false,
   failure   = false
 }) => {
-  let color: string = "alert-info"
+  let color = "alert-info"
 
   color = (success) ? "alert-success" : color
   color = (warning) ? "alert-warning" : color

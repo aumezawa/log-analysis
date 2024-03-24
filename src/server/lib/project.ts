@@ -14,7 +14,7 @@ import * as StatsTool from "./stats-tool"
 const rootPath: string = process.cwd()
 
 function getStoragePathSync(): string {
-  const configPath = process.env.npm_package_config_storage_path || null
+  const configPath = process.env.STORAGE_PATH ? path.join(process.env.STORAGE_PATH, "data") : (process.env.npm_package_config_storage_path || "")
   return configPath && ((configPath.slice(0, 1) === "/" || configPath.slice(1, 3) === ":\\") ? configPath : path.join(rootPath, configPath))
 }
 
@@ -70,7 +70,7 @@ function createResource(path: string): Promise<void> {
 
 function deleteResourceSync(path: string): boolean {
   try {
-    FSTool.rmRecursiveSync(path)
+    FSTool.rmRecursiveCacheSync(path)
     return true
   } catch (err) {
     (err instanceof Error) && logger.error(`${ err.name }: ${ err.message }`)

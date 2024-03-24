@@ -29,11 +29,11 @@ type StatsSelectModalProps = {
 }
 
 const StatsSelectModal = React.memo<StatsSelectModalProps>(({
-  id        = null,
-  domain    = null,
-  project   = null,
-  stats     = null,
-  counter   = null,
+  id        = "",
+  domain    = "",
+  project   = "",
+  stats     = "",
+  counter   = "",
   onSubmit  = undefined
 }) => {
   const [ignored, forceUpdate] = useReducer(x => x + 1, 0)
@@ -51,9 +51,9 @@ const StatsSelectModal = React.memo<StatsSelectModalProps>(({
   })
 
   const data = useRef({
-    group       : null,
-    subgroup    : null,
-    counter     : null,
+    group       : "",
+    subgroup    : "",
+    counter     : "",
     filter1     : "",
     filter2     : "",
     filter3     : "",
@@ -65,12 +65,12 @@ const StatsSelectModal = React.memo<StatsSelectModalProps>(({
   })
 
   useEffect(() => {
-    data.current.group = null
-    data.current.subgroup = null
-    data.current.counter = null
-    data.current.filter1 = refs.current.text1.current.value = ""
-    data.current.filter2 = refs.current.text2.current.value = ""
-    data.current.filter3 = refs.current.text3.current.value = ""
+    data.current.group = ""
+    data.current.subgroup = ""
+    data.current.counter = ""
+    data.current.filter1 = refs.current.text1.current!.value = ""
+    data.current.filter2 = refs.current.text2.current!.value = ""
+    data.current.filter3 = refs.current.text3.current!.value = ""
     refs.current.list1.current.clear()
     refs.current.list2.current.clear()
     refs.current.list3.current.clear()
@@ -129,10 +129,10 @@ const StatsSelectModal = React.memo<StatsSelectModalProps>(({
 
   const handleSelectGroup = useCallback((value: string) => {
     data.current.group = value
-    data.current.subgroup = null
-    data.current.counter = null
-    data.current.filter2 = refs.current.text2.current.value = ""
-    data.current.filter3 = refs.current.text3.current.value = ""
+    data.current.subgroup = ""
+    data.current.counter = ""
+    data.current.filter2 = refs.current.text2.current!.value = ""
+    data.current.filter3 = refs.current.text3.current!.value = ""
     refs.current.list2.current.clear()
     refs.current.list3.current.clear()
     forceUpdate()
@@ -140,8 +140,8 @@ const StatsSelectModal = React.memo<StatsSelectModalProps>(({
 
   const handleSelectSubGroup = useCallback((value: string) => {
     data.current.subgroup = value
-    data.current.counter = null
-    data.current.filter3 = refs.current.text3.current.value = ""
+    data.current.counter = ""
+    data.current.filter3 = refs.current.text3.current!.value = ""
     refs.current.list3.current.clear()
     forceUpdate()
   }, [true])

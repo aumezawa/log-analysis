@@ -28,10 +28,10 @@ type BundleSelectModalProps = {
 }
 
 const BundleSelectModal = React.memo<BundleSelectModalProps>(({
-  id        = null,
-  domain    = null,
-  project   = null,
-  bundle    = null,
+  id        = "",
+  domain    = "",
+  project   = "",
+  bundle    = "",
   action    = "open",
   reload    = 0,
   onSubmit  = undefined,
@@ -46,9 +46,9 @@ const BundleSelectModal = React.memo<BundleSelectModalProps>(({
 
   const data = useRef({
     filter      : "",
-    bundleId    : null,
-    bundleName  : null,
-    bundleType  : null,
+    bundleId    : "",
+    bundleName  : "",
+    bundleType  : "",
     bundles     : []
   })
 
@@ -58,9 +58,9 @@ const BundleSelectModal = React.memo<BundleSelectModalProps>(({
 
   useEffect(() => {
     reloadBundle()
-    data.current.filter = refs.current.text.current.value = ""
-    data.current.bundleId = null
-    data.current.bundleName = null
+    data.current.filter = refs.current.text.current!.value = ""
+    data.current.bundleId = ""
+    data.current.bundleName = ""
     refs.current.list.current.clear()
   }, [domain, project, reload])
 
@@ -72,11 +72,15 @@ const BundleSelectModal = React.memo<BundleSelectModalProps>(({
         data    : {}
       })
       .then((res: AxiosResponse) => {
-        onUpdate(res.data.name)
+        if (onUpdate) {
+          onUpdate(res.data.name)
+        }
         return
       })
       .catch((err: Error | AxiosError) => {
-        onSubmit(null, null, null)
+        if (onSubmit) {
+          onSubmit("", "", "")
+        }
         if (Axios.isAxiosError(err)) {
           // nop
         } else {
@@ -103,7 +107,7 @@ const BundleSelectModal = React.memo<BundleSelectModalProps>(({
         data.current.bundles = []
         forceUpdate()
         if (Axios.isAxiosError(err)) {
-          alert(err.response.data.msg)
+          alert(err.response!.data.msg)
         } else {
           console.log(err)
         }
@@ -123,9 +127,9 @@ const BundleSelectModal = React.memo<BundleSelectModalProps>(({
   }, [true])
 
   const handleSelectBundle = useCallback((value: string) => {
-    data.current.bundleId = data.current.bundles.find((bundle: BundleInfo) => (bundle.name === value.split(" ")[0])).id.toString()
+    data.current.bundleId = (data.current.bundles.find((bundle: BundleInfo) => (bundle.name === value.split(" ")[0])) as BundleInfo).id.toString()
     data.current.bundleName = value.split(" ")[0]
-    data.current.bundleType = data.current.bundles.find((bundle: BundleInfo) => (bundle.name === value.split(" ")[0])).type
+    data.current.bundleType = (data.current.bundles.find((bundle: BundleInfo) => (bundle.name === value.split(" ")[0])) as BundleInfo).type
     forceUpdate()
   }, [true])
 
@@ -150,15 +154,15 @@ const BundleSelectModal = React.memo<BundleSelectModalProps>(({
         if (onSubmit) {
           onSubmit(data.current.bundleId, data.current.bundleName, data.current.bundleType)
         }
-        data.current.bundleId = null
-        data.current.bundleName = null
+        data.current.bundleId = ""
+        data.current.bundleName = ""
         status.current.processing = false
         reloadBundle()
         return
       })
       .catch((err: Error | AxiosError) => {
         if (Axios.isAxiosError(err)) {
-          alert(err.response.data.msg)
+          alert(err.response!.data.msg)
         } else {
           console.log(err)
         }
@@ -203,7 +207,7 @@ const BundleSelectModal = React.memo<BundleSelectModalProps>(({
       })
       .catch((err: Error | AxiosError) => {
         if (Axios.isAxiosError(err)) {
-          alert(err.response.data.msg)
+          alert(err.response!.data.msg)
         } else {
           console.log(err)
         }
@@ -253,7 +257,7 @@ const BundleSelectModal = React.memo<BundleSelectModalProps>(({
         <ButtonSet
           submit={ `${ action.charAt(0).toUpperCase() + action.slice(1) } Bundle` }
           cancel="Close"
-          valid={ data.current.bundleId && !status.current.processing }
+          valid={ data.current.bundleId ? !status.current.processing : false }
           dismiss="modal"
           keep={ action !== "open" }
           onSubmit={ handleSubmit }

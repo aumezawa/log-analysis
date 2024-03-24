@@ -23,7 +23,7 @@ type MultiDateFormProps = {
 const MultiDateForm = React.memo(React.forwardRef<MultiDateFormReference, MultiDateFormProps>(({
   className     = "",
   label         = "Date",
-  button        = null,
+  button        = "",
   valid         = undefined,
   disabled      = false,
   defaultFrom   = "2019-01-01T00:00:00Z",
@@ -45,12 +45,12 @@ const MultiDateForm = React.memo(React.forwardRef<MultiDateFormReference, MultiD
 
   useImperativeHandle(ref, () => ({
     set: (from: string, to: string) => {
-      refs.current.from.current.value = from ? from : refs.current.from.current.value
-      refs.current.to.current.value   = to   ? to   : refs.current.to.current.value
+      refs.current.from.current!.value = from ? from : refs.current.from.current!.value
+      refs.current.to.current!.value   = to   ? to   : refs.current.to.current!.value
     },
     now: (from: boolean, to: boolean) => {
-      refs.current.from.current.value = from ? LocalDate.toInputFormat(new Date(), true) : refs.current.from.current.value
-      refs.current.to.current.value   = to   ? LocalDate.toInputFormat(new Date(), true) : refs.current.to.current.value
+      refs.current.from.current!.value = from ? LocalDate.toInputFormat(new Date(), true) : refs.current.from.current!.value
+      refs.current.to.current!.value   = to   ? LocalDate.toInputFormat(new Date(), true) : refs.current.to.current!.value
     }
   }), [true])
 
@@ -83,7 +83,7 @@ const MultiDateForm = React.memo(React.forwardRef<MultiDateFormReference, MultiD
             from={ defaultFrom }
             to={ defaultTo }
             labelSubmit="Set"
-            labelCancel={ null }
+            labelCancel=""
             dismiss="modal"
             onSubmit={ handleSubmit }
           />
@@ -109,12 +109,12 @@ const MultiDateForm = React.memo(React.forwardRef<MultiDateFormReference, MultiD
           </div>
         }
         <button
-          className={ `form-control ${ !valid && "is-invalid" }` }
+          className={ `form-control ${ valid ? "" : "is-invalid" }` }
           disabled={ disabled }
           data-toggle="modal"
           data-target={ "#" + id.current.date }
         >
-          { !valid ? "Click here to set" : "Click search button -->" }
+          { valid ? "Click search button -->" : "Click here to set" }
         </button>
         { button &&
           <div className="input-group-append">

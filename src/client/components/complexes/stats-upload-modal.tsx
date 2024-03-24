@@ -18,19 +18,25 @@ type StatsUploadBoxProps = {
   id        : string,
   domain?   : string
   project?  : string,
+  autoClose?: number,
   onSubmit? : (statsId: string, statsName: string) => void
 }
 
 const defaultMessage = `Please select a upload file (.csv) and input a stats "description".`
 
 const StatsUploadBox = React.memo<StatsUploadBoxProps>(({
-  id        = null,
-  domain    = null,
-  project   = null,
+  id        = "",
+  domain    = "",
+  project   = "",
+  autoClose = 3,
   onSubmit  = undefined
 }) => {
   const [ignored, forceUpdate]  = useReducer(x => x + 1, 0)
   const [formKey, clearFrom]    = useReducer(x => x + 1, 0)
+
+  const refs = useRef({
+    btn : React.createRef<HTMLButtonElement>(),
+  })
 
   const data = useRef({
     message   : defaultMessage
@@ -52,7 +58,7 @@ const StatsUploadBox = React.memo<StatsUploadBoxProps>(({
     clearFrom()
   }, [true])
 
-  const handleSubmit = useCallback((name: string, obj: any, description: string, preserve: boolean) => {
+  const handleSubmit = useCallback((name: string, obj: any, description: string, preserve: boolean = false) => {
     const uri = `${ Environment.getBaseUrl() }/api/v1/${ ProjectPath.encode(domain, project) }/stats`
     const params = new FormData()
     params.append("stats", obj)
@@ -83,11 +89,14 @@ const StatsUploadBox = React.memo<StatsUploadBoxProps>(({
         onSubmit(String(res.data.id), res.data.name)
       }
       clearFrom()
+      if (autoClose >= 0 && autoClose <= 10) {
+        setTimeout(() => refs.current.btn.current?.click(), autoClose * 1000)
+      }
       return
     })
     .catch((err: Error | AxiosError) => {
       if (Axios.isAxiosError(err)) {
-        data.current.message = err.response.data.msg
+        data.current.message = err.response!.data.msg
       } else {
         data.current.message = "An error on the client occurred."
         console.log(err)
@@ -112,6 +121,7 @@ const StatsUploadBox = React.memo<StatsUploadBoxProps>(({
 
   return (
     <ModalFrame
+      ref={ refs.current.btn }
       id={ id }
       title="Stats"
       message="Upload a performance data."

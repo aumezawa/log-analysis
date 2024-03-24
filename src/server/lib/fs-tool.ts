@@ -6,6 +6,8 @@ import * as zip from "adm-zip"
 import * as CacheTool from "../lib/cache-tool"
 
 const dateFormat = process.env.npm_package_config_date_format || ""
+const cacheDir = "cache"
+const cacheFile = "fs.ls.cache"
 
 export function isErrnoException(err: any, code: string): boolean {
   return (err instanceof Error) && ((err as NodeJS.ErrnoException).code === code)
@@ -73,7 +75,7 @@ export function lsRecursiveCacheSync(node: string, search?: string, date_from?:s
     return lsRecursiveSync(node, search, date_from, date_to)
   }
 
-  const file = path.join(path.dirname(node), "cache", "fs.ls.cache")
+  const file = path.join(path.dirname(node), cacheDir, cacheFile)
   const key  = path.basename(node)
 
   const cache = CacheTool.readCache(file, key)
@@ -119,6 +121,15 @@ export function rmRecursiveSync(node: string): void {
   } else {
     fs.unlinkSync(node)
   }
+}
+
+export function rmRecursiveCacheSync(node: string): void {
+  const file = path.join(path.dirname(node), cacheDir, cacheFile)
+  const key  = path.basename(node)
+
+  rmRecursiveSync(node)
+
+  CacheTool.deleteCache(file, key)
 }
 
 export function rmRecursive(node: string, callback: (err?: any) => void): void

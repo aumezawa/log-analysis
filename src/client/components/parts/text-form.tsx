@@ -19,10 +19,10 @@ type TextFormProps = {
 const TextForm = React.memo(React.forwardRef<HTMLInputElement, TextFormProps>(({
   className   = "",
   label       = "Text",
-  auxiliary   = null,
-  button      = null,
+  auxiliary   = "",
+  button      = "",
   type        = "text",
-  size        = null,
+  size        = undefined,
   valid       = undefined,
   validation  = true,
   disabled    = false,
@@ -85,7 +85,7 @@ const TextForm = React.memo(React.forwardRef<HTMLInputElement, TextFormProps>(({
         }
         <input
           ref={ ref }
-          className={ `form-control text-monospace ${ validation && !valid && "is-invalid" }` }
+          className={ `form-control text-monospace ${ (!validation || valid) ? "" : "is-invalid" }` }
           type={ type }
           size={ size }
           disabled={ disabled }

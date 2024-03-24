@@ -1,5 +1,5 @@
 export default {
-  isDomainSelectable: (privilege: string) => {
+  isDomainSelectable: (privilege: string): boolean => {
     switch (privilege) {
       case "root":
       case "owner":
@@ -13,7 +13,7 @@ export default {
     }
   },
 
-  isProjectCreatable: (privilege: string, domain: string) => {
+  isProjectCreatable: (privilege: string, domain: string): boolean => {
     switch (privilege) {
       case "root":
       case "owner":
@@ -27,7 +27,7 @@ export default {
     }
   },
 
-  isProjectOpenable: (privilege: string, domain: string) => {
+  isProjectOpenable: (privilege: string, domain: string): boolean => {
     switch (privilege) {
       case "root":
       case "owner":
@@ -41,7 +41,7 @@ export default {
     }
   },
 
-  isProjectClosable: (privilege: string, domain: string) => {
+  isProjectClosable: (privilege: string, domain: string): boolean => {
     switch (privilege) {
       case "root":
       case "owner":
@@ -55,7 +55,7 @@ export default {
     }
   },
 
-  isProjectReOpenable: (privilege: string, domain: string) => {
+  isProjectReOpenable: (privilege: string, domain: string): boolean => {
     switch (privilege) {
       case "root":
       case "owner":
@@ -69,58 +69,7 @@ export default {
     }
   },
 
-  isProjectDeletable: (privilege: string, domain: string) => {
-    switch (privilege) {
-      case "root":
-      case "owner":
-        return true
-
-      case "user":
-        switch (domain) {
-          case "public":
-          case "private":
-            return true
-
-          default:
-            return false
-        }
-
-      case "anonymous":
-      case "none":
-      default:
-        return false
-    }
-  },
-
-  isBundleUploadable: (privilege: string, domain: string) => {
-    switch (privilege) {
-      case "root":
-      case "owner":
-      case "user":
-      case "anonymous":
-      case "none":
-        return true
-
-      default:
-        return false
-    }
-  },
-
-  isBundleOpenable: (privilege: string, domain: string) => {
-    switch (privilege) {
-      case "root":
-      case "owner":
-      case "user":
-      case "anonymous":
-      case "none":
-        return true
-
-      default:
-        return false
-    }
-  },
-
-  isBundleDeletable: (privilege: string, domain: string) => {
+  isProjectDeletable: (privilege: string, domain: string): boolean => {
     switch (privilege) {
       case "root":
       case "owner":
@@ -143,7 +92,7 @@ export default {
     }
   },
 
-  isBundleDownloadable: (privilege: string, domain: string) => {
+  isBundleUploadable: (privilege: string, domain: string): boolean => {
     switch (privilege) {
       case "root":
       case "owner":
@@ -157,7 +106,7 @@ export default {
     }
   },
 
-  isStatsUploadable: (privilege: string, domain: string) => {
+  isBundleOpenable: (privilege: string, domain: string): boolean => {
     switch (privilege) {
       case "root":
       case "owner":
@@ -171,21 +120,7 @@ export default {
     }
   },
 
-  isStatsOpenable: (privilege: string, domain: string) => {
-    switch (privilege) {
-      case "root":
-      case "owner":
-      case "user":
-      case "anonymous":
-      case "none":
-        return true
-
-      default:
-        return false
-    }
-  },
-
-  isStatsDeletable: (privilege: string, domain: string) => {
+  isBundleDeletable: (privilege: string, domain: string): boolean => {
     switch (privilege) {
       case "root":
       case "owner":
@@ -208,7 +143,72 @@ export default {
     }
   },
 
-  isConsoleOpenable: (privilege: string, domain: string) => {
+  isBundleDownloadable: (privilege: string, domain: string): boolean => {
+    switch (privilege) {
+      case "root":
+      case "owner":
+      case "user":
+      case "anonymous":
+      case "none":
+        return true
+
+      default:
+        return false
+    }
+  },
+
+  isStatsUploadable: (privilege: string, domain: string): boolean => {
+    switch (privilege) {
+      case "root":
+      case "owner":
+      case "user":
+      case "anonymous":
+      case "none":
+        return true
+
+      default:
+        return false
+    }
+  },
+
+  isStatsOpenable: (privilege: string, domain: string): boolean => {
+    switch (privilege) {
+      case "root":
+      case "owner":
+      case "user":
+      case "anonymous":
+      case "none":
+        return true
+
+      default:
+        return false
+    }
+  },
+
+  isStatsDeletable: (privilege: string, domain: string): boolean => {
+    switch (privilege) {
+      case "root":
+      case "owner":
+        return true
+
+      case "user":
+        switch (domain) {
+          case "public":
+          case "private":
+            return true
+
+          default:
+            return false
+        }
+
+      case "anonymous":
+      case "none":
+      default:
+        return false
+    }
+  },
+
+  isConsoleOpenable: (privilege: string, domain: string): boolean => {
     switch (privilege) {
       case "root":
       case "owner":
@@ -222,7 +222,7 @@ export default {
     }
   },
 
-  isInvitable: (privilege: string, domain: string) => {
+  isInvitable: (privilege: string, domain: string): boolean => {
     switch (privilege) {
       case "root":
       case "owner":

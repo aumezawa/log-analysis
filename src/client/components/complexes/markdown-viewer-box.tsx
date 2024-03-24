@@ -38,7 +38,7 @@ const MarkdownViewerBox = React.memo<MarkdownViewerBoxProps>(({
     })
     .catch((err: Error | AxiosError) => {
       if (Axios.isAxiosError(err)) {
-        alert(err.response.data.msg)
+        alert(err.response!.data.msg)
       } else {
         console.log(err)
       }

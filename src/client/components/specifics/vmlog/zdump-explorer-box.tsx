@@ -24,9 +24,9 @@ type ZdumpExplorerBoxProps = {
 
 const ZdumpExplorerBox = React.memo<ZdumpExplorerBoxProps>(({
   className = "",
-  domain    = null,
-  project   = null,
-  bundle    = null,
+  domain    = "",
+  project   = "",
+  bundle    = "",
   onSelect  = undefined
 }) => {
   const [ignored, forceUpdate] = useReducer(x => x + 1, 0)
@@ -56,7 +56,7 @@ const ZdumpExplorerBox = React.memo<ZdumpExplorerBoxProps>(({
       })
       .catch((err: AxiosError) => {
         forceUpdate()
-        alert(err.response.data.msg)
+        alert(err.response!.data.msg)
         return
       })
     } else {
