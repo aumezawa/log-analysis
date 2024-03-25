@@ -1,6 +1,5 @@
 FROM node:16.13-alpine as builder
 
-RUN apk add --update bash
 RUN apk add --update g++ make
 RUN apk add --update git
 RUN apk add --update openssl
@@ -31,7 +30,6 @@ RUN npm run init:user -- --force
 
 FROM node:16.13-alpine
 
-RUN apk add --update bash
 RUN apk add --update g++ make
 RUN apk add --update git
 RUN apk add --update python3
