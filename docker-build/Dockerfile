@@ -85,6 +85,7 @@ RUN apk add --update python3
 ### Copy pakcages for app
 RUN mkdir -p ${APPDIR}/${APPNAME}
 
+WORKDIR ${APPDIR}/${APPNAME}
 COPY --from=builder-1 ${APPDIR}/${APPNAME}/bin ${APPDIR}/${APPNAME}/bin
 COPY --from=builder-1 ${APPDIR}/${APPNAME}/dist ${APPDIR}/${APPNAME}/dist
 COPY --from=builder-1 ${APPDIR}/${APPNAME}/local ${APPDIR}/${APPNAME}/local
