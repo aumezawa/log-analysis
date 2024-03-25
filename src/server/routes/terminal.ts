@@ -4,7 +4,7 @@ import * as os from "os"
 
 import logger = require("../lib/logger")
 
-const shell = os.platform() === "win32" ? "powershell.exe"  : "bash"
+const shell = os.platform() === "win32" ? "powershell.exe"  : (process.env.npm_package_config_linux_shell || "sh")
 const opt   = os.platform() === "win32" ? []                : ["-c"]
 
 const terminal = (server: http.Server) => {

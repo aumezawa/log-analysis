@@ -93,6 +93,7 @@ main:
       msg:              "bundle: log-bundle-test-0001.tgz was uploaded and was decompressed successfully."
       id:               0
       name:             log-bundle-test-0001
+      type:             .tgz
 
   - method:             GET
     path:               /api/v1/log/public/projects/Regression Test/bundles
@@ -178,6 +179,7 @@ main:
           hasHeader:    true
           hasIndex:     true
           contentKey:   Content
+          files:        ["bbb.txt"]
         data:
         - Content:      Test Message 1
         - Content:      Test Message 2
@@ -204,6 +206,7 @@ main:
           hasHeader:    true
           hasIndex:     true
           contentKey:   Content
+          files:        ["ddd.txt"]
         data:
         - Date:         2020-10-29T19:43:10.613Z
           Content:      Test Message 1
