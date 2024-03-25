@@ -6,8 +6,6 @@ RUN apk add --update git
 RUN apk add --update openssl
 RUN apk add --update python3
 
-RUN alias python=python3
-
 
 RUN mkdir -p /app
 
@@ -38,8 +36,6 @@ RUN apk add --update g++ make
 RUN apk add --update git
 RUN apk add --update python3
 
-RUN alias python=python3
-
 
 RUN mkdir -p /app
 
@@ -56,6 +52,7 @@ COPY --from=builder /app/log-analysis/local /app/log-analysis/local
 RUN mkdir -p /mnt/storage
 VOLUME /mnt/storage
 
+RUN ln -s /usr/bin/python3 /usr/bin/python
 ENTRYPOINT mkdir -p /mnt/storage/data && npm start --storage_path=/mnt/storage
 
 EXPOSE 3000
