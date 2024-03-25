@@ -63,7 +63,7 @@ router.route("/login")
   if (req.body.username === "anonymous") {
     // OK
     const token = jwt.sign({
-      iss: process.env.npm_package_author_name,
+      iss: process.env.npm_package_name,
       sub: "token-" + process.env.npm_package_name,
       usr: "anonymous",
       als: "anonymous",
@@ -121,7 +121,7 @@ router.route("/login")
 
   // OK
   const token = jwt.sign({
-    iss: process.env.npm_package_author_name,
+    iss: process.env.npm_package_name,
     sub: "token-" + process.env.npm_package_name,
     usr: userinfo.username,
     als: userinfo.alias,
@@ -141,6 +141,19 @@ router.route("/login")
 
 
 router.use((req: Request, res: Response, next: NextFunction) => {
+  if (process.env.npm_package_config_no_auth === "true" || process.env.NO_AUTH === "true") {
+    req.token = {
+      iss: process.env.npm_package_name,
+      sub: "token-" + process.env.npm_package_name,
+      iat: 0,
+      exp: 0,
+      usr: "root",
+      als: "root",
+      prv: "root"
+    }
+    return next()
+  }
+
   const token = req.query.token || req.body.token || req.header("X-Access-Token")
   if (!token) {
     // Unauthorized
