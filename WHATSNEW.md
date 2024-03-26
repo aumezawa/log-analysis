@@ -1,3 +1,20 @@
+Version: **0.27.0** [2024/03/25]
+
+New Features:
+  - Supported option to not authenticate user
+
+Enhanced Features:
+  - Changed default shell on linux
+  - Shrinked docker image
+  - Updated test modules
+
+Bug Fixes:
+  - Bug fix: Python cannot work on docker container
+  -
+  - Updated vulnerary modules
+
+***
+
 Version: **0.26.0** [2024/03/24]
 
 New Features:
@@ -11,7 +28,7 @@ Enhanced Features:
 Bug Fixes:
   - Unvisibling date button on functinal table is still enabled when multi files are opened
   - cache data remains after deleting bundle
-  -  Workaround for error in xterm.js
+  - Workaround for error in xterm.js
 
 ***
 

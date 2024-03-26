@@ -77,9 +77,13 @@ const VmExplorerBox = React.memo<VmExplorerBoxProps>(({
         forceUpdate()
         return
       })
-      .catch((err: AxiosError) => {
+      .catch((err: Error | AxiosError) => {
         forceUpdate()
-        alert(err.response!.data.msg)
+        if (Axios.isAxiosError(err)) {
+          alert(err.response!.data.msg)
+        } else {
+          console.log(err)
+        }
         return
       })
     } else {

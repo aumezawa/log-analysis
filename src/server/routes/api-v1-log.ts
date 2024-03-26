@@ -607,7 +607,8 @@ router.route("/:domain/projects/:projectName/bundles/:bundleId")
   } if (req.query.mode && req.query.mode === "term") {
     const dirpath = Project.getBundleResourcePathSync(req.token.usr, req.domain, req.project, req.bundleId)
     const cmd = os.platform() === "win32"              ? `cmd /k cd ${ dirpath }` :
-                req.app.get("console-user") === "root" ? `cd ${ dirpath }; bash`  : `cd ${ dirpath }; sudo -u ${ req.app.get("console-user") } bash`
+                req.app.get("console-user") === "root" ? `cd ${ dirpath }; ${ process.env.npm_package_config_linux_shell || "sh" }`
+                                                       : `cd ${ dirpath }; sudo -u ${ req.app.get("console-user") } ${ process.env.npm_package_config_linux_shell || "sh" }`
     // OK
     return res.status(200).json({
       msg: `You get a terminal command to open the console of project ${ req.project } bundle ID = ${ req.bundleId }.`,

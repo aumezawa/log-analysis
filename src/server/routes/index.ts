@@ -28,6 +28,19 @@ router.route("/error")
 })
 
 router.use((req: Request, res: Response, next: NextFunction) => {
+  if (process.env.npm_package_config_no_auth === "true" || process.env.NO_AUTH === "true") {
+    req.token = {
+      iss: process.env.npm_package_name,
+      sub: "token-" + process.env.npm_package_name,
+      iat: 0,
+      exp: 0,
+      usr: "root",
+      als: "root",
+      prv: "root"
+    }
+    return next()
+  }
+
   const token = req.query.token || req.body.token || req.header("X-Access-Token") || req.cookies.token
   if (!token) {
     // Unauthorized

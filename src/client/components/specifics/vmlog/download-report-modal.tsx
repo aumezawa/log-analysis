@@ -53,9 +53,13 @@ const DownloadReportModal = React.memo<DownloadReportModalProps>(({
       }
       return
     })
-    .catch((err: AxiosError) => {
-      alert(err.response!.data.msg)
-      return
+    .catch((err: Error | AxiosError) => {
+      if (Axios.isAxiosError(err)) {
+        alert(err.response!.data.msg)
+      } else {
+        console.log(err)
+      }
+    return
     })
   }, [domain, project, bundle])
 

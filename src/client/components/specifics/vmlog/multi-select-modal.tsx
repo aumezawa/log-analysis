@@ -62,10 +62,14 @@ const MultiSelectModal = React.memo<MultiSelectModalProps>(({
         forceUpdate()
         return
       })
-      .catch((err: AxiosError) => {
+      .catch((err: Error | AxiosError) => {
         data.current.list = []
         forceUpdate()
-        alert(err.response!.data.msg)
+        if (Axios.isAxiosError(err)) {
+          alert(err.response!.data.msg)
+        } else {
+          console.log(err)
+        }
         return
       })
     } else {

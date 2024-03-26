@@ -52,7 +52,8 @@ function execVmtoolsSync(node: string, mode: string, type?: string, target?: str
 
   const result = child_process.spawnSync("python", [
     "main.py",
-    "-l", path.join(rootPath, "local", "log"),
+    "-l",
+    process.env.STORAGE_PATH ? path.join(process.env.STORAGE_PATH, "log") : path.join(rootPath, process.env.npm_package_config_log_path!),
   ].concat(options), {
     cwd: path.join("src", "server", "exts", "vmtools"),
     encoding: "utf-8"
