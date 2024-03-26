@@ -1,7 +1,7 @@
 ################################################################################
 # Global Variables
 ARG REPOSITORY="https://github.com/aumezawa/log-analysis.git"
-ARG BRANCH="vmlog"
+ARG BRANCH="docker-image"
 
 ARG APPNAME="log-analysis"
 ARG APPDIR="/app"
