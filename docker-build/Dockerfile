@@ -90,6 +90,7 @@ COPY --from=builder-1 ${APPDIR}/${APPNAME}/bin ${APPDIR}/${APPNAME}/bin
 COPY --from=builder-1 ${APPDIR}/${APPNAME}/dist ${APPDIR}/${APPNAME}/dist
 COPY --from=builder-1 ${APPDIR}/${APPNAME}/local ${APPDIR}/${APPNAME}/local
 COPY --from=builder-1 ${APPDIR}/${APPNAME}/public ${APPDIR}/${APPNAME}/public
+COPY --from=builder-1 ${APPDIR}/${APPNAME}/src/server/exts ${APPDIR}/${APPNAME}/src/server/exts
 COPY --from=builder-1 ${APPDIR}/${APPNAME}/package.json ${APPDIR}/${APPNAME}/package.json
 COPY --from=builder-1 ${APPDIR}/${APPNAME}/LICENSE ${APPDIR}/${APPNAME}/LICENSE
 COPY --from=builder-1 ${APPDIR}/${APPNAME}/README.md ${APPDIR}/${APPNAME}/README.md
